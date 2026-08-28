@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-style="dopamine">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -75,27 +75,6 @@
     --block-d-bg: var(--panel);    --block-d-ink: var(--ink);
     --btn-radius: 999px;
   }
-  html[data-style="brutal"]{
-    --bg:#E3E5DF; --bg2:#D9DCD5;
-    --panel:#FFFFFF; --surface:#FFFFFF;
-    --ink:#12130F; --ink-dim:#4B4E47; --ink-faint:#7D8079;
-    --line: #12130F;
-    --chip-bg: #12130F; --chip-fg: #F4F5F1;
-    --radius-xl: 4px; --radius-lg: 4px; --radius-md: 4px; --radius-sm: 3px;
-    --border-w: 3px; --border-c: #12130F;
-    --shadow-block: 7px 7px 0 0 #12130F;
-    --title-font: 'Bungee Inline', cursive;
-    --title-weight: 400;
-    --title-style: normal;
-    --title-tracking: 0em;
-    --label-font: 'Space Mono', monospace;
-    --body-font: 'Inter', sans-serif;
-    --block-a-bg: #FFFFFF;         --block-a-ink: var(--ink);
-    --block-b-bg: #FFFFFF;         --block-b-ink: var(--ink);
-    --block-c-bg: #FFFFFF;         --block-c-ink: var(--ink);
-    --block-d-bg: var(--acc);      --block-d-ink: var(--acc-ink);
-    --btn-radius: 4px;
-  }
 
   *{ box-sizing:border-box; margin:0; padding:0; }
   html{ -webkit-tap-highlight-color: transparent; }
@@ -140,11 +119,6 @@
     background: linear-gradient(180deg, rgba(8,6,4,0.86) 0%, rgba(8,6,4,0.40) 42%, rgba(8,6,4,0.58) 100%);
     opacity: calc(1 - var(--hero-progress, 0) * 0.58);
   }
-  /* Legend: the image only ever peeks in at the very top; a real gradient carries
-     it down into the flat, light theme color that the rest of the page sits on. */
-  html[data-style="brutal"] .page-bg-tint{
-    background: linear-gradient(180deg, rgba(227,229,223,0.06) 0%, rgba(227,229,223,0.62) 46%, var(--bg) 78%, var(--bg) 100%);
-  }
   @media (prefers-reduced-motion: reduce){ .page-bg-img{ transform:none !important; } }
 
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; scroll-behavior:auto !important; } }
@@ -163,7 +137,6 @@
 
   .herohead{ display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
   .titlelogo{ height: clamp(64px, 11vw, 110px); width:auto; border-radius:50%; flex-shrink:0; }
-  html[data-style="brutal"] .titlelogo{ border-radius: var(--radius-sm); box-shadow: none; }
 
   .paintwrap{ position:relative; }
   .paintwrap.floating{ position:absolute; top:16px; right:16px; z-index:5; }
@@ -173,7 +146,6 @@
     background: var(--surface); color: var(--ink); display:flex; align-items:center; justify-content:center;
     font-size:19px; box-shadow: var(--shadow-block);
   }
-  html[data-style="brutal"] .paintbtn{ border-radius: var(--radius-sm); border: var(--border-w) solid var(--border-c); background: var(--panel); }
   .paintbtn:hover{ background: var(--acc); color: var(--acc-ink); }
 
   /* ---- Add to Home Screen ---- */
@@ -197,7 +169,6 @@
     opacity:0; transform: translateY(10px) scale(.96);
     transition: opacity .28s var(--ease), transform .28s var(--ease-spring);
   }
-  html[data-style="brutal"] .iospop{ border: var(--border-w) solid var(--border-c); }
   .iospop.show{ display:block; opacity:1; transform: translateY(0) scale(1); }
   .iospop-title{ font-family: var(--title-font); font-weight: var(--title-weight); color: var(--acc); font-size:18px; margin-bottom:12px; }
   .iospop-step{ display:flex; align-items:flex-start; gap:10px; font-size:13px; line-height:1.5; color: var(--ink-dim); margin-bottom:10px; }
@@ -221,25 +192,19 @@
   }
   .paintpop.show{ opacity:1; transform: translateY(0) scale(1); pointer-events:auto; }
   .pop-label{ font-family: var(--label-font); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color: var(--ink-faint); font-weight:700; margin-bottom:10px; }
-  .stylerow{ display:flex; gap:10px; margin-bottom:18px; }
-  .stylebtn{
-    flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; padding: 14px 8px 12px;
-    background: var(--surface); border: 2px solid transparent; border-radius: var(--radius-sm); cursor:pointer; color: var(--ink);
+  .accentrow{ display:flex; gap:10px; justify-content:space-between; padding:0 4px; }
+  .accentbtn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:7px;
+    background:transparent; border:none; cursor:pointer; padding:4px 2px;
   }
-  html[data-style="brutal"] .stylebtn{ background: var(--bg); border: var(--border-w) solid var(--border-c); }
-  .stylebtn .shape{ width:26px; height:26px; background: var(--ink-dim); }
-  .stylebtn[data-shape="circle"] .shape{ border-radius:50%; }
-  .stylebtn[data-shape="square"] .shape{ border-radius:5px; }
-  .stylebtn span.name{ font-family: var(--label-font); font-size:10.5px; font-weight:700; letter-spacing:0.03em; }
-  .stylebtn.active{ border-color: var(--acc); }
-  .stylebtn.active .shape{ background: var(--acc); }
-  .accentrow{ display:flex; gap:12px; justify-content:space-between; padding:0 4px; }
-  .accentdot{
-    width:34px; height:34px; border-radius:50%; border: 3px solid transparent; cursor:pointer; position:relative;
+  .accentbtn .dot{
+    width:34px; height:34px; border-radius:50%; border: 3px solid transparent; position:relative;
     box-shadow: inset 0 0 0 2px rgba(0,0,0,0.12);
   }
-  .accentdot.active{ border-color: var(--ink); }
-  .accentdot.active::after{ content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; color:#0A0A0A; font-weight:800; text-shadow: 0 1px 4px rgba(255,255,255,0.5); }
+  .accentbtn .name{ font-family: var(--label-font); font-size:10.5px; font-weight:700; letter-spacing:0.03em; color: var(--ink-dim); }
+  .accentbtn.active .dot{ border-color: var(--ink); }
+  .accentbtn.active .name{ color: var(--ink); }
+  .accentbtn.active .dot::after{ content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; color:#0A0A0A; font-weight:800; text-shadow: 0 1px 4px rgba(255,255,255,0.5); }
   .rememberrow{ display:flex; align-items:center; gap:8px; margin-top:16px; font-family: var(--label-font); font-size:11.5px; color: var(--ink-dim); cursor:pointer; }
   .rememberrow input{ width:16px; height:16px; accent-color: var(--acc); cursor:pointer; }
 
@@ -274,48 +239,45 @@
     .hero-navbar{ display:none !important; }
   }
 
-  /* ---- Compact hero: once shrunk into a nav bar, it becomes a solid-color bar
-     (never the hero image) with just a hint of transparency, edge-to-edge on
-     both themes regardless of the page's max-width. ---- */
-  .hero-block.compact{
-    width:100%; left:0; right:0; margin:0;
-    background: color-mix(in srgb, var(--bg) 94%, transparent);
+  /* ---- Compact hero: once shrunk into a nav bar, it has NO fill or edge of its
+     own — the dark scrim below (which extends past the bar's own box, down into
+     the content) carries all the visual weight, so there's nothing to draw a
+     hard boundary. ---- */
+  .hero-block.compact{ width:100%; left:0; right:0; margin:0; }
+  /* Original: iOS-style progressive blur + dark tint, extended well past the
+     bar's own 64px box (see --scrim-h) so both the blur and the color fade out
+     gradually *over the content underneath* instead of cutting off in a hard
+     line right at the bar's edge. */
+  .hero-navbar-blur{
+    position:absolute; top:0; left:0; right:0; z-index:1; overflow:hidden;
+    height: calc(100% + var(--scrim-h, 72px));
+    opacity:0; pointer-events:none; transition: opacity .3s var(--ease);
   }
-  /* Legend: the compact bar goes dark with light text/controls, regardless of the
-     light theme color everywhere else — it's a nav bar, not a page surface. */
-  html[data-style="brutal"] .hero-block.compact{
-    background: #12130F;
-    border-bottom: var(--border-w) solid rgba(244,245,241,0.18);
-  }
-  html[data-style="brutal"] .hero-block.compact .hero-navbar-title{ color:#F4F5F1; }
-  html[data-style="brutal"] .hero-block.compact .hero-navbar-btn{
-    background: #1E1D1B; color:#F4F5F1; border-color: rgba(244,245,241,0.35);
-  }
-  html[data-style="brutal"] .hero-block.compact .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); border-color: var(--acc); }
-  /* Original: iOS-style progressive blur — several stacked, increasingly-blurred
-     layers feathered with masks, so the blur ramps in smoothly instead of a single
-     flat backdrop-filter cutoff. */
-  .hero-navbar-blur{ position:absolute; inset:0; z-index:1; overflow:hidden; opacity:0; pointer-events:none; transition: opacity .3s var(--ease); }
   .hero-block.compact .hero-navbar-blur{ opacity:1; }
-  html[data-style="dopamine"] .hero-navbar-blur span{ position:absolute; inset:0; }
-  html[data-style="dopamine"] .hero-navbar-blur span:nth-child(1){
-    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
-    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 55%);
-    mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 55%);
+  html[data-style="dopamine"] .hero-navbar-blur .tint{
+    position:absolute; inset:0;
+    background: linear-gradient(180deg,
+      color-mix(in srgb, var(--bg) 94%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 80%, transparent) 34%,
+      color-mix(in srgb, var(--bg) 42%, transparent) 58%,
+      transparent 100%);
   }
+  html[data-style="dopamine"] .hero-navbar-blur span{ position:absolute; inset:0; }
   html[data-style="dopamine"] .hero-navbar-blur span:nth-child(2){
-    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
-    -webkit-mask-image: linear-gradient(180deg, transparent 15%, #000 40%, #000 65%, transparent 85%);
-    mask-image: linear-gradient(180deg, transparent 15%, #000 40%, #000 65%, transparent 85%);
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 18%, transparent 34%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 18%, transparent 34%);
   }
   html[data-style="dopamine"] .hero-navbar-blur span:nth-child(3){
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    -webkit-mask-image: linear-gradient(180deg, transparent 40%, #000 65%, #000 100%);
-    mask-image: linear-gradient(180deg, transparent 40%, #000 65%, #000 100%);
+    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 9%, #000 24%, #000 42%, transparent 58%);
+    mask-image: linear-gradient(180deg, transparent 9%, #000 24%, #000 42%, transparent 58%);
   }
-  /* Legend: no blur at all — a hard, flat edge (already applied to .hero-block
-     above) is the whole point; it stays crisp edge-to-edge once compact too. */
-  html[data-style="brutal"] .hero-navbar-blur{ display:none; }
+  html[data-style="dopamine"] .hero-navbar-blur span:nth-child(4){
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 26%, #000 40%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 26%, #000 40%, #000 100%);
+  }
   .hero-inner{
     position:relative; z-index:2; padding: 0 clamp(20px, 5vw, 56px) clamp(28px, 5vw, 52px); width:100%;
     opacity: calc(1 - var(--hero-content-p, 0));
@@ -352,16 +314,12 @@
   }
   .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); }
   .hero-navbar-btn:active{ transform: scale(0.9); }
-  html[data-style="brutal"] .hero-navbar-btn{
-    background: var(--panel); border: var(--border-w) solid var(--border-c); border-radius: var(--radius-sm);
-  }
-  html[data-style="brutal"] .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); }
   .paintwrap.navpaint{ position:relative; }
   .paintwrap.navpaint .paintpop{ top:48px; }
   @media (max-width: 480px){ .paintwrap.navpaint .paintpop{ right:-8px; } }
   .hero-titlewrap{ position:relative; overflow: visible; }
 
-  /* ---- Title intro: curtain slide-up on Original, soft fade+rise on Legend ---- */
+  /* ---- Title intro: curtain slide-up ---- */
   .eyebrow{
     font-family: var(--label-font); font-size: 11.5px; letter-spacing: 0.2em;
     text-transform: uppercase; background: var(--acc); color: var(--acc-ink); padding: 5px 10px; border-radius: var(--radius-sm);
@@ -376,11 +334,6 @@
     transition: transform 1s var(--ease-spring) .22s;
   }
   html[data-style="dopamine"] .hero-block.in .hero-titlewrap h1{ transform: translateY(0); }
-  html[data-style="brutal"] .hero-titlewrap h1{
-    opacity: 0; transform: translateY(26px) scale(.97);
-    transition: opacity .8s var(--ease) .2s, transform .8s var(--ease) .2s;
-  }
-  html[data-style="brutal"] .hero-block.in .hero-titlewrap h1{ opacity:1; transform: translateY(0) scale(1); }
   .sub{ opacity:0; transform: translateY(10px); transition: opacity .6s var(--ease) .38s, transform .6s var(--ease) .38s; }
   .hero-block.in .sub{ opacity:1; transform: translateY(0); }
 
@@ -397,14 +350,8 @@
     text-shadow: 0 10px 40px rgba(0,0,0,0.5);
   }
   html[data-style="dopamine"] .hero-titlewrap{ overflow: hidden; margin-bottom: 4px; padding-bottom: 6px; }
-  html[data-style="brutal"] h1{
-    color: #F3F1EC;
-    display:inline-block;
-  }
   .sub{ color: rgba(255,246,228,0.82); font-size: 15px; line-height: 1.6; max-width: 60ch; margin-top: 2px; }
-  html[data-style="brutal"] .sub{ color: rgba(18,19,15,0.82); text-shadow: 0 1px 3px rgba(255,255,255,0.35); }
   .sub b{ color: #fff; font-weight:700; }
-  html[data-style="brutal"] .sub b{ color: #12130F; }
 
   @media (max-width: 640px){
     .hero-block{ min-height: 52vh; }
@@ -413,7 +360,7 @@
   #netHeroSentinel{ height:0; }
 
   .netpay-hero{
-    margin: -30px 0 26px; position: sticky; top: var(--nav-h); z-index:12; width:100%; overflow:hidden;
+    margin: -30px 0 26px; position: sticky; top: calc(var(--nav-h) + 14px); z-index:12; width:100%; overflow:hidden;
     background: var(--block-d-bg); color: var(--block-d-ink);
     border-radius: var(--radius-lg); padding: 26px 28px 22px; text-align:left;
     box-shadow: var(--shadow-block);
@@ -425,21 +372,22 @@
     transform: translateZ(0);
     transition: padding .38s var(--ease), border-radius .38s var(--ease), box-shadow .3s var(--ease);
   }
-  /* ---- Stuck (pinned below the compact hero) layout: number stays on the left,
-     the label + context move to a stacked column on the right, box shrinks to
-     roughly double the compact hero's height. ---- */
+  /* ---- Stuck (pinned, with a gap below the compact hero): a short, fully
+     rounded pill that floats free of the nav bar rather than sitting flush
+     under it — number stays left (bigger, not smaller) with the label +
+     context stacked to its right. ---- */
   .nph-content{ display:flex; flex-direction:column; }
   .nph-textcol{ display:contents; }
   .netpay-hero.stuck{
     display:flex; align-items:center;
-    padding: 14px 22px;
-    min-height: calc(var(--nav-h) * 2);
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
-    box-shadow: 0 14px 30px -16px rgba(0,0,0,0.5);
+    padding: 13px 22px;
+    min-height: 0;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 16px 34px -14px rgba(0,0,0,0.55);
   }
-  .netpay-hero.stuck .nph-content{ flex-direction: row; align-items:center; gap:16px; width:100%; }
-  .netpay-hero.stuck .nph-textcol{ display:flex; flex-direction:column; order:2; gap:3px; }
-  .netpay-hero.stuck .nph-num{ order:1; font-size: clamp(28px, 8vw, 40px); flex-shrink:0; }
+  .netpay-hero.stuck .nph-content{ flex-direction: row; align-items:center; gap:14px; width:100%; }
+  .netpay-hero.stuck .nph-textcol{ display:flex; flex-direction:column; order:2; gap:2px; }
+  .netpay-hero.stuck .nph-num{ order:1; font-size: clamp(32px, 9vw, 44px); flex-shrink:0; }
   .netpay-hero.stuck .nph-label{ margin-bottom:0; font-size:9.5px; }
   .netpay-hero.stuck .nph-context{ margin-top:0; font-size:10.5px; }
   @media (prefers-reduced-motion: reduce){ .netpay-hero{ position:relative; top:auto; } }
@@ -449,7 +397,6 @@
     background-size: cover; background-position: center 45%;
     opacity:0.65;
   }
-  html[data-style="brutal"] .nph-bg{ opacity:1; }
   .nph-blur{
     position:absolute; inset:0; z-index:-3;
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
@@ -464,10 +411,8 @@
     position:absolute; inset:0; z-index:-1;
     background: linear-gradient(105deg, var(--block-d-bg) 0%, var(--block-d-bg) 34%, rgba(0,0,0,0) 78%);
   }
-  html[data-style="brutal"] .netpay-hero{ border: var(--border-w) solid var(--border-c); }
   .netpay-hero .nph-label{ order:1; font-family: var(--label-font); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; font-weight:700; opacity:0.75; margin-bottom:6px; transition: font-size .3s var(--ease), margin .3s var(--ease); }
   .netpay-hero .nph-num{ order:2; font-family: var(--title-font); font-weight: var(--title-weight); font-size: clamp(52px, 11vw, 92px); line-height:0.95; letter-spacing: var(--title-tracking); display:inline-block; animation: nphBreathe 4.5s ease-in-out infinite; color: var(--acc); transition: font-size .3s var(--ease); }
-  html[data-style="brutal"] .netpay-hero .nph-num{ color: #F3F1EC; }
   .netpay-hero .nph-num.bump{ animation: nphBump .5s var(--ease-spring); }
   @keyframes nphBump{ 0%{ transform: scale(1); } 35%{ transform: scale(1.06); } 100%{ transform: scale(1); } }
   @keyframes nphBreathe{ 0%,100%{ filter: brightness(1); } 50%{ filter: brightness(1.07); } }
@@ -486,7 +431,6 @@
     box-shadow: var(--shadow-block);
   }
   html[data-style="dopamine"] .gearbtn{ background: #2E2C2A; }
-  html[data-style="brutal"] .gearbtn{ border: var(--border-w) solid var(--border-c); background: var(--panel); }
   .gearbtn:hover{ background: var(--acc); color: var(--acc-ink); }
 
   .cards-grid{ display:grid; grid-template-columns: 1fr; gap: 22px; align-items:start; }
@@ -499,16 +443,13 @@
     color: var(--onblock); box-shadow: var(--shadow-block);
     transition: background-color .5s var(--ease), color .5s var(--ease), border-color .5s var(--ease);
   }
-  html[data-style="brutal"] .ledger{ border: var(--border-w) solid var(--border-c); }
   .ledger-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
   .cardtitle{ font-family: var(--title-font); font-size: 24px; font-weight: var(--title-weight); font-style: var(--title-style); color: var(--onblock); letter-spacing: var(--title-tracking); }
-  html[data-style="brutal"] .cardtitle{ font-size:22px; }
   .cardtitle span{
     font-family: var(--label-font); font-size: 10px; font-weight:700; letter-spacing:0.08em;
     color: var(--chip-fg); background: var(--chip-bg); margin-left: 10px;
     padding: 5px 10px; border-radius: 999px; display:inline-block; vertical-align: 4px;
   }
-  html[data-style="brutal"] .cardtitle span{ border-radius:3px; border: 2px solid var(--onblock); }
   .cardtitle.pill-below{ display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
   .cardtitle.pill-below span{ margin-left:0; vertical-align:baseline; }
   .cardnote{ color: var(--onblock-dim); font-size: 13.5px; line-height:1.6; margin-bottom: 18px; }
@@ -516,12 +457,6 @@
   .block-a{ background: var(--block-a-bg); --onblock: var(--block-a-ink); --onblock-dim: color-mix(in srgb, var(--block-a-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
   .block-b{ background: var(--block-b-bg); --onblock: var(--block-b-ink); --onblock-dim: color-mix(in srgb, var(--block-b-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
   .block-c{ background: var(--block-c-bg); --onblock: var(--block-c-ink); --onblock-dim: color-mix(in srgb, var(--block-c-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
-  html[data-style="brutal"] .block-a, html[data-style="brutal"] .block-b, html[data-style="brutal"] .block-c{
-    --chip-bg: var(--ink); --chip-fg: #F4F5F1;
-  }
-  html[data-style="brutal"] .block-a{ border-top: 8px solid var(--acc); }
-  html[data-style="brutal"] .block-b{ border-top: 8px solid var(--acc2); }
-  html[data-style="brutal"] .block-c{ border-top: 8px solid var(--acc3); }
 
   .uploadgrid{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
   .uploadbtn{
@@ -529,12 +464,10 @@
     background: rgba(255,255,255,0.38); color: var(--onblock); border: none; border-radius: var(--radius-sm);
     padding: 26px 18px; cursor:pointer; min-height: 110px;
   }
-  html[data-style="brutal"] .uploadbtn{ background: var(--acc); color: var(--acc-ink); border: var(--border-w) solid var(--border-c); border-radius: var(--radius-sm); }
   .uploadbtn .icon{ font-size: 40px; line-height:1; }
   .uploadbtn .label{ display:flex; flex-direction:column; align-items:flex-start; line-height:1.08; }
   .uploadbtn .label .l1, .uploadbtn .label .l2{ font-family: var(--label-font); font-size: 19px; font-weight:900; letter-spacing:0.01em; text-transform:uppercase; }
   .uploadbtn:hover{ background: rgba(255,255,255,0.5); transform: translateY(-2px); }
-  html[data-style="brutal"] .uploadbtn:hover{ background: color-mix(in srgb, var(--acc) 82%, black 0%); }
   .uploadbtn.busy{ background: var(--acc3); color: var(--acc3-ink); animation: scanPulse 1.15s ease-in-out infinite; }
   .uploadbtn.done{ background: color-mix(in srgb, var(--acc2) 88%, black 0%); animation: scanPop .45s var(--ease-spring); }
   @keyframes scanPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.045); } }
@@ -559,14 +492,12 @@
     color: var(--onblock); background: rgba(255,255,255,0.22); border-radius: var(--radius-sm);
     padding: 12px 16px;
   }
-  html[data-style="brutal"] .manualbtn{ background: transparent; border: 2px solid var(--onblock); }
   .manualbtn::before{ content:"+"; font-weight:900; }
   .manualentry[open] .manualbtn::before{ content:"\2212"; }
   .fieldwrap{ display:flex; flex-direction:column; gap:7px; }
   .fieldlabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.06em; text-transform:uppercase; color: var(--onblock-dim); font-weight:700; }
   .fieldrow{ display:flex; align-items:center; gap:6px; background: var(--chip-bg); border: none; border-radius: var(--radius-sm); padding: 14px 14px; min-height: 52px; box-shadow: 0 0 0 0 var(--acc); transition: box-shadow .3s var(--ease), transform .3s var(--ease-spring); }
   .fieldrow:focus-within{ box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 55%, transparent); transform: translateY(-1px); }
-  html[data-style="brutal"] .fieldrow{ border-radius: var(--radius-sm); border: 2px solid var(--onblock); background: rgba(255,255,255,0.5); }
   .fieldwrap .fieldlabel{ transition: color .25s var(--ease); }
   .fieldwrap:focus-within .fieldlabel{ color: var(--acc); }
   .fieldrow span{ color: var(--chip-fg); opacity:0.6; font-family: var(--label-font); font-size:14px; }
@@ -574,7 +505,6 @@
     flex:1; min-width:0; background:transparent; border:none; color: var(--chip-fg);
     font-family: var(--label-font); font-size: 15px; font-weight:600; outline:none;
   }
-  html[data-style="brutal"] .fieldrow input, html[data-style="brutal"] .fieldrow span{ color: var(--onblock); opacity:1; }
 
   .breakwrap{ margin-top: 4px; }
   .flagrow{ display:flex; align-items:center; gap:8px; margin-bottom:14px; }
@@ -582,18 +512,15 @@
     font-family: var(--label-font); font-size: 9.5px; letter-spacing:0.04em; color: #0A0A0A;
     background: var(--acc3); border-radius: 999px; padding: 4px 10px; font-weight:800;
   }
-  html[data-style="brutal"] .floorflag{ border-radius:3px; border:2px solid var(--onblock); }
   .flagtext{ font-family: var(--label-font); font-size: 11.5px; color: var(--onblock-dim); }
 
   .nutrition{
     background: rgba(255,255,255,0.14); border-radius: var(--radius-sm); overflow:hidden; margin-bottom: 20px;
   }
-  html[data-style="brutal"] .nutrition{ background: transparent; border: 3px solid var(--onblock); border-radius: var(--radius-sm); }
   .nutrition .nlabel-head{
     font-family: var(--title-font); font-weight:800; font-size: 15px; letter-spacing:-0.01em;
     padding: 10px 14px 8px; border-bottom: 6px solid rgba(0,0,0,0.55); text-transform:uppercase;
   }
-  html[data-style="brutal"] .nutrition .nlabel-head{ font-family:'Inter',sans-serif; border-bottom: 6px solid var(--onblock); }
   .nrow{
     display:flex; justify-content:space-between; align-items:center; padding: 9px 14px;
     border-bottom: 1px solid rgba(0,0,0,0.14); font-family: var(--label-font); font-size: 13px;
@@ -606,26 +533,18 @@
   .nrow .nv{ color: var(--onblock); font-weight:700; font-variant-numeric: tabular-nums; }
   .nrow.sub .nk, .nrow.sub .nv{ opacity:0.75; font-weight:500; font-size:12.5px; padding-left: 10px; }
   .nrow.total{ border-top: 4px solid rgba(0,0,0,0.6); border-bottom:none; padding-top:12px; margin-top:2px; }
-  html[data-style="brutal"] .nrow.total{ border-top: 4px solid var(--onblock); }
   .nrow.total .nk, .nrow.total .nv{ font-size: 15px; font-weight:800; }
   .nrow.net{ background: rgba(0,0,0,0.14); border-radius: 0 0 10px 10px; padding: 14px; }
-  html[data-style="brutal"] .nrow.net{ background: var(--onblock); border-radius:0; }
-  html[data-style="brutal"] .nrow.net .nk, html[data-style="brutal"] .nrow.net .nv{ color: #FFFFFF; }
   .nrow.net .nk, .nrow.net .nv{ font-size: 17px; font-weight:800; }
 
   .bigrow{ display:grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 12px; margin-bottom: 18px; }
   .bigcell{ background: var(--chip-bg); border-radius: var(--radius-sm); padding: 16px 15px 14px; }
-  html[data-style="brutal"] .bigcell{ border: 2px solid var(--onblock); background: transparent; border-radius: var(--radius-sm); }
   .bigcell .label{ font-family: var(--label-font); font-size: 10px; letter-spacing:0.06em; text-transform:uppercase; color: var(--chip-fg); opacity:0.6; margin-bottom:8px; }
-  html[data-style="brutal"] .bigcell .label{ color: var(--onblock); opacity:0.6; }
   .bigcell .val{ font-family: var(--label-font); font-size: 22px; font-weight:800; color: var(--chip-fg); }
-  html[data-style="brutal"] .bigcell:not(.net) .val{ color: var(--onblock); }
   .bigcell.net{ background: #0A0A0A; box-shadow: inset 0 0 0 2px var(--acc3); }
-  html[data-style="brutal"] .bigcell.net{ background: var(--onblock); border-color: var(--acc3); box-shadow: none; }
   .bigcell.net .val{ color: var(--acc3); font-size:38px; font-family: var(--title-font); font-weight: 400; letter-spacing: var(--title-tracking); }
 
   .bigcell.net .label{ opacity:0.85; }
-  html[data-style="brutal"] .bigcell.net .label{ color: rgba(255,255,255,0.65); }
 
   .reconcile{ border-radius: var(--radius-sm); padding: 15px 17px; font-size: 13px; line-height:1.6; display:none; background: rgba(0,0,0,0.75); color: #F3F1EC; border-left: 5px solid transparent; }
   .reconcile.show{ display:block; }
@@ -645,7 +564,6 @@
   details.projection > summary span{ font-family: var(--label-font); font-size:11px; color: var(--ink-faint); font-weight:400; font-style:normal; }
 
   .tabbar{ display:flex; gap:7px; margin: 16px 0 14px; flex-wrap: wrap; background: var(--chip-bg); padding:6px; border-radius: var(--btn-radius); }
-  html[data-style="brutal"] .tabbar{ background:transparent; border: 2px solid var(--onblock); padding:5px; gap:5px; }
   .controllabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.1em; text-transform:uppercase; color: var(--ink-faint); margin-bottom: 9px; font-weight:700; }
   .tabbtn{
     flex:1 1 100px; text-align:center; padding: 12px 4px 10px; border-radius: var(--btn-radius); border: none; min-height: 48px;
@@ -653,7 +571,6 @@
   }
   .tabbtn .ticket{ display:block; font-size: 10px; color: var(--ink-faint); margin-top:3px; }
   .tabbtn.active{ background: var(--acc); color: var(--acc-ink); font-weight:800; }
-  html[data-style="brutal"] .tabbtn.active{ border-radius: 2px; }
   .tabbtn.active .ticket{ color: inherit; opacity: 0.75; }
 
   .goalrow, .goalcolheads{ display:grid; grid-template-columns: 1.35fr 1.1fr 0.95fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
@@ -667,12 +584,10 @@
 
   .zoomhead{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:10px; }
   .periodtoggle{ display:flex; gap:4px; background: var(--chip-bg); padding:5px; border-radius: var(--btn-radius); width:fit-content; margin-bottom:16px; }
-  html[data-style="brutal"] .periodtoggle{ background:transparent; border:2px solid var(--onblock); }
   .periodbtn{
     font-family: var(--label-font); font-size: 11px; font-weight:700; padding: 9px 13px; border-radius: var(--btn-radius); min-height:40px;
     border: none; background: transparent; color: var(--chip-fg); opacity:0.65; cursor:pointer;
   }
-  html[data-style="brutal"] .periodbtn{ color: var(--onblock); }
   .periodbtn.active{ background: var(--acc); color: var(--acc-ink); opacity:1; }
   .zoomcolheads{ display:grid; grid-template-columns: 1.3fr 0.85fr 0.85fr 0.9fr; gap: 6px; font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding: 0 0 9px; border-bottom: 1px solid rgba(0,0,0,0.12); font-weight:700; }
   .zoomcolheads .num{ text-align:right; }
@@ -687,12 +602,10 @@
     background: var(--panel); z-index:50; padding: 24px 22px 44px;
     transform: translateX(100%); transition: transform .38s var(--ease);
   }
-  html[data-style="brutal"] .drawer{ border-left: var(--border-w) solid var(--border-c); }
   .drawer.show{ transform: translateX(0); }
   .drawer-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; }
   .drawer-head h2{ font-family: var(--title-font); font-weight: var(--title-weight); font-size:26px; color: var(--acc); }
   .closebtn{ background: rgba(128,128,128,0.14); border:none; color: var(--ink); font-size:20px; cursor:pointer; line-height:1; padding:8px 12px; border-radius:999px; min-height:40px; }
-  html[data-style="brutal"] .closebtn{ border-radius: var(--radius-sm); border: 2px solid var(--border-c); }
   .closebtn:hover{ background: var(--acc); color: var(--acc-ink); }
   .drawer-sub{ color: var(--ink-faint); font-size: 12.5px; line-height:1.5; margin-bottom: 22px; }
 
@@ -708,7 +621,6 @@
     background: rgba(128,128,128,0.10); border: none; color: var(--ink);
     font-family: var(--label-font); font-size: 13px; padding: 11px 9px; border-radius: var(--radius-sm); width:100%; min-height:44px;
   }
-  html[data-style="brutal"] select, html[data-style="brutal"] .setrow .fieldrow{ border: 2px solid var(--line); background: transparent; }
 
   .bracketrow{ display:grid; grid-template-columns: 1fr 1fr auto; gap:6px; align-items:center; margin-bottom:7px; }
   .bracketrow .fieldrow{ padding: 8px 9px; background: rgba(128,128,128,0.10); min-height:40px; }
@@ -719,7 +631,6 @@
     background: rgba(128,128,128,0.10); border: none; color: var(--ink); border-radius: var(--btn-radius);
     padding: 11px 16px; font-family: var(--label-font); font-size: 11.5px; font-weight:700; cursor:pointer; margin-top:6px; min-height:42px;
   }
-  html[data-style="brutal"] .smallbtn{ border: 2px solid var(--line); }
   .smallbtn:hover{ background: var(--acc2); color: #0A0A0A; }
   .smallbtn.danger:hover{ background: var(--acc); color: #fff; }
   .btnrow{ display:flex; gap:8px; flex-wrap:wrap; }
@@ -760,7 +671,6 @@
     width:26px; height:26px; border-radius:999px; cursor:pointer; font-size:14px; line-height:1;
   }
   .historydel:hover{ background: var(--acc); color:#fff; }
-  html[data-style="brutal"] .historydel{ border-radius:3px; border:2px solid var(--onblock); background:transparent; }
 
 </style>
 </head>
@@ -786,24 +696,21 @@
 
   <div class="hero-spacer" id="heroSpacer">
   <div class="hero-block reveal-scale" id="heroBlock">
-    <div class="hero-navbar-blur" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="hero-navbar-blur" aria-hidden="true"><div class="tint"></div><span></span><span></span><span></span></div>
     <div class="paintwrap floating">
       <button type="button" class="paintbtn" id="paintToggle" aria-label="Change look">🖌️</button>
       <div class="paintpop" id="paintPop">
-        <div class="pop-label">Design language</div>
-        <div class="stylerow">
-          <button type="button" class="stylebtn" data-shape="circle" data-styleval="dopamine">
-            <span class="shape"></span><span class="name">Original</span>
-          </button>
-          <button type="button" class="stylebtn" data-shape="square" data-styleval="brutal">
-            <span class="shape"></span><span class="name">Legend</span>
-          </button>
-        </div>
         <div class="pop-label">Accent color</div>
         <div class="accentrow">
-          <button type="button" class="accentdot" data-accentval="coral" style="background:#FF5B49;" aria-label="Coral"></button>
-          <button type="button" class="accentdot" data-accentval="teal" style="background:#00C2A0;" aria-label="Teal"></button>
-          <button type="button" class="accentdot" data-accentval="gold" style="background:#FFD23F;" aria-label="Gold"></button>
+          <button type="button" class="accentbtn" data-accentval="coral" aria-label="Classic accent color">
+            <span class="dot" style="background:#FF5B49;"></span><span class="name">Classic</span>
+          </button>
+          <button type="button" class="accentbtn" data-accentval="teal" aria-label="Original accent color">
+            <span class="dot" style="background:#00C2A0;"></span><span class="name">Original</span>
+          </button>
+          <button type="button" class="accentbtn" data-accentval="gold" aria-label="Legend accent color">
+            <span class="dot" style="background:#FFD23F;"></span><span class="name">Legend</span>
+          </button>
         </div>
         <label class="rememberrow"><input type="checkbox" class="rememberChk" id="rememberLook"> Remember this look</label>
       </div>
@@ -824,20 +731,17 @@
       <div class="paintwrap navpaint">
         <button type="button" class="hero-navbar-btn" id="navPaintBtn" aria-label="Change look">🖌️</button>
         <div class="paintpop" id="navPaintPop">
-          <div class="pop-label">Design language</div>
-          <div class="stylerow">
-            <button type="button" class="stylebtn" data-shape="circle" data-styleval="dopamine">
-              <span class="shape"></span><span class="name">Original</span>
-            </button>
-            <button type="button" class="stylebtn" data-shape="square" data-styleval="brutal">
-              <span class="shape"></span><span class="name">Legend</span>
-            </button>
-          </div>
           <div class="pop-label">Accent color</div>
           <div class="accentrow">
-            <button type="button" class="accentdot" data-accentval="coral" style="background:#FF5B49;" aria-label="Coral"></button>
-            <button type="button" class="accentdot" data-accentval="teal" style="background:#00C2A0;" aria-label="Teal"></button>
-            <button type="button" class="accentdot" data-accentval="gold" style="background:#FFD23F;" aria-label="Gold"></button>
+            <button type="button" class="accentbtn" data-accentval="coral" aria-label="Classic accent color">
+              <span class="dot" style="background:#FF5B49;"></span><span class="name">Classic</span>
+            </button>
+            <button type="button" class="accentbtn" data-accentval="teal" aria-label="Original accent color">
+              <span class="dot" style="background:#00C2A0;"></span><span class="name">Original</span>
+            </button>
+            <button type="button" class="accentbtn" data-accentval="gold" aria-label="Legend accent color">
+              <span class="dot" style="background:#FFD23F;"></span><span class="name">Legend</span>
+            </button>
           </div>
           <label class="rememberrow"><input type="checkbox" class="rememberChk" id="rememberLook2"> Remember this look</label>
         </div>
@@ -1126,12 +1030,10 @@
     tipsDeductionAssumed: 3000,
     brackets: JSON.parse(JSON.stringify(DEFAULT_BRACKETS)),
     tierTickets: { low:22, average:30, high:42 },
-    uiStyle: 'brutal',
-    uiAccent: 'coral',
+    uiAccent: 'teal',
     rememberLook: false
   };
   var ACCENTS = ['coral','teal','gold'];
-  var STYLES = ['dopamine','brutal'];
 
   var SHIFT_CAPACITY = 11;
   var FILL_RATES = [
@@ -1153,7 +1055,6 @@
 
   var settings = loadSettings();
   if(!settings.rememberLook){
-    settings.uiStyle = STYLES[Math.floor(Math.random()*STYLES.length)];
     settings.uiAccent = ACCENTS[Math.floor(Math.random()*ACCENTS.length)];
   }
   var ui = {
@@ -1210,12 +1111,8 @@
   }
 
   function applyLook(){
-    document.documentElement.setAttribute('data-style', settings.uiStyle);
     document.documentElement.setAttribute('data-accent', settings.uiAccent);
-    document.querySelectorAll('.stylebtn').forEach(function(btn){
-      btn.classList.toggle('active', btn.getAttribute('data-styleval') === settings.uiStyle);
-    });
-    document.querySelectorAll('.accentdot').forEach(function(btn){
+    document.querySelectorAll('.accentbtn').forEach(function(btn){
       btn.classList.toggle('active', btn.getAttribute('data-accentval') === settings.uiAccent);
     });
     document.querySelectorAll('.rememberChk').forEach(function(chk){
@@ -1246,10 +1143,7 @@
       if(!p.pop.contains(e.target) && e.target !== p.btn){ p.pop.classList.remove('show'); }
     });
   });
-  document.querySelectorAll('.stylebtn').forEach(function(btn){
-    btn.addEventListener('click', function(){ settings.uiStyle = btn.getAttribute('data-styleval'); fireWipe(btn); applyLook(); });
-  });
-  document.querySelectorAll('.accentdot').forEach(function(btn){
+  document.querySelectorAll('.accentbtn').forEach(function(btn){
     btn.addEventListener('click', function(){ settings.uiAccent = btn.getAttribute('data-accentval'); fireWipe(btn); applyLook(); });
   });
   document.querySelectorAll('.rememberChk').forEach(function(chk){
@@ -1675,9 +1569,9 @@
   });
   document.getElementById('resetAll').addEventListener('click', function(){
     if(!confirm('Reset all settings to defaults? This clears anything you\'ve customized.')) return;
-    var keepStyle = settings.uiStyle, keepAccent = settings.uiAccent, keepRemember = settings.rememberLook;
+    var keepAccent = settings.uiAccent, keepRemember = settings.rememberLook;
     settings = JSON.parse(JSON.stringify(DEFAULTS));
-    settings.uiStyle = keepStyle; settings.uiAccent = keepAccent; settings.rememberLook = keepRemember;
+    settings.uiAccent = keepAccent; settings.rememberLook = keepRemember;
     saveSettings(); applyLook(); populateStateDropdown(); renderSettingsForm(); renderAll();
   });
   document.getElementById('lookupWage').addEventListener('click', function(){
@@ -1911,21 +1805,33 @@
       entries.forEach(function(entry){
         box.classList.toggle('stuck', !entry.isIntersecting);
       });
-    }, { threshold: 0, rootMargin: '-' + (NAV_H + 1) + 'px 0px 0px 0px' });
+    }, { threshold: 0, rootMargin: '-' + (NAV_H + 14 + 1) + 'px 0px 0px 0px' });
     io.observe(sentinel);
   }
 
   // ---- Once the main cards are on screen, add a touch of blur + grain to the
-  // shared page background so it recedes behind them instead of competing. ----
+  // shared page background so it recedes behind them instead of competing.
+  // This stays on for the rest of the page (footnotes, projection tool, etc.
+  // sit past the cards-grid too) — it only latches back off if the user
+  // scrolls back up above the hero entirely. ----
   function initBgCardsObserver(){
     var cards = document.querySelector('.cards-grid');
     if(!cards || !('IntersectionObserver' in window)) return;
+    var activated = false;
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(entry){
-        document.documentElement.classList.toggle('cards-visible', entry.isIntersecting);
+        if(entry.isIntersecting) activated = true;
+        document.documentElement.classList.toggle('cards-visible', activated);
       });
     }, { threshold: 0, rootMargin: '-15% 0px -55% 0px' });
     io.observe(cards);
+
+    window.addEventListener('scroll', function(){
+      if(window.scrollY <= 4 && activated){
+        activated = false;
+        document.documentElement.classList.remove('cards-visible');
+      }
+    }, { passive: true });
   }
 
   // ---- Add to Home Screen ----
