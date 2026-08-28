@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Take — Chop Barbershop</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%82%EF%B8%8F%3C/text%3E%3C/svg%3E">
+
+<!-- ---- PWA / installability ---- -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#141413">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Take">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<style>
+
+  :root{
+    --page-pad: 20px;
+    --maxw: 1180px;
+    --ease: cubic-bezier(.16,1,.3,1);
+    --ease-spring: cubic-bezier(.34,1.56,.64,1);
+    --wx: 50%; --wy: 40px;
+    --nav-h: 64px;
+  }
+
+  /* ---- Subtle grain, dopamine only — quiets the flat dark fills ---- */
+  body::before{
+    content:""; position:fixed; inset:-100px; z-index:1; pointer-events:none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0; mix-blend-mode: overlay; transition: opacity .6s var(--ease);
+  }
+  html[data-style="dopamine"] body::before{ opacity: 0.05; }
+
+  /* ---- Paint-wipe: a little theatrical flourish when style/accent changes ---- */
+  .theme-wipe{
+    position: fixed; inset: 0; z-index: 90; pointer-events: none;
+    background: var(--acc);
+    clip-path: circle(0% at var(--wx) var(--wy));
+    opacity: 0;
+  }
+  .theme-wipe.go{
+    transition: clip-path .68s var(--ease), opacity .5s ease .42s;
+    clip-path: circle(140% at var(--wx) var(--wy));
+    opacity: 0.9;
+  }
+
+  html[data-accent="coral"]{ --acc:#FF5B49; --acc2:#00C2A0; --acc3:#FFD23F; --acc-ink:#0A0A0A; --acc2-ink:#0A0A0A; --acc3-ink:#0A0A0A; }
+  html[data-accent="teal"] { --acc:#00C2A0; --acc2:#FFD23F; --acc3:#FF5B49; --acc-ink:#0A0A0A; --acc2-ink:#0A0A0A; --acc3-ink:#F3F1EC; }
+  html[data-accent="gold"] { --acc:#FFD23F; --acc2:#FF5B49; --acc3:#00C2A0; --acc-ink:#0A0A0A; --acc2-ink:#F3F1EC; --acc3-ink:#0A0A0A; }
+
+  html[data-style="dopamine"]{
+    --bg:#141413; --bg2:#0D0D0C;
+    --panel:#1E1D1B; --surface:#242321;
+    --ink:#F3F1EC; --ink-dim:#C7C4BE; --ink-faint:#8B8983;
+    --line: rgba(255,246,228,0.10);
+    --chip-bg: rgba(10,8,6,0.55); --chip-fg: var(--ink);
+    --radius-xl: 42px; --radius-lg: 30px; --radius-md: 20px; --radius-sm: 14px;
+    --border-w: 0px; --border-c: transparent;
+    --shadow-block: 0 18px 40px -14px rgba(0,0,0,0.55);
+    --title-font: 'Bungee Inline', cursive;
+    --title-weight: 400;
+    --title-style: normal;
+    --title-tracking: -0.02em;
+    --label-font: 'Space Mono', monospace;
+    --body-font: 'Inter', sans-serif;
+    --block-a-bg: var(--acc);      --block-a-ink: var(--acc-ink);
+    --block-b-bg: var(--acc2);     --block-b-ink: var(--acc2-ink);
+    --block-c-bg: var(--acc3);     --block-c-ink: var(--acc3-ink);
+    --block-d-bg: var(--panel);    --block-d-ink: var(--ink);
+    --btn-radius: 999px;
+  }
+  html[data-style="brutal"]{
+    --bg:#E3E5DF; --bg2:#D9DCD5;
+    --panel:#FFFFFF; --surface:#FFFFFF;
+    --ink:#12130F; --ink-dim:#4B4E47; --ink-faint:#7D8079;
+    --line: #12130F;
+    --chip-bg: #12130F; --chip-fg: #F4F5F1;
+    --radius-xl: 4px; --radius-lg: 4px; --radius-md: 4px; --radius-sm: 3px;
+    --border-w: 3px; --border-c: #12130F;
+    --shadow-block: 7px 7px 0 0 #12130F;
+    --title-font: 'Bungee Inline', cursive;
+    --title-weight: 400;
+    --title-style: normal;
+    --title-tracking: 0em;
+    --label-font: 'Space Mono', monospace;
+    --body-font: 'Inter', sans-serif;
+    --block-a-bg: #FFFFFF;         --block-a-ink: var(--ink);
+    --block-b-bg: #FFFFFF;         --block-b-ink: var(--ink);
+    --block-c-bg: #FFFFFF;         --block-c-ink: var(--ink);
+    --block-d-bg: var(--acc);      --block-d-ink: var(--acc-ink);
+    --btn-radius: 4px;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ -webkit-tap-highlight-color: transparent; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body-font);
+    font-size: 16.5px;
+    display:flex;
+    justify-content:center;
+    padding: 0 0 90px;
+    transition: background-color .5s var(--ease), color .5s var(--ease);
+  }
+  .page{ width:100%; max-width: var(--maxw); padding: 0 var(--page-pad); position:relative; z-index:1; }
+
+  /* ---- Page background: the hero image lives here now, pinned behind the entire
+     page (both themes) instead of scoped to the hero block. It never scrolls or
+     zooms ("the image should not move") — only the tint/blur/grain layers on top
+     of it respond to scroll, via --hero-progress and the .cards-visible class. ---- */
+  .page-bg{ position:fixed; inset:0; z-index:-1; overflow:hidden; }
+  .page-bg-img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 32%;
+  }
+  .page-bg-tint{ position:absolute; inset:0; transition: opacity .5s var(--ease); }
+  .page-bg-blur{
+    position:absolute; inset:0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+    transition: backdrop-filter .8s var(--ease), -webkit-backdrop-filter .8s var(--ease);
+  }
+  html.cards-visible .page-bg-blur{ backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .page-bg-grain{
+    position:absolute; inset:-100px; opacity:0; mix-blend-mode:overlay; pointer-events:none;
+    transition: opacity .8s var(--ease);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  html.cards-visible .page-bg-grain{ opacity:0.14; }
+
+  /* Original: dark, moody gradient over the full-page image. Strongest near the
+     top (for hero-text legibility), it eases back as you scroll ("fades up and
+     away") but never fully clears — a dim floor keeps the image visible-but-dimmed
+     behind the cards for the rest of the page. */
+  html[data-style="dopamine"] .page-bg-tint{
+    background: linear-gradient(180deg, rgba(8,6,4,0.86) 0%, rgba(8,6,4,0.40) 42%, rgba(8,6,4,0.58) 100%);
+    opacity: calc(1 - var(--hero-progress, 0) * 0.58);
+  }
+  /* Legend: the image only ever peeks in at the very top; a real gradient carries
+     it down into the flat, light theme color that the rest of the page sits on. */
+  html[data-style="brutal"] .page-bg-tint{
+    background: linear-gradient(180deg, rgba(227,229,223,0.06) 0%, rgba(227,229,223,0.62) 46%, var(--bg) 78%, var(--bg) 100%);
+  }
+  @media (prefers-reduced-motion: reduce){ .page-bg-img{ transform:none !important; } }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; scroll-behavior:auto !important; } }
+  html{ scroll-behavior: smooth; }
+  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible{
+    outline: 3px solid var(--acc); outline-offset: 3px; border-radius: 4px;
+  }
+  button{ font-family: inherit; -webkit-tap-highlight-color: transparent; }
+  button{ transition: transform .18s var(--ease-spring), box-shadow .18s var(--ease), background-color .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease); }
+  button:active{ transform: scale(0.96); }
+
+  .reveal{ opacity:0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+  .reveal.in{ opacity:1; transform: none; }
+  .reveal-scale{ opacity:0; transform: scale(.94); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .reveal-scale.in{ opacity:1; transform: none; }
+
+  .herohead{ display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
+  .titlelogo{ height: clamp(64px, 11vw, 110px); width:auto; border-radius:50%; flex-shrink:0; }
+  html[data-style="brutal"] .titlelogo{ border-radius: var(--radius-sm); box-shadow: none; }
+
+  .paintwrap{ position:relative; }
+  .paintwrap.floating{ position:absolute; top:16px; right:16px; z-index:5; }
+  .paintwrap.floating .paintbtn{ width:38px; height:38px; font-size:15px; }
+  .paintbtn{
+    width:46px; height:46px; border-radius:50%; border:none; cursor:pointer;
+    background: var(--surface); color: var(--ink); display:flex; align-items:center; justify-content:center;
+    font-size:19px; box-shadow: var(--shadow-block);
+  }
+  html[data-style="brutal"] .paintbtn{ border-radius: var(--radius-sm); border: var(--border-w) solid var(--border-c); background: var(--panel); }
+  .paintbtn:hover{ background: var(--acc); color: var(--acc-ink); }
+
+  /* ---- Add to Home Screen ---- */
+  .installbtn{
+    display:none; align-items:center; gap:8px; position:fixed; right:18px; bottom:22px; z-index:45;
+    background: var(--acc); color: var(--acc-ink); border:none; border-radius: var(--btn-radius);
+    padding: 13px 20px; font-family: var(--label-font); font-size:12.5px; font-weight:800;
+    letter-spacing:0.03em; cursor:pointer; box-shadow: 0 14px 34px -10px rgba(0,0,0,0.55);
+    opacity:1; transform: translateY(0);
+    transition: transform .22s var(--ease-spring), box-shadow .22s var(--ease), opacity .3s var(--ease);
+  }
+  .installbtn:hover{ transform: translateY(-3px); }
+  .installbtn:active{ transform: scale(0.94); }
+  .installbtn.hide{ opacity:0; transform: translateY(14px) scale(.94); pointer-events:none; }
+  @media (max-width: 640px){ .installbtn{ right:14px; bottom:18px; padding:12px 18px; } }
+
+  .iospop{
+    display:none; position:fixed; right:18px; bottom:78px; z-index:46; width: min(300px, calc(100vw - 36px));
+    background: var(--panel); color: var(--ink); border-radius: var(--radius-md); padding:18px;
+    box-shadow: 0 24px 60px -12px rgba(0,0,0,0.5);
+    opacity:0; transform: translateY(10px) scale(.96);
+    transition: opacity .28s var(--ease), transform .28s var(--ease-spring);
+  }
+  html[data-style="brutal"] .iospop{ border: var(--border-w) solid var(--border-c); }
+  .iospop.show{ display:block; opacity:1; transform: translateY(0) scale(1); }
+  .iospop-title{ font-family: var(--title-font); font-weight: var(--title-weight); color: var(--acc); font-size:18px; margin-bottom:12px; }
+  .iospop-step{ display:flex; align-items:flex-start; gap:10px; font-size:13px; line-height:1.5; color: var(--ink-dim); margin-bottom:10px; }
+  .iospop-num{
+    flex-shrink:0; width:20px; height:20px; border-radius:50%; background: var(--acc); color: var(--acc-ink);
+    font-family: var(--label-font); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  }
+  .iospop-close{
+    width:100%; margin-top:6px; background: rgba(128,128,128,0.14); border:none; color: var(--ink);
+    font-family: var(--label-font); font-size:11.5px; font-weight:700; padding:11px; border-radius: var(--btn-radius); cursor:pointer;
+  }
+  .iospop-close:hover{ background: var(--acc); color: var(--acc-ink); }
+
+  .paintpop{
+    position:absolute; top:56px; right:0; width: 268px; z-index:60;
+    background: var(--panel); border-radius: var(--radius-md); padding: 18px;
+    box-shadow: 0 24px 60px -12px rgba(0,0,0,0.45);
+    opacity:0; transform: translateY(-8px) scale(.96); pointer-events:none;
+    transition: opacity .28s var(--ease), transform .28s var(--ease-spring);
+    border: var(--border-w) solid var(--border-c);
+  }
+  .paintpop.show{ opacity:1; transform: translateY(0) scale(1); pointer-events:auto; }
+  .pop-label{ font-family: var(--label-font); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color: var(--ink-faint); font-weight:700; margin-bottom:10px; }
+  .stylerow{ display:flex; gap:10px; margin-bottom:18px; }
+  .stylebtn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; padding: 14px 8px 12px;
+    background: var(--surface); border: 2px solid transparent; border-radius: var(--radius-sm); cursor:pointer; color: var(--ink);
+  }
+  html[data-style="brutal"] .stylebtn{ background: var(--bg); border: var(--border-w) solid var(--border-c); }
+  .stylebtn .shape{ width:26px; height:26px; background: var(--ink-dim); }
+  .stylebtn[data-shape="circle"] .shape{ border-radius:50%; }
+  .stylebtn[data-shape="square"] .shape{ border-radius:5px; }
+  .stylebtn span.name{ font-family: var(--label-font); font-size:10.5px; font-weight:700; letter-spacing:0.03em; }
+  .stylebtn.active{ border-color: var(--acc); }
+  .stylebtn.active .shape{ background: var(--acc); }
+  .accentrow{ display:flex; gap:12px; justify-content:space-between; padding:0 4px; }
+  .accentdot{
+    width:34px; height:34px; border-radius:50%; border: 3px solid transparent; cursor:pointer; position:relative;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,0.12);
+  }
+  .accentdot.active{ border-color: var(--ink); }
+  .accentdot.active::after{ content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; color:#0A0A0A; font-weight:800; text-shadow: 0 1px 4px rgba(255,255,255,0.5); }
+  .rememberrow{ display:flex; align-items:center; gap:8px; margin-top:16px; font-family: var(--label-font); font-size:11.5px; color: var(--ink-dim); cursor:pointer; }
+  .rememberrow input{ width:16px; height:16px; accent-color: var(--acc); cursor:pointer; }
+
+  /* ---- Hero: stays put in the viewport and shrinks into a compact nav bar as you scroll ---- */
+  .hero-spacer{
+    position:relative; margin: 0 calc(var(--page-pad) * -1) 0;
+    min-height: 62vh; max-height: 640px; /* pre-JS fallback size; JS syncs this to the live hero height */
+  }
+  @media (max-width: 640px){ .hero-spacer{ min-height: 52vh; } }
+
+  .hero-block{
+    /* NOTE: centered with left/right/margin, not a translateX transform — this element
+       also carries the .reveal-scale entrance animation, which sets `transform: none`
+       at higher specificity (.reveal-scale.in) once it plays; a transform-based centering
+       trick would get clobbered by that and knock the hero off-center after it loads. */
+    position: fixed; top:0; left:0; right:0; z-index:5;
+    width: min(100vw, calc(var(--maxw) + var(--page-pad) * 2));
+    margin: 0 auto;
+    min-height: 62vh; max-height: 640px; /* used only for the very first measurement, before JS pins a px height */
+    display:flex; flex-direction:column; justify-content:flex-end;
+    isolation: isolate;
+    /* No fill of its own while expanded — the shared #pageBg shows straight through.
+       Only .compact (the shrunk nav bar) paints a background, below. */
+    background: transparent;
+    transition: background-color .35s var(--ease);
+  }
+  @media (max-width: 640px){ .hero-block{ min-height: 52vh; } }
+  /* Reduced motion / no-JS: fall back to the original static, in-flow hero */
+  @media (prefers-reduced-motion: reduce){
+    .hero-block{ position:static !important; width:100% !important; transform:none !important; height:auto !important; }
+    .hero-spacer{ height:auto !important; }
+    .hero-navbar{ display:none !important; }
+  }
+
+  /* ---- Compact hero: once shrunk into a nav bar, it becomes a solid-color bar
+     (never the hero image) with just a hint of transparency, edge-to-edge on
+     both themes regardless of the page's max-width. ---- */
+  .hero-block.compact{
+    width:100%; left:0; right:0; margin:0;
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+  }
+  /* Legend: the compact bar goes dark with light text/controls, regardless of the
+     light theme color everywhere else — it's a nav bar, not a page surface. */
+  html[data-style="brutal"] .hero-block.compact{
+    background: #12130F;
+    border-bottom: var(--border-w) solid rgba(244,245,241,0.18);
+  }
+  html[data-style="brutal"] .hero-block.compact .hero-navbar-title{ color:#F4F5F1; }
+  html[data-style="brutal"] .hero-block.compact .hero-navbar-btn{
+    background: #1E1D1B; color:#F4F5F1; border-color: rgba(244,245,241,0.35);
+  }
+  html[data-style="brutal"] .hero-block.compact .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); border-color: var(--acc); }
+  /* Original: iOS-style progressive blur — several stacked, increasingly-blurred
+     layers feathered with masks, so the blur ramps in smoothly instead of a single
+     flat backdrop-filter cutoff. */
+  .hero-navbar-blur{ position:absolute; inset:0; z-index:1; overflow:hidden; opacity:0; pointer-events:none; transition: opacity .3s var(--ease); }
+  .hero-block.compact .hero-navbar-blur{ opacity:1; }
+  html[data-style="dopamine"] .hero-navbar-blur span{ position:absolute; inset:0; }
+  html[data-style="dopamine"] .hero-navbar-blur span:nth-child(1){
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 55%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 55%);
+  }
+  html[data-style="dopamine"] .hero-navbar-blur span:nth-child(2){
+    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 15%, #000 40%, #000 65%, transparent 85%);
+    mask-image: linear-gradient(180deg, transparent 15%, #000 40%, #000 65%, transparent 85%);
+  }
+  html[data-style="dopamine"] .hero-navbar-blur span:nth-child(3){
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 40%, #000 65%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 40%, #000 65%, #000 100%);
+  }
+  /* Legend: no blur at all — a hard, flat edge (already applied to .hero-block
+     above) is the whole point; it stays crisp edge-to-edge once compact too. */
+  html[data-style="brutal"] .hero-navbar-blur{ display:none; }
+  .hero-inner{
+    position:relative; z-index:2; padding: 0 clamp(20px, 5vw, 56px) clamp(28px, 5vw, 52px); width:100%;
+    opacity: calc(1 - var(--hero-content-p, 0));
+    transform: translateY(calc(var(--hero-content-p, 0) * -22px)) scale(calc(1 - var(--hero-content-p, 0) * 0.12));
+    transform-origin: left bottom;
+  }
+  .hero-block.compact .hero-inner{ pointer-events:none; }
+  .paintwrap.floating{
+    opacity: calc(1 - var(--hero-content-p, 0));
+    transform: scale(calc(1 - var(--hero-content-p, 0) * 0.3));
+    transform-origin: top right;
+  }
+  .hero-block.compact .paintwrap.floating{ pointer-events:none; }
+
+  /* ---- Compact nav bar (crossfades in over the last part of the shrink) ---- */
+  .hero-navbar{
+    position:absolute; inset:0; z-index:4;
+    display:flex; align-items:center; gap:12px;
+    padding: 0 clamp(18px, 5vw, 40px);
+    opacity: var(--hero-nav-p, 0);
+    pointer-events:none;
+  }
+  .hero-block.compact .hero-navbar{ pointer-events:auto; }
+  .hero-navbar-logo{ width:32px; height:32px; border-radius:50%; flex-shrink:0; object-fit:cover; }
+  .hero-navbar-title{
+    font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
+    font-size:19px; color: var(--ink); letter-spacing: var(--title-tracking); flex:1;
+  }
+  .hero-navbar-btn{
+    width:34px; height:34px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0;
+    background: rgba(255,255,255,0.14); color: var(--ink); font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+    transition: transform .18s var(--ease-spring), background-color .2s var(--ease);
+  }
+  .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); }
+  .hero-navbar-btn:active{ transform: scale(0.9); }
+  html[data-style="brutal"] .hero-navbar-btn{
+    background: var(--panel); border: var(--border-w) solid var(--border-c); border-radius: var(--radius-sm);
+  }
+  html[data-style="brutal"] .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); }
+  .paintwrap.navpaint{ position:relative; }
+  .paintwrap.navpaint .paintpop{ top:48px; }
+  @media (max-width: 480px){ .paintwrap.navpaint .paintpop{ right:-8px; } }
+  .hero-titlewrap{ position:relative; overflow: visible; }
+
+  /* ---- Title intro: curtain slide-up on Original, soft fade+rise on Legend ---- */
+  .eyebrow{
+    font-family: var(--label-font); font-size: 11.5px; letter-spacing: 0.2em;
+    text-transform: uppercase; background: var(--acc); color: var(--acc-ink); padding: 5px 10px; border-radius: var(--radius-sm);
+    margin-bottom: 14px; font-weight:700; display:inline-block;
+    opacity:0; transform: translateY(14px);
+    transition: opacity .6s var(--ease) .1s, transform .6s var(--ease) .1s;
+  }
+  .hero-block.in .eyebrow{ opacity:1; transform: translateY(0); }
+
+  html[data-style="dopamine"] .hero-titlewrap h1{
+    transform: translateY(112%);
+    transition: transform 1s var(--ease-spring) .22s;
+  }
+  html[data-style="dopamine"] .hero-block.in .hero-titlewrap h1{ transform: translateY(0); }
+  html[data-style="brutal"] .hero-titlewrap h1{
+    opacity: 0; transform: translateY(26px) scale(.97);
+    transition: opacity .8s var(--ease) .2s, transform .8s var(--ease) .2s;
+  }
+  html[data-style="brutal"] .hero-block.in .hero-titlewrap h1{ opacity:1; transform: translateY(0) scale(1); }
+  .sub{ opacity:0; transform: translateY(10px); transition: opacity .6s var(--ease) .38s, transform .6s var(--ease) .38s; }
+  .hero-block.in .sub{ opacity:1; transform: translateY(0); }
+
+  h1{
+    font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
+    font-size: clamp(60px, 12vw, 128px);
+    letter-spacing: var(--title-tracking); color: var(--ink); margin: 0 0 12px; line-height: 0.86;
+  }
+  html[data-style="dopamine"] h1{
+    margin-left: -4px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: visible;
+    text-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  html[data-style="dopamine"] .hero-titlewrap{ overflow: hidden; margin-bottom: 4px; padding-bottom: 6px; }
+  html[data-style="brutal"] h1{
+    color: #F3F1EC;
+    display:inline-block;
+  }
+  .sub{ color: rgba(255,246,228,0.82); font-size: 15px; line-height: 1.6; max-width: 60ch; margin-top: 2px; }
+  html[data-style="brutal"] .sub{ color: rgba(18,19,15,0.82); text-shadow: 0 1px 3px rgba(255,255,255,0.35); }
+  .sub b{ color: #fff; font-weight:700; }
+  html[data-style="brutal"] .sub b{ color: #12130F; }
+
+  @media (max-width: 640px){
+    .hero-block{ min-height: 52vh; }
+  }
+
+  #netHeroSentinel{ height:0; }
+
+  .netpay-hero{
+    margin: -30px 0 26px; position: sticky; top: var(--nav-h); z-index:12; width:100%; overflow:hidden;
+    background: var(--block-d-bg); color: var(--block-d-ink);
+    border-radius: var(--radius-lg); padding: 26px 28px 22px; text-align:left;
+    box-shadow: var(--shadow-block);
+    /* Safari-only: overflow:hidden + border-radius doesn't reliably clip children that
+       use backdrop-filter or negative z-index (the bg/blur/grain layers below). Forcing
+       a dedicated compositing layer + a mask-based clip fixes the square-corner bug. */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    isolation: isolate;
+    transform: translateZ(0);
+    transition: padding .38s var(--ease), border-radius .38s var(--ease), box-shadow .3s var(--ease);
+  }
+  /* ---- Stuck (pinned below the compact hero) layout: number stays on the left,
+     the label + context move to a stacked column on the right, box shrinks to
+     roughly double the compact hero's height. ---- */
+  .nph-content{ display:flex; flex-direction:column; }
+  .nph-textcol{ display:contents; }
+  .netpay-hero.stuck{
+    display:flex; align-items:center;
+    padding: 14px 22px;
+    min-height: calc(var(--nav-h) * 2);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    box-shadow: 0 14px 30px -16px rgba(0,0,0,0.5);
+  }
+  .netpay-hero.stuck .nph-content{ flex-direction: row; align-items:center; gap:16px; width:100%; }
+  .netpay-hero.stuck .nph-textcol{ display:flex; flex-direction:column; order:2; gap:3px; }
+  .netpay-hero.stuck .nph-num{ order:1; font-size: clamp(28px, 8vw, 40px); flex-shrink:0; }
+  .netpay-hero.stuck .nph-label{ margin-bottom:0; font-size:9.5px; }
+  .netpay-hero.stuck .nph-context{ margin-top:0; font-size:10.5px; }
+  @media (prefers-reduced-motion: reduce){ .netpay-hero{ position:relative; top:auto; } }
+  .nph-bg{
+    position:absolute; inset:0; z-index:-4;
+    background-image: url('assets/netpay-bg-hq.jpg');
+    background-size: cover; background-position: center 45%;
+    opacity:0.65;
+  }
+  html[data-style="brutal"] .nph-bg{ opacity:1; }
+  .nph-blur{
+    position:absolute; inset:0; z-index:-3;
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    -webkit-mask-image: linear-gradient(105deg, #000 0%, #000 38%, transparent 74%);
+    mask-image: linear-gradient(105deg, #000 0%, #000 38%, transparent 74%);
+  }
+  .nph-grain{
+    position:absolute; inset:0; z-index:-2; opacity:0.15; mix-blend-mode:overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .nph-fade{
+    position:absolute; inset:0; z-index:-1;
+    background: linear-gradient(105deg, var(--block-d-bg) 0%, var(--block-d-bg) 34%, rgba(0,0,0,0) 78%);
+  }
+  html[data-style="brutal"] .netpay-hero{ border: var(--border-w) solid var(--border-c); }
+  .netpay-hero .nph-label{ order:1; font-family: var(--label-font); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; font-weight:700; opacity:0.75; margin-bottom:6px; transition: font-size .3s var(--ease), margin .3s var(--ease); }
+  .netpay-hero .nph-num{ order:2; font-family: var(--title-font); font-weight: var(--title-weight); font-size: clamp(52px, 11vw, 92px); line-height:0.95; letter-spacing: var(--title-tracking); display:inline-block; animation: nphBreathe 4.5s ease-in-out infinite; color: var(--acc); transition: font-size .3s var(--ease); }
+  html[data-style="brutal"] .netpay-hero .nph-num{ color: #F3F1EC; }
+  .netpay-hero .nph-num.bump{ animation: nphBump .5s var(--ease-spring); }
+  @keyframes nphBump{ 0%{ transform: scale(1); } 35%{ transform: scale(1.06); } 100%{ transform: scale(1); } }
+  @keyframes nphBreathe{ 0%,100%{ filter: brightness(1); } 50%{ filter: brightness(1.07); } }
+  @media (prefers-reduced-motion: reduce){ .netpay-hero .nph-num{ animation: none; } }
+
+  .netpay-hero .nph-context{ order:3; font-family: var(--label-font); font-size:11.5px; margin-top:8px; opacity:0.75; transition: font-size .3s var(--ease), margin .3s var(--ease); }
+  @media (max-width: 640px){ .netpay-hero{ padding: 20px 18px 18px; margin-top:-24px; } }
+
+  .contenttoolbar{ display:flex; align-items:center; justify-content:space-between; margin: 8px 2px 14px; gap:10px; flex-wrap:wrap; }
+  .toolbar-title{ font-family: var(--label-font); font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color: var(--ink-faint); font-weight:700; }
+  .gearbtn{
+    display:flex; align-items:center; gap:8px;
+    background: var(--surface); border: none; color: var(--ink);
+    font-family: var(--label-font); font-size: 12px; letter-spacing:0.04em; font-weight:700;
+    padding: 12px 18px; border-radius: var(--btn-radius); cursor:pointer; min-height:46px;
+    box-shadow: var(--shadow-block);
+  }
+  html[data-style="dopamine"] .gearbtn{ background: #2E2C2A; }
+  html[data-style="brutal"] .gearbtn{ border: var(--border-w) solid var(--border-c); background: var(--panel); }
+  .gearbtn:hover{ background: var(--acc); color: var(--acc-ink); }
+
+  .cards-grid{ display:grid; grid-template-columns: 1fr; gap: 22px; align-items:start; }
+  .card-full{ grid-column: 1 / -1; }
+  @media (min-width: 900px){ .cards-grid{ grid-template-columns: 1fr 1fr; } }
+
+  .ledger{
+    border-radius: var(--radius-lg);
+    padding: 28px 24px 24px; position: relative; overflow: hidden;
+    color: var(--onblock); box-shadow: var(--shadow-block);
+    transition: background-color .5s var(--ease), color .5s var(--ease), border-color .5s var(--ease);
+  }
+  html[data-style="brutal"] .ledger{ border: var(--border-w) solid var(--border-c); }
+  .ledger-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+  .cardtitle{ font-family: var(--title-font); font-size: 24px; font-weight: var(--title-weight); font-style: var(--title-style); color: var(--onblock); letter-spacing: var(--title-tracking); }
+  html[data-style="brutal"] .cardtitle{ font-size:22px; }
+  .cardtitle span{
+    font-family: var(--label-font); font-size: 10px; font-weight:700; letter-spacing:0.08em;
+    color: var(--chip-fg); background: var(--chip-bg); margin-left: 10px;
+    padding: 5px 10px; border-radius: 999px; display:inline-block; vertical-align: 4px;
+  }
+  html[data-style="brutal"] .cardtitle span{ border-radius:3px; border: 2px solid var(--onblock); }
+  .cardtitle.pill-below{ display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+  .cardtitle.pill-below span{ margin-left:0; vertical-align:baseline; }
+  .cardnote{ color: var(--onblock-dim); font-size: 13.5px; line-height:1.6; margin-bottom: 18px; }
+
+  .block-a{ background: var(--block-a-bg); --onblock: var(--block-a-ink); --onblock-dim: color-mix(in srgb, var(--block-a-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
+  .block-b{ background: var(--block-b-bg); --onblock: var(--block-b-ink); --onblock-dim: color-mix(in srgb, var(--block-b-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
+  .block-c{ background: var(--block-c-bg); --onblock: var(--block-c-ink); --onblock-dim: color-mix(in srgb, var(--block-c-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
+  html[data-style="brutal"] .block-a, html[data-style="brutal"] .block-b, html[data-style="brutal"] .block-c{
+    --chip-bg: var(--ink); --chip-fg: #F4F5F1;
+  }
+  html[data-style="brutal"] .block-a{ border-top: 8px solid var(--acc); }
+  html[data-style="brutal"] .block-b{ border-top: 8px solid var(--acc2); }
+  html[data-style="brutal"] .block-c{ border-top: 8px solid var(--acc3); }
+
+  .uploadgrid{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .uploadbtn{
+    display:flex; flex-direction:row; align-items:center; justify-content:center; gap:16px;
+    background: rgba(255,255,255,0.38); color: var(--onblock); border: none; border-radius: var(--radius-sm);
+    padding: 26px 18px; cursor:pointer; min-height: 110px;
+  }
+  html[data-style="brutal"] .uploadbtn{ background: var(--acc); color: var(--acc-ink); border: var(--border-w) solid var(--border-c); border-radius: var(--radius-sm); }
+  .uploadbtn .icon{ font-size: 40px; line-height:1; }
+  .uploadbtn .label{ display:flex; flex-direction:column; align-items:flex-start; line-height:1.08; }
+  .uploadbtn .label .l1, .uploadbtn .label .l2{ font-family: var(--label-font); font-size: 19px; font-weight:900; letter-spacing:0.01em; text-transform:uppercase; }
+  .uploadbtn:hover{ background: rgba(255,255,255,0.5); transform: translateY(-2px); }
+  html[data-style="brutal"] .uploadbtn:hover{ background: color-mix(in srgb, var(--acc) 82%, black 0%); }
+  .uploadbtn.busy{ background: var(--acc3); color: var(--acc3-ink); animation: scanPulse 1.15s ease-in-out infinite; }
+  .uploadbtn.done{ background: color-mix(in srgb, var(--acc2) 88%, black 0%); animation: scanPop .45s var(--ease-spring); }
+  @keyframes scanPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.045); } }
+  @keyframes scanPop{ 0%{ transform:scale(0.94); } 55%{ transform:scale(1.06); } 100%{ transform:scale(1); } }
+  .scanstatus{ font-family: var(--label-font); font-size: 11.5px; color: var(--onblock-dim); margin-bottom:4px; min-height: 14px; }
+
+  details.rawtext{ margin-bottom: 16px; }
+  details.rawtext summary{ font-family: var(--label-font); font-size: 10.5px; color: var(--onblock-dim); cursor:pointer; letter-spacing:0.04em; padding: 4px 0; }
+  details.rawtext pre{
+    margin-top: 8px; background: var(--chip-bg); border: none; border-radius: 10px;
+    padding: 12px; font-family: var(--label-font); font-size: 11px; color: var(--chip-fg);
+    white-space: pre-wrap; max-height: 160px; overflow:auto;
+  }
+
+  .inputgrid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 14px 16px; margin-top: 16px; margin-bottom: 4px; }
+  .manualentry{ margin-bottom: 18px; }
+  .manualentry summary{ list-style:none; cursor:pointer; display:block; }
+  .manualentry summary::-webkit-details-marker{ display:none; }
+  .manualbtn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    font-family: var(--label-font); font-size: 12px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase;
+    color: var(--onblock); background: rgba(255,255,255,0.22); border-radius: var(--radius-sm);
+    padding: 12px 16px;
+  }
+  html[data-style="brutal"] .manualbtn{ background: transparent; border: 2px solid var(--onblock); }
+  .manualbtn::before{ content:"+"; font-weight:900; }
+  .manualentry[open] .manualbtn::before{ content:"\2212"; }
+  .fieldwrap{ display:flex; flex-direction:column; gap:7px; }
+  .fieldlabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.06em; text-transform:uppercase; color: var(--onblock-dim); font-weight:700; }
+  .fieldrow{ display:flex; align-items:center; gap:6px; background: var(--chip-bg); border: none; border-radius: var(--radius-sm); padding: 14px 14px; min-height: 52px; box-shadow: 0 0 0 0 var(--acc); transition: box-shadow .3s var(--ease), transform .3s var(--ease-spring); }
+  .fieldrow:focus-within{ box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 55%, transparent); transform: translateY(-1px); }
+  html[data-style="brutal"] .fieldrow{ border-radius: var(--radius-sm); border: 2px solid var(--onblock); background: rgba(255,255,255,0.5); }
+  .fieldwrap .fieldlabel{ transition: color .25s var(--ease); }
+  .fieldwrap:focus-within .fieldlabel{ color: var(--acc); }
+  .fieldrow span{ color: var(--chip-fg); opacity:0.6; font-family: var(--label-font); font-size:14px; }
+  .fieldrow input{
+    flex:1; min-width:0; background:transparent; border:none; color: var(--chip-fg);
+    font-family: var(--label-font); font-size: 15px; font-weight:600; outline:none;
+  }
+  html[data-style="brutal"] .fieldrow input, html[data-style="brutal"] .fieldrow span{ color: var(--onblock); opacity:1; }
+
+  .breakwrap{ margin-top: 4px; }
+  .flagrow{ display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .floorflag{
+    font-family: var(--label-font); font-size: 9.5px; letter-spacing:0.04em; color: #0A0A0A;
+    background: var(--acc3); border-radius: 999px; padding: 4px 10px; font-weight:800;
+  }
+  html[data-style="brutal"] .floorflag{ border-radius:3px; border:2px solid var(--onblock); }
+  .flagtext{ font-family: var(--label-font); font-size: 11.5px; color: var(--onblock-dim); }
+
+  .nutrition{
+    background: rgba(255,255,255,0.14); border-radius: var(--radius-sm); overflow:hidden; margin-bottom: 20px;
+  }
+  html[data-style="brutal"] .nutrition{ background: transparent; border: 3px solid var(--onblock); border-radius: var(--radius-sm); }
+  .nutrition .nlabel-head{
+    font-family: var(--title-font); font-weight:800; font-size: 15px; letter-spacing:-0.01em;
+    padding: 10px 14px 8px; border-bottom: 6px solid rgba(0,0,0,0.55); text-transform:uppercase;
+  }
+  html[data-style="brutal"] .nutrition .nlabel-head{ font-family:'Inter',sans-serif; border-bottom: 6px solid var(--onblock); }
+  .nrow{
+    display:flex; justify-content:space-between; align-items:center; padding: 9px 14px;
+    border-bottom: 1px solid rgba(0,0,0,0.14); font-family: var(--label-font); font-size: 13px;
+    opacity:0; transform: translateX(-8px); transition: opacity .4s var(--ease), transform .4s var(--ease);
+  }
+  .nrow.in{ opacity:1; transform: translateX(0); }
+  .nrow:last-child{ border-bottom:none; }
+  .nrow .nk{ color: var(--onblock); font-weight:600; display:flex; align-items:center; gap:6px; }
+  .nrow .nk .op{ opacity:0.5; font-weight:400; }
+  .nrow .nv{ color: var(--onblock); font-weight:700; font-variant-numeric: tabular-nums; }
+  .nrow.sub .nk, .nrow.sub .nv{ opacity:0.75; font-weight:500; font-size:12.5px; padding-left: 10px; }
+  .nrow.total{ border-top: 4px solid rgba(0,0,0,0.6); border-bottom:none; padding-top:12px; margin-top:2px; }
+  html[data-style="brutal"] .nrow.total{ border-top: 4px solid var(--onblock); }
+  .nrow.total .nk, .nrow.total .nv{ font-size: 15px; font-weight:800; }
+  .nrow.net{ background: rgba(0,0,0,0.14); border-radius: 0 0 10px 10px; padding: 14px; }
+  html[data-style="brutal"] .nrow.net{ background: var(--onblock); border-radius:0; }
+  html[data-style="brutal"] .nrow.net .nk, html[data-style="brutal"] .nrow.net .nv{ color: #FFFFFF; }
+  .nrow.net .nk, .nrow.net .nv{ font-size: 17px; font-weight:800; }
+
+  .bigrow{ display:grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 12px; margin-bottom: 18px; }
+  .bigcell{ background: var(--chip-bg); border-radius: var(--radius-sm); padding: 16px 15px 14px; }
+  html[data-style="brutal"] .bigcell{ border: 2px solid var(--onblock); background: transparent; border-radius: var(--radius-sm); }
+  .bigcell .label{ font-family: var(--label-font); font-size: 10px; letter-spacing:0.06em; text-transform:uppercase; color: var(--chip-fg); opacity:0.6; margin-bottom:8px; }
+  html[data-style="brutal"] .bigcell .label{ color: var(--onblock); opacity:0.6; }
+  .bigcell .val{ font-family: var(--label-font); font-size: 22px; font-weight:800; color: var(--chip-fg); }
+  html[data-style="brutal"] .bigcell:not(.net) .val{ color: var(--onblock); }
+  .bigcell.net{ background: #0A0A0A; box-shadow: inset 0 0 0 2px var(--acc3); }
+  html[data-style="brutal"] .bigcell.net{ background: var(--onblock); border-color: var(--acc3); box-shadow: none; }
+  .bigcell.net .val{ color: var(--acc3); font-size:38px; font-family: var(--title-font); font-weight: 400; letter-spacing: var(--title-tracking); }
+
+  .bigcell.net .label{ opacity:0.85; }
+  html[data-style="brutal"] .bigcell.net .label{ color: rgba(255,255,255,0.65); }
+
+  .reconcile{ border-radius: var(--radius-sm); padding: 15px 17px; font-size: 13px; line-height:1.6; display:none; background: rgba(0,0,0,0.75); color: #F3F1EC; border-left: 5px solid transparent; }
+  .reconcile.show{ display:block; }
+  .reconcile.warn{ border-left-color: var(--acc); }
+  .reconcile.ok{ border-left-color: var(--acc2); }
+  .reconcile.mismatch{ border-left-color: var(--acc3); }
+  .reconcile b{ color: var(--acc3); }
+
+  details.projection{ margin-top: 30px; }
+  details.projection > summary{
+    list-style:none; cursor:pointer; font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
+    font-size: 20px; color: var(--acc); padding: 6px 0; display:flex; align-items:center; gap:10px;
+  }
+  details.projection > summary::-webkit-details-marker{ display:none; }
+  details.projection > summary::before{ content:"▸"; color: var(--acc3); font-size:15px; }
+  details.projection[open] > summary::before{ content:"▾"; }
+  details.projection > summary span{ font-family: var(--label-font); font-size:11px; color: var(--ink-faint); font-weight:400; font-style:normal; }
+
+  .tabbar{ display:flex; gap:7px; margin: 16px 0 14px; flex-wrap: wrap; background: var(--chip-bg); padding:6px; border-radius: var(--btn-radius); }
+  html[data-style="brutal"] .tabbar{ background:transparent; border: 2px solid var(--onblock); padding:5px; gap:5px; }
+  .controllabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.1em; text-transform:uppercase; color: var(--ink-faint); margin-bottom: 9px; font-weight:700; }
+  .tabbtn{
+    flex:1 1 100px; text-align:center; padding: 12px 4px 10px; border-radius: var(--btn-radius); border: none; min-height: 48px;
+    background: transparent; color: var(--ink-dim); font-family: var(--label-font); font-size: 12px; cursor:pointer; font-weight:600;
+  }
+  .tabbtn .ticket{ display:block; font-size: 10px; color: var(--ink-faint); margin-top:3px; }
+  .tabbtn.active{ background: var(--acc); color: var(--acc-ink); font-weight:800; }
+  html[data-style="brutal"] .tabbtn.active{ border-radius: 2px; }
+  .tabbtn.active .ticket{ color: inherit; opacity: 0.75; }
+
+  .goalrow, .goalcolheads{ display:grid; grid-template-columns: 1.35fr 1.1fr 0.95fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
+  .goalcolheads{ font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding-bottom: 9px; font-weight:700; }
+  .goalrow:last-child{ border-bottom:none; }
+  .goalrow, .zoomrow{ opacity:0; transform: translateX(-8px); transition: opacity .4s var(--ease), transform .4s var(--ease); }
+  .goalrow.in, .zoomrow.in{ opacity:1; transform: translateX(0); }
+  .num{ font-family: var(--label-font); font-size: 14px; text-align:right; color: var(--onblock-dim); font-variant-numeric: tabular-nums; }
+  .filllabel{ font-size: 13.5px; font-weight:700; color: var(--onblock); display:flex; align-items:center; gap:6px; }
+  .filllabel small{ font-family: var(--label-font); font-weight:400; color: var(--onblock-dim); font-size: 11px; }
+
+  .zoomhead{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:10px; }
+  .periodtoggle{ display:flex; gap:4px; background: var(--chip-bg); padding:5px; border-radius: var(--btn-radius); width:fit-content; margin-bottom:16px; }
+  html[data-style="brutal"] .periodtoggle{ background:transparent; border:2px solid var(--onblock); }
+  .periodbtn{
+    font-family: var(--label-font); font-size: 11px; font-weight:700; padding: 9px 13px; border-radius: var(--btn-radius); min-height:40px;
+    border: none; background: transparent; color: var(--chip-fg); opacity:0.65; cursor:pointer;
+  }
+  html[data-style="brutal"] .periodbtn{ color: var(--onblock); }
+  .periodbtn.active{ background: var(--acc); color: var(--acc-ink); opacity:1; }
+  .zoomcolheads{ display:grid; grid-template-columns: 1.3fr 0.85fr 0.85fr 0.9fr; gap: 6px; font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding: 0 0 9px; border-bottom: 1px solid rgba(0,0,0,0.12); font-weight:700; }
+  .zoomcolheads .num{ text-align:right; }
+  .zoomrow{ display:grid; grid-template-columns: 1.3fr 0.85fr 0.85fr 0.9fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
+  .zoomrow:last-child{ border-bottom:none; }
+
+  .backdrop{ position:fixed; inset:0; background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); display:none; z-index:40; opacity:0; transition: opacity .3s var(--ease); }
+  .backdrop.show{ display:block; }
+  .backdrop.in{ opacity:1; }
+  .drawer{
+    position:fixed; top:0; right:0; width: min(440px, 100vw); height:100vh; overflow-y:auto;
+    background: var(--panel); z-index:50; padding: 24px 22px 44px;
+    transform: translateX(100%); transition: transform .38s var(--ease);
+  }
+  html[data-style="brutal"] .drawer{ border-left: var(--border-w) solid var(--border-c); }
+  .drawer.show{ transform: translateX(0); }
+  .drawer-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; }
+  .drawer-head h2{ font-family: var(--title-font); font-weight: var(--title-weight); font-size:26px; color: var(--acc); }
+  .closebtn{ background: rgba(128,128,128,0.14); border:none; color: var(--ink); font-size:20px; cursor:pointer; line-height:1; padding:8px 12px; border-radius:999px; min-height:40px; }
+  html[data-style="brutal"] .closebtn{ border-radius: var(--radius-sm); border: 2px solid var(--border-c); }
+  .closebtn:hover{ background: var(--acc); color: var(--acc-ink); }
+  .drawer-sub{ color: var(--ink-faint); font-size: 12.5px; line-height:1.5; margin-bottom: 22px; }
+
+  .setgroup{ margin-bottom: 24px; padding-bottom:22px; border-bottom: 1px solid var(--line); }
+  .setgroup:last-child{ border-bottom:none; }
+  .setlabel{ font-family: var(--label-font); font-size: 11px; letter-spacing:0.08em; text-transform:uppercase; color: var(--acc); margin-bottom: 11px; font-weight:800; }
+  .sethint{ color: var(--ink-faint); font-size: 12px; line-height:1.5; margin-top:7px; }
+
+  .setrow{ display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+  .setrow label{ flex:1; font-size:13.5px; color: var(--ink-dim); }
+  .setrow .fieldrow{ width: 118px; flex-shrink:0; background: rgba(128,128,128,0.10); min-height:44px; padding:9px 12px; }
+  select{
+    background: rgba(128,128,128,0.10); border: none; color: var(--ink);
+    font-family: var(--label-font); font-size: 13px; padding: 11px 9px; border-radius: var(--radius-sm); width:100%; min-height:44px;
+  }
+  html[data-style="brutal"] select, html[data-style="brutal"] .setrow .fieldrow{ border: 2px solid var(--line); background: transparent; }
+
+  .bracketrow{ display:grid; grid-template-columns: 1fr 1fr auto; gap:6px; align-items:center; margin-bottom:7px; }
+  .bracketrow .fieldrow{ padding: 8px 9px; background: rgba(128,128,128,0.10); min-height:40px; }
+  .bracketrow input{ font-size:12.5px; }
+  .rmbtn{ background: rgba(128,128,128,0.10); border:none; color: var(--ink-faint); border-radius:999px; width:32px; height:32px; cursor:pointer; }
+  .rmbtn:hover{ color: #fff; background: var(--acc); }
+  .smallbtn{
+    background: rgba(128,128,128,0.10); border: none; color: var(--ink); border-radius: var(--btn-radius);
+    padding: 11px 16px; font-family: var(--label-font); font-size: 11.5px; font-weight:700; cursor:pointer; margin-top:6px; min-height:42px;
+  }
+  html[data-style="brutal"] .smallbtn{ border: 2px solid var(--line); }
+  .smallbtn:hover{ background: var(--acc2); color: #0A0A0A; }
+  .smallbtn.danger:hover{ background: var(--acc); color: #fff; }
+  .btnrow{ display:flex; gap:8px; flex-wrap:wrap; }
+  .lookupbtn{ font-size:10.5px; }
+
+  .footnotes{ margin-top: 34px; max-width: 82ch; }
+  .footnote{ color: var(--ink-faint); font-size: 12.5px; line-height: 1.65; padding: 7px 4px 0; }
+  .footnote .dot{ color:var(--acc2); font-weight:700; }
+  .footnote:nth-child(4n+1) .dot{ color: var(--acc); }
+  .footnote:nth-child(4n+2) .dot{ color: var(--acc2); }
+  .footnote:nth-child(4n+3) .dot{ color: var(--acc3); }
+  .footnote:nth-child(4n+4) .dot{ color: var(--ink-dim); }
+
+  @media (max-width: 640px){
+    .bigrow{ grid-template-columns: 1fr 1fr; }
+    .bigcell.net{ grid-column: 1 / -1; }
+    .goalrow, .goalcolheads{ grid-template-columns: 1.1fr 1fr 0.8fr; }
+  }
+
+  .historysave{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px; }
+  .historysave .fieldwrap{ flex:1; min-width:160px; }
+  .historysave .smallbtn{ margin-top:0; }
+  .historysummary{ font-family: var(--label-font); font-size:11.5px; color: var(--onblock-dim); margin-bottom:6px; font-weight:700; }
+  .historyrow{
+    position:relative; padding:12px 34px 12px 0; border-bottom:1px solid rgba(0,0,0,0.12); cursor:pointer;
+    opacity:0; transform: translateX(-8px); transition: opacity .4s var(--ease), transform .4s var(--ease), background-color .2s var(--ease);
+  }
+  .historyrow.in{ opacity:1; transform: translateX(0); }
+  .historyrow:last-child{ border-bottom:none; }
+  .historyrow:hover{ background: rgba(0,0,0,0.05); }
+  .historyrow-main{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .historylabel{ font-weight:700; font-size:14px; color: var(--onblock); }
+  .historylabel .historydate{ font-family: var(--label-font); font-weight:400; font-size:11px; color: var(--onblock-dim); margin-left:6px; }
+  .historynet{ font-family: var(--label-font); font-weight:800; font-size:15px; color: var(--onblock); flex-shrink:0; }
+  .historyrow-sub{ font-family: var(--label-font); font-size:11.5px; color: var(--onblock-dim); margin-top:3px; }
+  .historydel{
+    position:absolute; top:10px; right:0; background: rgba(0,0,0,0.12); border:none; color: var(--onblock);
+    width:26px; height:26px; border-radius:999px; cursor:pointer; font-size:14px; line-height:1;
+  }
+  .historydel:hover{ background: var(--acc); color:#fff; }
+  html[data-style="brutal"] .historydel{ border-radius:3px; border:2px solid var(--onblock); background:transparent; }
+
+</style>
+</head>
+<body>
+<div class="page-bg" id="pageBg" aria-hidden="true">
+  <img class="page-bg-img" id="pageBgImg" src="assets/chop-hero.jpg" alt="">
+  <div class="page-bg-tint" id="pageBgTint"></div>
+  <div class="page-bg-blur" id="pageBgBlur"></div>
+  <div class="page-bg-grain" id="pageBgGrain"></div>
+</div>
+<div class="theme-wipe" id="themeWipe" aria-hidden="true"></div>
+
+<button type="button" class="installbtn" id="installBtn" aria-label="Add The Take to your home screen">
+  <span class="installbtn-label">Add app</span>
+</button>
+<div class="iospop" id="iosInstallPop">
+  <div class="iospop-title">Add to Home Screen</div>
+  <div class="iospop-steps" id="iospopSteps"></div>
+  <button type="button" class="iospop-close" id="iosPopClose">Got it</button>
+</div>
+
+<div class="page">
+
+  <div class="hero-spacer" id="heroSpacer">
+  <div class="hero-block reveal-scale" id="heroBlock">
+    <div class="hero-navbar-blur" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="paintwrap floating">
+      <button type="button" class="paintbtn" id="paintToggle" aria-label="Change look">🖌️</button>
+      <div class="paintpop" id="paintPop">
+        <div class="pop-label">Design language</div>
+        <div class="stylerow">
+          <button type="button" class="stylebtn" data-shape="circle" data-styleval="dopamine">
+            <span class="shape"></span><span class="name">Original</span>
+          </button>
+          <button type="button" class="stylebtn" data-shape="square" data-styleval="brutal">
+            <span class="shape"></span><span class="name">Legend</span>
+          </button>
+        </div>
+        <div class="pop-label">Accent color</div>
+        <div class="accentrow">
+          <button type="button" class="accentdot" data-accentval="coral" style="background:#FF5B49;" aria-label="Coral"></button>
+          <button type="button" class="accentdot" data-accentval="teal" style="background:#00C2A0;" aria-label="Teal"></button>
+          <button type="button" class="accentdot" data-accentval="gold" style="background:#FFD23F;" aria-label="Gold"></button>
+        </div>
+        <label class="rememberrow"><input type="checkbox" class="rememberChk" id="rememberLook"> Remember this look</label>
+      </div>
+    </div>
+    <div class="hero-inner" id="heroInner">
+      <div class="herohead">
+        <img class="titlelogo" src="assets/chop-logo.png" alt="Chop Barbershop logo">
+        <div class="eyebrow">Chop Barbershop &mdash; Pay Calculator</div>
+        <div class="hero-titlewrap"><h1>The Take</h1></div>
+      </div>
+      <p class="sub" id="subtext"></p>
+    </div>
+
+    <!-- Compact nav bar: crossfades in as the hero shrinks on scroll -->
+    <div class="hero-navbar" id="heroNavbar" aria-hidden="true">
+      <img class="hero-navbar-logo" src="assets/chop-logo.png" alt="">
+      <span class="hero-navbar-title">The Take</span>
+      <div class="paintwrap navpaint">
+        <button type="button" class="hero-navbar-btn" id="navPaintBtn" aria-label="Change look">🖌️</button>
+        <div class="paintpop" id="navPaintPop">
+          <div class="pop-label">Design language</div>
+          <div class="stylerow">
+            <button type="button" class="stylebtn" data-shape="circle" data-styleval="dopamine">
+              <span class="shape"></span><span class="name">Original</span>
+            </button>
+            <button type="button" class="stylebtn" data-shape="square" data-styleval="brutal">
+              <span class="shape"></span><span class="name">Legend</span>
+            </button>
+          </div>
+          <div class="pop-label">Accent color</div>
+          <div class="accentrow">
+            <button type="button" class="accentdot" data-accentval="coral" style="background:#FF5B49;" aria-label="Coral"></button>
+            <button type="button" class="accentdot" data-accentval="teal" style="background:#00C2A0;" aria-label="Teal"></button>
+            <button type="button" class="accentdot" data-accentval="gold" style="background:#FFD23F;" aria-label="Gold"></button>
+          </div>
+          <label class="rememberrow"><input type="checkbox" class="rememberChk" id="rememberLook2"> Remember this look</label>
+        </div>
+      </div>
+      <button type="button" class="hero-navbar-btn" id="navSettingsBtn" aria-label="Settings">⚙️</button>
+    </div>
+  </div>
+  </div>
+
+  <div id="netHeroSentinel" aria-hidden="true"></div>
+  <div class="netpay-hero reveal-scale" id="netHeroBox">
+    <div class="nph-bg" aria-hidden="true"></div>
+    <div class="nph-blur" aria-hidden="true"></div>
+    <div class="nph-grain" aria-hidden="true"></div>
+    <div class="nph-fade" aria-hidden="true"></div>
+    <div class="nph-content">
+      <div class="nph-num" id="netHeroVal">$0</div>
+      <div class="nph-textcol">
+        <div class="nph-label">Est. net pay this period</div>
+        <div class="nph-context" id="netHeroContext"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contenttoolbar reveal">
+    <div class="toolbar-title">Your numbers</div>
+    <button type="button" class="gearbtn" id="settingsToggle">⚙️ Settings</button>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- ACTUAL PAY -->
+    <div class="ledger actual card-full block-a reveal">
+      <div class="ledger-head">
+        <div class="cardtitle pill-below">This Period's Pay<span>SCAN OR ENTER</span></div>
+      </div>
+      <p class="cardnote">Upload your Sales and Timesheet screenshots and this will read the numbers off them &mdash; or just type them in. Everything runs in your browser; nothing is uploaded anywhere.</p>
+
+      <div class="uploadgrid">
+        <button type="button" class="uploadbtn" id="scanSalesBtn"><span class="icon">📊</span><span class="label"><span class="l1">Upload</span><span class="l2">Sales</span></span></button>
+        <input type="file" id="scanSalesInput" accept="image/*" style="display:none">
+        <button type="button" class="uploadbtn" id="scanTimeBtn"><span class="icon">🕒</span><span class="label"><span class="l1">Upload</span><span class="l2">Hours</span></span></button>
+        <input type="file" id="scanTimeInput" accept="image/*" style="display:none">
+      </div>
+      <div class="scanstatus" id="scanStatus"></div>
+
+      <details class="manualentry" id="manualEntry">
+        <summary class="manualbtn">Manually enter numbers</summary>
+        <div class="inputgrid">
+        <div class="fieldwrap">
+          <div class="fieldlabel">Hours worked</div>
+          <div class="fieldrow"><input type="number" id="inHours" step="0.01" min="0" placeholder="0"><span>hrs</span></div>
+        </div>
+        <div class="fieldwrap">
+          <div class="fieldlabel">Gross service revenue</div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inRevenue" step="0.01" min="0" placeholder="0"></div>
+        </div>
+        <div class="fieldwrap">
+          <div class="fieldlabel">Actual tips</div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inTips" step="0.01" min="0" placeholder="0"></div>
+        </div>
+        <div class="fieldwrap">
+          <div class="fieldlabel">Amount actually paid <span style="text-transform:none;">(optional)</span></div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inReceived" step="0.01" min="0" placeholder="e.g. 295.85"></div>
+        </div>
+        </div>
+      </details>
+
+      <details class="rawtext" id="salesRawWrap" style="display:none;">
+        <summary>Raw text read from sales screenshot</summary>
+        <pre id="salesRawText"></pre>
+      </details>
+      <details class="rawtext" id="timeRawWrap" style="display:none;">
+        <summary>Raw text read from timesheet screenshot</summary>
+        <pre id="timeRawText"></pre>
+      </details>
+
+      <div class="breakwrap">
+        <div class="flagrow" id="floorFlagRow" style="display:none;">
+          <span class="floorflag">FLOOR</span>
+          <span class="flagtext">Commission alone was below minimum wage for these hours &mdash; the floor was paid instead.</span>
+        </div>
+
+        <div class="nutrition" id="nutritionBox">
+          <div class="nlabel-head">Pay Breakdown</div>
+          <div id="nutritionRows"></div>
+        </div>
+
+        <div class="bigrow">
+          <div class="bigcell"><div class="label">Gross pay</div><div class="val" id="outGross">$0</div></div>
+          <div class="bigcell"><div class="label">After FICA</div><div class="val" id="outAfterFica">$0</div></div>
+          <div class="bigcell net"><div class="label">Est. net pay</div><div class="val" id="outNet">$0</div></div>
+        </div>
+        <div class="reconcile" id="reconcileBox"></div>
+      </div>
+    </div>
+
+    <!-- ZOOM OUT -->
+    <div class="ledger card-full block-c reveal">
+      <div class="zoomhead">
+        <div class="cardtitle" style="font-size:20px;">Zoom Out <span id="zoomlabel" style="font-family:'Space Mono', monospace; font-size:11px; font-weight:400;">Weekly</span></div>
+      </div>
+      <p class="cardnote">Same actual-pay numbers above, scaled out &mdash; assumes this period repeats every week.</p>
+      <div class="periodtoggle" id="periodbar">
+        <button type="button" class="periodbtn" data-period="weekly">Wk</button>
+        <button type="button" class="periodbtn" data-period="biweekly">2Wk</button>
+        <button type="button" class="periodbtn" data-period="monthly">Mo</button>
+        <button type="button" class="periodbtn" data-period="yearly">Yr</button>
+      </div>
+      <div class="zoomcolheads"><div>Period</div><div class="num">Gross</div><div class="num">FICA</div><div class="num">Net</div></div>
+      <div id="zoomrows"></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="ledger card-full block-b reveal">
+      <div class="ledger-head">
+        <div class="cardtitle pill-below">History<span id="historyCount">0 SAVED</span></div>
+      </div>
+      <p class="cardnote">Save this period's numbers to build a running record. Saved locally in this browser only &mdash; tap any saved period to load it back into the fields above.</p>
+
+      <div class="historysave">
+        <div class="fieldwrap">
+          <div class="fieldlabel">Label <span style="text-transform:none;">(optional)</span></div>
+          <div class="fieldrow"><input type="text" id="historyLabel" placeholder="e.g. Aug 18\u201324" maxlength="40"></div>
+        </div>
+        <button type="button" class="smallbtn" id="saveHistoryBtn">\ud83d\udcbe Save this period</button>
+      </div>
+
+      <div id="historyEmpty" class="cardnote">No saved periods yet &mdash; enter or scan a period above, then save it here.</div>
+      <div id="historyRows"></div>
+      <div class="btnrow" id="historyClearRow" style="display:none; margin-top:12px;">
+        <button type="button" class="smallbtn danger" id="clearHistoryBtn">Clear history</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PROJECTION (planning tool, collapsible) -->
+  <details class="projection reveal" open>
+    <summary>Projected Earnings <span>&mdash; planning tool for a future week, not based on your scans</span></summary>
+
+    <div class="controllabel">Shift schedule</div>
+    <div class="tabbar" id="shiftbar">
+      <button type="button" class="tabbtn" data-hours="15">15 hrs/wk<span class="ticket">3 shifts</span></button>
+      <button type="button" class="tabbtn" data-hours="20">20 hrs/wk<span class="ticket">4 shifts</span></button>
+      <button type="button" class="tabbtn" data-hours="25">25 hrs/wk<span class="ticket">5 shifts</span></button>
+    </div>
+    <div class="controllabel">Average ticket tier</div>
+    <div class="tabbar" id="tierbar">
+      <button type="button" class="tabbtn" data-tier="low">Low<span class="ticket" id="lowTicket">$22 avg</span></button>
+      <button type="button" class="tabbtn" data-tier="average">Average<span class="ticket" id="avgTicket">$30 avg</span></button>
+      <button type="button" class="tabbtn" data-tier="high">High<span class="ticket" id="highTicket">$42 avg</span></button>
+    </div>
+    <p class="cardnote" id="tierintro" style="margin-top:14px;"></p>
+
+    <div class="ledger goal card-full block-b" style="margin-top:10px;">
+      <div class="ledger-head"><div class="cardtitle pill-below" style="font-size:19px;">Daily Sales Goal<span>PER 5-HR SHIFT</span></div></div>
+      <div class="goalcolheads"><div>Fill rate</div><div class="num">Revenue goal</div><div class="num">~ Clients</div></div>
+      <div id="goalrows"></div>
+    </div>
+    <div class="ledger card-full block-a" style="margin-top:20px;">
+      <div class="ledger-head"><div class="cardtitle">Weekly Breakdown</div><div class="num" id="breakdownfloor"></div></div>
+      <div class="zoomcolheads"><div>Fill rate</div><div class="num">Gross</div><div class="num">FICA</div><div class="num">Net</div></div>
+      <div id="projrows"></div>
+    </div>
+  </details>
+
+  <div class="footnotes reveal">
+    <p class="footnote"><span class="dot">&bull;</span> Base pay is whichever is greater &mdash; your commission rate on revenue, or the minimum-wage floor for the hours worked. All rates live in <b style="color:var(--ink-dim)">Settings</b> and are saved in this browser only.</p>
+    <p class="footnote"><span class="dot">&bull;</span> FICA (Social Security + Medicare) applies to all pay including tips and floor wages. Federal income tax is an estimated <b style="color:var(--ink-dim)">annual liability</b> spread across the year, not a literal per-paycheck withholding figure &mdash; your actual withholding depends on your W-4 / 1099 status.</p>
+    <p class="footnote"><span class="dot">&bull;</span> Screenshot scanning uses on-device OCR (Tesseract.js) &mdash; the image never leaves your browser. It's best-effort: always check the parsed numbers before trusting them, and correct any field by hand if it misreads.</p>
+    <p class="footnote"><span class="dot">&bull;</span> Minimum wage and tax bracket figures in Settings are reference defaults, not live data &mdash; a static site like this one can't reliably auto-fetch government rate tables. Use the lookup links in Settings to confirm current numbers for your state.</p>
+    <p class="footnote"><span class="dot">&bull;</span> This is a planning and reconciliation tool, not tax advice &mdash; actual pay and tax owed will vary with real bookings, service mix, tips, and your filing situation.</p>
+  </div>
+
+</div>
+
+<!-- SETTINGS DRAWER -->
+<div class="backdrop" id="backdrop"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head"><h2>Settings</h2><button type="button" class="closebtn" id="closeDrawer">&times;</button></div>
+  <p class="drawer-sub">Everything here is saved in this browser (not synced anywhere) and drives both cards on the main page.</p>
+
+  <div class="setgroup">
+    <div class="setlabel">Location</div>
+    <div class="setrow">
+      <label for="setState">State</label>
+      <select id="setState" style="width:130px; flex-shrink:0;"></select>
+    </div>
+    <div class="setrow">
+      <label>Wage type</label>
+      <div class="periodtoggle" id="wageModeToggle" style="flex-shrink:0; width:auto; margin:0;">
+        <button type="button" class="periodbtn" data-wagemode="tipped">Tipped</button>
+        <button type="button" class="periodbtn" data-wagemode="full">Full</button>
+      </div>
+    </div>
+    <div class="setrow">
+      <label for="setMinWage">Minimum wage</label>
+      <div class="fieldrow"><span>$</span><input type="number" id="setMinWage" step="0.05" min="0"><span>/hr</span></div>
+    </div>
+    <div class="sethint" id="minWageNote"></div>
+    <div class="btnrow" style="margin-top:8px;">
+      <button type="button" class="smallbtn lookupbtn" id="lookupWage">🔎 Look up current minimum wage</button>
+    </div>
+  </div>
+
+  <div class="setgroup">
+    <div class="setlabel">Pay structure</div>
+    <div class="setrow"><label for="setCommission">Commission rate</label><div class="fieldrow"><input type="number" id="setCommission" step="0.5" min="0" max="100"><span>%</span></div></div>
+    <div class="setrow"><label for="setTipRate">Assumed tip rate (projection only)</label><div class="fieldrow"><input type="number" id="setTipRate" step="0.5" min="0" max="100"><span>%</span></div></div>
+    <div class="sethint">Actual pay uses the real tips you enter or scan &mdash; this rate only feeds the Projected Earnings planner.</div>
+  </div>
+
+  <div class="setgroup">
+    <div class="setlabel">Taxes</div>
+    <div class="setrow"><label for="setFica">FICA rate</label><div class="fieldrow"><input type="number" id="setFica" step="0.01" min="0" max="100"><span>%</span></div></div>
+    <div class="setrow"><label for="setStdDeduction">Standard deduction</label><div class="fieldrow"><span>$</span><input type="number" id="setStdDeduction" step="100" min="0"></div></div>
+    <div class="setrow"><label for="setTipsDeduction">"No Tax on Tips" deducted</label><div class="fieldrow"><span>$</span><input type="number" id="setTipsDeduction" step="250" min="0" max="25000"></div></div>
+    <div class="sethint">Real cap is $25,000/yr, phased out above $150k MAGI.</div>
+
+    <div class="setlabel" style="margin-top:16px;">Federal tax brackets (single filer)</div>
+    <div id="bracketRows"></div>
+    <div class="btnrow" style="margin-top:8px;">
+      <button type="button" class="smallbtn" id="addBracket">+ Add bracket</button>
+      <button type="button" class="smallbtn" id="resetBrackets">Reset to 2026 defaults</button>
+      <button type="button" class="smallbtn lookupbtn" id="lookupTax">🔎 Look up current brackets</button>
+    </div>
+  </div>
+
+  <div class="setgroup">
+    <div class="setlabel">Projection ticket prices</div>
+    <div class="setrow"><label for="setTicketLow">Low tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketLow" step="1" min="0"></div></div>
+    <div class="setrow"><label for="setTicketAvg">Average tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketAvg" step="1" min="0"></div></div>
+    <div class="setrow"><label for="setTicketHigh">High tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketHigh" step="1" min="0"></div></div>
+  </div>
+
+  <div class="btnrow">
+    <button type="button" class="smallbtn danger" id="resetAll">Reset everything to defaults</button>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  var NAV_H = 64; // px — height of the compact hero nav bar; kept in sync with --nav-h in CSS
+
+  var DEFAULT_BRACKETS = [
+    { upTo:12400,    rate:0.10 },
+    { upTo:50400,    rate:0.12 },
+    { upTo:105700,   rate:0.22 },
+    { upTo:201775,   rate:0.24 },
+    { upTo:256225,   rate:0.32 },
+    { upTo:640600,   rate:0.35 },
+    { upTo:null,     rate:0.37 }
+  ];
+
+  var STATE_MIN_WAGE = {
+    FL: { rate:14.00, tippedRate:10.98, note:'$14.00/hr full rate through Sept 29, 2026, then $15.00/hr from Sept 30, 2026 (Amendment 2 final step). Tipped cash wage is the full rate minus a fixed $3.02 tip credit. No state income tax.' },
+    CA: { rate:16.90, tippedRate:16.90, note:'2026 statewide rate; no tip credit allowed — tipped and full rates are the same. Many cities set higher local minimums.' },
+    WA: { rate:17.13, tippedRate:17.13, note:'2026 statewide rate; no tip credit allowed — highest statewide rate in the US.' },
+    CO: { rate:15.16, tippedRate:12.14, note:'2026 statewide rate; $3.02 tip credit. Denver runs higher.' },
+    AZ: { rate:15.15, tippedRate:12.15, note:'2026 statewide rate; $3.00 tip credit.' },
+    OR: { rate:14.20, tippedRate:14.20, note:'Standard statewide rate; no tip credit allowed. Portland metro and nonurban counties differ.' },
+    NY: { rate:15.50, tippedRate:12.90, note:'Varies by region — NYC/Long Island/Westchester run higher (~$17.00). Check your county for the exact tipped rate.' },
+    IL: { rate:15.00, tippedRate:9.00,  note:'2026 statewide rate; 40% tip credit allowed.' },
+    MA: { rate:15.00, tippedRate:6.75,  note:'2026 statewide rate; tipped service rate shown.' },
+    NJ: { rate:15.49, tippedRate:5.62,  note:'2026 statewide rate; tip credit allowed.' },
+    CT: { rate:16.94, tippedRate:6.38,  note:'2026 statewide rate; tipped rate for restaurant staff shown.' },
+    MD: { rate:15.00, tippedRate:3.63,  note:'2026 statewide rate; tip credit allowed.' },
+    MN: { rate:11.13, tippedRate:11.13, note:'2026 statewide rate for large employers; no tip credit allowed.' },
+    DC: { rate:17.95, tippedRate:10.00, note:'District of Columbia; tipped minimum is phasing up to match the full rate by 2027.' },
+    TX: { rate:7.25,  tippedRate:2.13,  note:'No state minimum above the federal floor; federal tipped cash wage shown.' },
+    GA: { rate:7.25,  tippedRate:2.13,  note:'State law sets $5.15, but the federal $7.25 floor applies to FLSA-covered employers; federal tipped cash wage shown.' },
+    OTHER: { rate:7.25, tippedRate:2.13, note:'Federal floor shown as a placeholder — enter your actual state/local rate.' }
+  };
+
+  var DEFAULTS = {
+    state: 'FL',
+    wageMode: 'tipped',
+    minWage: 10.98,
+    commissionRate: 0.45,
+    tipRateAssumed: 0.15,
+    ficaRate: 0.0765,
+    stdDeduction: 16100,
+    tipsDeductionCap: 25000,
+    tipsDeductionAssumed: 3000,
+    brackets: JSON.parse(JSON.stringify(DEFAULT_BRACKETS)),
+    tierTickets: { low:22, average:30, high:42 },
+    uiStyle: 'brutal',
+    uiAccent: 'coral',
+    rememberLook: false
+  };
+  var ACCENTS = ['coral','teal','gold'];
+  var STYLES = ['dopamine','brutal'];
+
+  var SHIFT_CAPACITY = 11;
+  var FILL_RATES = [
+    { key:'slow',  label:'Slow',          pct:0.45 },
+    { key:'below', label:'Below average', pct:0.65 },
+    { key:'avg',   label:'Average',       pct:0.75 },
+    { key:'busy',  label:'Busy',          pct:0.85 },
+    { key:'full',  label:'Fully booked',  pct:0.95 }
+  ];
+  var PERIODS = {
+    weekly:   { label:'Weekly',    mult: 1 },
+    biweekly: { label:'Bi-Weekly', mult: 2 },
+    monthly:  { label:'Monthly',   mult: 52/12 },
+    yearly:   { label:'Yearly',    mult: 52 }
+  };
+
+  var STORAGE_KEY = 'thetake_chop_settings_v2';
+  var HISTORY_KEY = 'thetake_chop_history_v1';
+
+  var settings = loadSettings();
+  if(!settings.rememberLook){
+    settings.uiStyle = STYLES[Math.floor(Math.random()*STYLES.length)];
+    settings.uiAccent = ACCENTS[Math.floor(Math.random()*ACCENTS.length)];
+  }
+  var ui = {
+    hours: 0, revenue: 0, tips: 0, received: null,
+    projHours: 20, projTier: 'average', zoomPeriod: 'weekly'
+  };
+  var lastNet = null;
+  var history = loadHistory();
+
+  function loadSettings(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
+      var loaded = JSON.parse(raw);
+      var merged = JSON.parse(JSON.stringify(DEFAULTS));
+      for(var k in loaded){ merged[k] = loaded[k]; }
+      if(!merged.brackets || !merged.brackets.length){ merged.brackets = JSON.parse(JSON.stringify(DEFAULT_BRACKETS)); }
+      return merged;
+    }catch(e){ return JSON.parse(JSON.stringify(DEFAULTS)); }
+  }
+  function saveSettings(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); }catch(e){}
+  }
+  function loadHistory(){
+    try{
+      var raw = localStorage.getItem(HISTORY_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveHistory(){
+    try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }catch(e){}
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function fmtDate(ts){
+    return new Date(ts).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  var themeWipe = document.getElementById('themeWipe');
+  var wipeTimer = null;
+  function fireWipe(originEl){
+    if(!originEl) return;
+    var rect = originEl.getBoundingClientRect();
+    document.documentElement.style.setProperty('--wx', (rect.left + rect.width/2) + 'px');
+    document.documentElement.style.setProperty('--wy', (rect.top + rect.height/2) + 'px');
+    themeWipe.classList.remove('go');
+    void themeWipe.offsetWidth; // restart animation
+    themeWipe.classList.add('go');
+    clearTimeout(wipeTimer);
+    wipeTimer = setTimeout(function(){ themeWipe.classList.remove('go'); }, 950);
+  }
+
+  function applyLook(){
+    document.documentElement.setAttribute('data-style', settings.uiStyle);
+    document.documentElement.setAttribute('data-accent', settings.uiAccent);
+    document.querySelectorAll('.stylebtn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-styleval') === settings.uiStyle);
+    });
+    document.querySelectorAll('.accentdot').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-accentval') === settings.uiAccent);
+    });
+    document.querySelectorAll('.rememberChk').forEach(function(chk){
+      chk.checked = !!settings.rememberLook;
+    });
+    saveSettings();
+  }
+
+  // Two paint toggles share one set of style/accent controls: the floating button
+  // on the full-size hero, and the compact one in the nav bar next to Settings.
+  var paintPops = [];
+  function wirePaintToggle(btnId, popId){
+    var btn = document.getElementById(btnId);
+    var pop = document.getElementById(popId);
+    if(!btn || !pop) return;
+    paintPops.push({ btn: btn, pop: pop });
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var willShow = !pop.classList.contains('show');
+      paintPops.forEach(function(p){ p.pop.classList.remove('show'); });
+      if(willShow) pop.classList.add('show');
+    });
+  }
+  wirePaintToggle('paintToggle', 'paintPop');
+  wirePaintToggle('navPaintBtn', 'navPaintPop');
+  document.addEventListener('click', function(e){
+    paintPops.forEach(function(p){
+      if(!p.pop.contains(e.target) && e.target !== p.btn){ p.pop.classList.remove('show'); }
+    });
+  });
+  document.querySelectorAll('.stylebtn').forEach(function(btn){
+    btn.addEventListener('click', function(){ settings.uiStyle = btn.getAttribute('data-styleval'); fireWipe(btn); applyLook(); });
+  });
+  document.querySelectorAll('.accentdot').forEach(function(btn){
+    btn.addEventListener('click', function(){ settings.uiAccent = btn.getAttribute('data-accentval'); fireWipe(btn); applyLook(); });
+  });
+  document.querySelectorAll('.rememberChk').forEach(function(chk){
+    chk.addEventListener('change', function(e){
+      settings.rememberLook = e.target.checked; saveSettings();
+    });
+  });
+
+  function fmt(n){ var r = Math.round(n); return '$' + r.toLocaleString('en-US'); }
+  function pct(p){ return Math.round(p * 100); }
+  function num(v, fallback){ var n = parseFloat(v); return isNaN(n) ? fallback : n; }
+
+  function annualFederalTax(taxableIncome, brackets){
+    var tax = 0, prevCap = 0;
+    for(var i=0; i<brackets.length; i++){
+      var b = brackets[i];
+      var cap = (b.upTo===null || b.upTo===undefined || b.upTo==='') ? Infinity : parseFloat(b.upTo);
+      if(taxableIncome > prevCap){
+        var inBracket = Math.min(taxableIncome, cap) - prevCap;
+        tax += inBracket * b.rate;
+        prevCap = cap;
+      } else break;
+    }
+    return tax;
+  }
+
+  function computePay(hours, revenue, tips){
+    var commission = revenue * settings.commissionRate;
+    var floor = settings.minWage * hours;
+    var base = Math.max(commission, floor);
+    var floorApplies = floor > commission;
+    var grossWeekly = base + tips;
+    var ficaWeekly = grossWeekly * settings.ficaRate;
+    var afterFicaWeekly = grossWeekly - ficaWeekly;
+
+    var annualGross = grossWeekly * 52;
+    var annualTips = tips * 52;
+    var tipsDeductionApplied = Math.max(0, Math.min(settings.tipsDeductionAssumed, annualTips, settings.tipsDeductionCap));
+    var taxableIncome = Math.max(0, annualGross - settings.stdDeduction - tipsDeductionApplied);
+    var annualTax = annualFederalTax(taxableIncome, settings.brackets);
+    var fedWeekly = annualTax / 52;
+    var netWeekly = afterFicaWeekly - fedWeekly;
+
+    return {
+      commission: commission, floor: floor, base: base, floorApplies: floorApplies,
+      tips: tips, grossWeekly: grossWeekly, ficaWeekly: ficaWeekly,
+      afterFicaWeekly: afterFicaWeekly, fedWeekly: fedWeekly, netWeekly: netWeekly
+    };
+  }
+
+  function animateNumberTo(el, from, to, duration){
+    if(from === null || from === undefined || isNaN(from)) from = to;
+    var start = null;
+    function easeOutExpo(t){ return t===1 ? 1 : 1 - Math.pow(2, -10*t); }
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min(1, (ts - start) / duration);
+      var eased = easeOutExpo(p);
+      var val = from + (to - from) * eased;
+      el.textContent = fmt(val);
+      if(p < 1) requestAnimationFrame(step);
+      else el.textContent = fmt(to);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function staggerRows(container, selector){
+    var rows = container.querySelectorAll(selector || '.nrow');
+    rows.forEach(function(row){ row.classList.remove('in'); });
+    rows.forEach(function(row, i){
+      setTimeout(function(){ row.classList.add('in'); }, 50 + i * 55);
+    });
+  }
+
+  function renderHeader(){
+    var wageLabel = settings.wageMode === 'full' ? 'full minimum wage' : 'tipped minimum wage';
+    document.getElementById('subtext').innerHTML =
+      'Enter or scan your sales and hours to see what you actually take home &mdash; commission vs. the ' + wageLabel + ' floor, FICA, and estimated federal tax, worked out live. ' +
+      'Commission at <b>' + Math.round(settings.commissionRate*100) + '%</b> of revenue, FICA at <b>' + (settings.ficaRate*100).toFixed(2) + '%</b>, ' +
+      wageLabel + ' floor <b>$' + settings.minWage.toFixed(2) + '/hr</b> (' + settings.state + '). All editable in Settings.';
+  }
+
+  function renderActual(){
+    var r = computePay(ui.hours, ui.revenue, ui.tips);
+
+    document.getElementById('floorFlagRow').style.display = r.floorApplies ? 'flex' : 'none';
+    document.getElementById('outGross').textContent = fmt(r.grossWeekly);
+    document.getElementById('outAfterFica').textContent = fmt(r.afterFicaWeekly);
+    document.getElementById('outNet').textContent = fmt(r.netWeekly);
+
+    var netHeroEl = document.getElementById('netHeroVal');
+    if(lastNet !== null && Math.round(lastNet) !== Math.round(r.netWeekly)){
+      netHeroEl.classList.remove('bump');
+      void netHeroEl.offsetWidth;
+      netHeroEl.classList.add('bump');
+      clearTimeout(netHeroEl._bumpTimer);
+      netHeroEl._bumpTimer = setTimeout(function(){ netHeroEl.classList.remove('bump'); }, 520);
+    }
+    animateNumberTo(netHeroEl, lastNet, r.netWeekly, 650);
+    document.getElementById('netHeroContext').textContent =
+      fmt(r.grossWeekly) + ' gross \u2192 ' + fmt(r.ficaWeekly) + ' FICA \u2192 ' + fmt(r.fedWeekly) + ' fed = net above';
+    lastNet = r.netWeekly;
+
+    var baseLabel = r.floorApplies ? 'Base pay (floor)' : 'Base pay (commission)';
+
+    var nb = document.getElementById('nutritionRows');
+    nb.innerHTML =
+      '<div class="nrow"><div class="nk">' + baseLabel + '</div><div class="nv">' + fmt(r.base) + '</div></div>' +
+      '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> ' + (r.floorApplies ? ('minimum wage floor, ' + ui.hours + ' hrs') : 'commission on revenue') + '</div><div class="nv">' + fmt(r.floorApplies ? r.floor : r.commission) + '</div></div>' +
+      '<div class="nrow"><div class="nk"><span class="op">+</span> Tips</div><div class="nv">' + fmt(r.tips) + '</div></div>' +
+      '<div class="nrow total"><div class="nk"><span class="op">=</span> Gross pay</div><div class="nv">' + fmt(r.grossWeekly) + '</div></div>' +
+      '<div class="nrow"><div class="nk"><span class="op">&minus;</span> FICA</div><div class="nv">&minus;' + fmt(r.ficaWeekly) + '</div></div>' +
+      '<div class="nrow total"><div class="nk"><span class="op">=</span> After FICA</div><div class="nv">' + fmt(r.afterFicaWeekly) + '</div></div>' +
+      '<div class="nrow"><div class="nk"><span class="op">&minus;</span> Est. federal tax</div><div class="nv">&minus;' + fmt(r.fedWeekly) + '</div></div>' +
+      '<div class="nrow net"><div class="nk">Est. net pay</div><div class="nv">' + fmt(r.netWeekly) + '</div></div>';
+    staggerRows(nb);
+
+    var box = document.getElementById('reconcileBox');
+    if(ui.received === null || isNaN(ui.received)){
+      box.className = 'reconcile';
+      box.innerHTML = '';
+    } else {
+      var diffGross = Math.abs(ui.received - r.grossWeekly);
+      var diffNet = Math.abs(ui.received - r.netWeekly);
+      box.classList.add('show');
+      if(diffGross < 1){
+        box.className = 'reconcile show warn';
+        box.innerHTML = '\u26a0 The amount you were paid matches <b>gross</b> pay (pre-FICA, pre-federal-tax) almost exactly. ' +
+          'That means no taxes appear to have been withheld from this payment &mdash; worth confirming whether you\'re classified as a W-2 employee (who should have withholding) or a 1099 contractor (who handles taxes separately).';
+      } else if(diffNet < 1){
+        box.className = 'reconcile show ok';
+        box.innerHTML = '\u2713 The amount you were paid matches the <b>estimated net pay</b> above almost exactly &mdash; FICA and federal withholding appear to have been applied as expected.';
+      } else {
+        box.className = 'reconcile show mismatch';
+        box.innerHTML = 'This doesn\'t cleanly match either figure &mdash; off by <b>' + fmt(diffGross) + '</b> from gross and <b>' + fmt(diffNet) + '</b> from estimated net. Worth asking for an itemized pay breakdown.';
+      }
+    }
+
+    renderZoom(r);
+  }
+
+  function renderZoom(actualRow){
+    var period = PERIODS[ui.zoomPeriod];
+    document.getElementById('zoomlabel').textContent = period.label;
+    document.getElementById('zoomrows').innerHTML =
+      '<div class="zoomrow"><div class="filllabel">' + period.label + '</div>' +
+      '<div class="num">' + fmt(actualRow.grossWeekly*period.mult) + '</div>' +
+      '<div class="num">' + fmt(actualRow.ficaWeekly*period.mult) + '</div>' +
+      '<div class="num net">' + fmt(actualRow.netWeekly*period.mult) + '</div></div>';
+    staggerRows(document.getElementById('zoomrows'), '.zoomrow');
+  }
+
+  function computeGoal(fillPct){
+    var ticket = settings.tierTickets[ui.projTier];
+    var clientsExact = fillPct * SHIFT_CAPACITY;
+    return { clientsExact: clientsExact, revenue: clientsExact * ticket };
+  }
+  function computeProjRow(fillPct){
+    var shifts = ui.projHours / 5;
+    var goal = computeGoal(fillPct);
+    var weeklyRevenue = goal.revenue * shifts;
+    var tips = weeklyRevenue * settings.tipRateAssumed;
+    return computePay(ui.projHours, weeklyRevenue, tips);
+  }
+
+  function renderProjection(){
+    document.getElementById('lowTicket').textContent = '$' + settings.tierTickets.low + ' avg';
+    document.getElementById('avgTicket').textContent = '$' + settings.tierTickets.average + ' avg';
+    document.getElementById('highTicket').textContent = '$' + settings.tierTickets.high + ' avg';
+
+    document.getElementById('tierintro').innerHTML =
+      'Assuming a <b style="color:var(--acc3)">$' + settings.tierTickets[ui.projTier] + ' average ticket</b> per client at this tier, ~' + SHIFT_CAPACITY + ' slots per 5-hr shift, and tips at ' + Math.round(settings.tipRateAssumed*100) + '% of revenue.';
+
+    var goalHtml = '';
+    FILL_RATES.forEach(function(fr){
+      var g = computeGoal(fr.pct);
+      goalHtml += '<div class="goalrow"><div class="filllabel">' + fr.label + ' <small>~' + pct(fr.pct) + '%</small></div>' +
+        '<div class="num">' + fmt(g.revenue) + '</div><div class="num">~' + Math.round(g.clientsExact) + '</div></div>';
+    });
+    document.getElementById('goalrows').innerHTML = goalHtml;
+    staggerRows(document.getElementById('goalrows'), '.goalrow');
+
+    document.getElementById('breakdownfloor').textContent = 'floor $' + Math.round(settings.minWage * ui.projHours);
+
+    var rowsHtml = '';
+    FILL_RATES.forEach(function(fr){
+      var r = computeProjRow(fr.pct);
+      rowsHtml += '<div class="zoomrow' + (r.floorApplies?' floor-applies':'') + '">' +
+        '<div class="filllabel">' + fr.label + ' <small>~' + pct(fr.pct) + '%</small>' + (r.floorApplies?' <span class="floorflag">FLOOR</span>':'') + '</div>' +
+        '<div class="num">' + fmt(r.grossWeekly) + '</div><div class="num">' + fmt(r.ficaWeekly) + '</div>' +
+        '<div class="num net">' + fmt(r.netWeekly) + '</div></div>';
+    });
+    document.getElementById('projrows').innerHTML = rowsHtml;
+    staggerRows(document.getElementById('projrows'), '.zoomrow');
+
+    document.querySelectorAll('#shiftbar .tabbtn').forEach(function(btn){
+      btn.classList.toggle('active', parseInt(btn.getAttribute('data-hours'),10) === ui.projHours);
+    });
+    document.querySelectorAll('#tierbar .tabbtn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-tier') === ui.projTier);
+    });
+  }
+
+  function renderHistory(){
+    var countEl = document.getElementById('historyCount');
+    countEl.textContent = history.length + (history.length===1 ? ' SAVED' : ' SAVED');
+    var empty = document.getElementById('historyEmpty');
+    var wrap = document.getElementById('historyRows');
+    var clearRow = document.getElementById('historyClearRow');
+
+    if(!history.length){
+      empty.style.display = 'block';
+      wrap.innerHTML = '';
+      clearRow.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    clearRow.style.display = 'flex';
+
+    var totalNet = history.reduce(function(s,h){ return s + h.net; }, 0);
+    var html = '<div class="historysummary">' + history.length + ' saved &middot; ' + fmt(totalNet) + ' total net</div>';
+    history.forEach(function(h){
+      var hrs = Math.round((h.hours||0)*100)/100;
+      var labelHtml = h.label ? escapeHtml(h.label) + ' <span class="historydate">' + fmtDate(h.savedAt) + '</span>' : fmtDate(h.savedAt);
+      html += '<div class="historyrow" data-id="'+h.id+'">' +
+        '<div class="historyrow-main"><div class="historylabel">' + labelHtml + '</div>' +
+        '<div class="historynet">' + fmt(h.net) + '</div></div>' +
+        '<div class="historyrow-sub">' + hrs + ' hrs &middot; ' + fmt(h.revenue) + ' rev &middot; ' + fmt(h.tips) + ' tips' + (h.floorApplies ? ' &middot; floor' : '') + '</div>' +
+        '<button type="button" class="historydel" data-id="'+h.id+'" aria-label="Delete saved period">&times;</button>' +
+        '</div>';
+    });
+    wrap.innerHTML = html;
+    staggerRows(wrap, '.historyrow');
+
+    wrap.querySelectorAll('.historyrow').forEach(function(row){
+      row.addEventListener('click', function(){
+        var id = row.getAttribute('data-id');
+        var rec = history.filter(function(h){ return h.id === id; })[0];
+        if(!rec) return;
+        ui.hours = rec.hours; ui.revenue = rec.revenue; ui.tips = rec.tips; ui.received = rec.received;
+        document.getElementById('inHours').value = rec.hours || '';
+        document.getElementById('inRevenue').value = rec.revenue || '';
+        document.getElementById('inTips').value = rec.tips || '';
+        document.getElementById('inReceived').value = (rec.received!==null && rec.received!==undefined) ? rec.received : '';
+        document.getElementById('manualEntry').setAttribute('open','');
+        renderActual();
+        window.scrollTo({ top:0, behavior:'smooth' });
+      });
+    });
+    wrap.querySelectorAll('.historydel').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var id = btn.getAttribute('data-id');
+        history = history.filter(function(h){ return h.id !== id; });
+        saveHistory(); renderHistory();
+      });
+    });
+  }
+
+  function renderAll(){
+    renderHeader();
+    renderActual();
+    renderProjection();
+    renderHistory();
+    document.querySelectorAll('#periodbar .periodbtn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-period') === ui.zoomPeriod);
+    });
+  }
+
+  function renderBracketRows(){
+    var html = '';
+    settings.brackets.forEach(function(b, i){
+      var isLast = i === settings.brackets.length - 1;
+      html += '<div class="bracketrow" data-idx="'+i+'">' +
+        '<div class="fieldrow"><input type="number" class="bRate" step="0.5" min="0" max="100" value="'+(b.rate*100)+'"><span>%</span></div>' +
+        '<div class="fieldrow">' + (isLast ? '<span style="flex:1;">and up</span>' : '<span>$</span><input type="number" class="bUpTo" step="100" min="0" value="'+b.upTo+'">') + '</div>' +
+        (settings.brackets.length>1 ? '<button type="button" class="rmbtn" data-rm="'+i+'">&times;</button>' : '<span></span>') +
+        '</div>';
+    });
+    document.getElementById('bracketRows').innerHTML = html;
+
+    document.querySelectorAll('.bRate').forEach(function(inp, i){
+      inp.addEventListener('input', function(){
+        settings.brackets[i].rate = num(inp.value,0)/100; saveSettings(); renderAll();
+      });
+    });
+    document.querySelectorAll('.bUpTo').forEach(function(inp){
+      inp.addEventListener('input', function(){
+        var idx = parseInt(inp.closest('.bracketrow').getAttribute('data-idx'),10);
+        settings.brackets[idx].upTo = num(inp.value, settings.brackets[idx].upTo);
+        saveSettings(); renderAll();
+      });
+    });
+    document.querySelectorAll('.rmbtn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var idx = parseInt(btn.getAttribute('data-rm'),10);
+        settings.brackets.splice(idx,1);
+        saveSettings(); renderBracketRows(); renderAll();
+      });
+    });
+  }
+
+  function populateStateDropdown(){
+    var sel = document.getElementById('setState');
+    var html = '';
+    Object.keys(STATE_MIN_WAGE).forEach(function(code){
+      var label = code === 'OTHER' ? 'Other / not listed' : code;
+      html += '<option value="'+code+'">'+label+'</option>';
+    });
+    sel.innerHTML = html;
+    sel.value = settings.state;
+  }
+
+  function renderSettingsForm(){
+    document.getElementById('setMinWage').value = settings.minWage;
+    document.getElementById('setCommission').value = settings.commissionRate*100;
+    document.getElementById('setTipRate').value = settings.tipRateAssumed*100;
+    document.getElementById('setFica').value = (settings.ficaRate*100).toFixed(2);
+    document.getElementById('setStdDeduction').value = settings.stdDeduction;
+    document.getElementById('setTipsDeduction').value = settings.tipsDeductionAssumed;
+    document.getElementById('setTicketLow').value = settings.tierTickets.low;
+    document.getElementById('setTicketAvg').value = settings.tierTickets.average;
+    document.getElementById('setTicketHigh').value = settings.tierTickets.high;
+    document.getElementById('minWageNote').textContent = (STATE_MIN_WAGE[settings.state]||STATE_MIN_WAGE.OTHER).note + ' (reference figure, always verify.)';
+    document.querySelectorAll('#wageModeToggle .periodbtn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-wagemode') === settings.wageMode);
+    });
+    renderBracketRows();
+  }
+
+  document.getElementById('inHours').addEventListener('input', function(e){ ui.hours = num(e.target.value,0); renderActual(); });
+  document.getElementById('inRevenue').addEventListener('input', function(e){ ui.revenue = num(e.target.value,0); renderActual(); });
+  document.getElementById('inTips').addEventListener('input', function(e){ ui.tips = num(e.target.value,0); renderActual(); });
+  document.getElementById('inReceived').addEventListener('input', function(e){
+    ui.received = e.target.value === '' ? null : num(e.target.value, null);
+    renderActual();
+  });
+
+  document.getElementById('saveHistoryBtn').addEventListener('click', function(){
+    var r = computePay(ui.hours, ui.revenue, ui.tips);
+    var labelInput = document.getElementById('historyLabel');
+    var rec = {
+      id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      savedAt: Date.now(),
+      label: labelInput.value.trim(),
+      hours: ui.hours, revenue: ui.revenue, tips: ui.tips, received: ui.received,
+      gross: r.grossWeekly, fica: r.ficaWeekly, fed: r.fedWeekly, net: r.netWeekly,
+      floorApplies: r.floorApplies
+    };
+    history.unshift(rec);
+    saveHistory();
+    labelInput.value = '';
+    renderHistory();
+  });
+  document.getElementById('clearHistoryBtn').addEventListener('click', function(){
+    if(!confirm('Clear all saved history? This can\'t be undone.')) return;
+    history = [];
+    saveHistory(); renderHistory();
+  });
+
+  document.querySelectorAll('#shiftbar .tabbtn').forEach(function(btn){
+    btn.addEventListener('click', function(){ ui.projHours = parseInt(btn.getAttribute('data-hours'),10); renderProjection(); });
+  });
+  document.querySelectorAll('#tierbar .tabbtn').forEach(function(btn){
+    btn.addEventListener('click', function(){ ui.projTier = btn.getAttribute('data-tier'); renderProjection(); });
+  });
+  document.querySelectorAll('#periodbar .periodbtn').forEach(function(btn){
+    btn.addEventListener('click', function(){ ui.zoomPeriod = btn.getAttribute('data-period'); renderActual(); document.querySelectorAll('#periodbar .periodbtn').forEach(function(b){ b.classList.toggle('active', b===btn); }); });
+  });
+
+  var drawer = document.getElementById('drawer');
+  var backdrop = document.getElementById('backdrop');
+  function openDrawer(){
+    drawer.classList.add('show'); backdrop.classList.add('show');
+    requestAnimationFrame(function(){ backdrop.classList.add('in'); });
+  }
+  function closeDrawer(){
+    drawer.classList.remove('show'); backdrop.classList.remove('in');
+    setTimeout(function(){ backdrop.classList.remove('show'); }, 300);
+  }
+  document.getElementById('settingsToggle').addEventListener('click', openDrawer);
+  document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+
+  document.getElementById('setState').addEventListener('change', function(e){
+    settings.state = e.target.value;
+    var sw = STATE_MIN_WAGE[settings.state] || STATE_MIN_WAGE.OTHER;
+    settings.minWage = settings.wageMode === 'full' ? sw.rate : sw.tippedRate;
+    saveSettings(); renderSettingsForm(); renderAll();
+  });
+  document.querySelectorAll('#wageModeToggle .periodbtn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      settings.wageMode = btn.getAttribute('data-wagemode');
+      var sw = STATE_MIN_WAGE[settings.state] || STATE_MIN_WAGE.OTHER;
+      settings.minWage = settings.wageMode === 'full' ? sw.rate : sw.tippedRate;
+      saveSettings(); renderSettingsForm(); renderAll();
+    });
+  });
+  document.getElementById('setMinWage').addEventListener('input', function(e){ settings.minWage = num(e.target.value, settings.minWage); saveSettings(); renderAll(); });
+  document.getElementById('setCommission').addEventListener('input', function(e){ settings.commissionRate = num(e.target.value,0)/100; saveSettings(); renderAll(); });
+  document.getElementById('setTipRate').addEventListener('input', function(e){ settings.tipRateAssumed = num(e.target.value,0)/100; saveSettings(); renderAll(); });
+  document.getElementById('setFica').addEventListener('input', function(e){ settings.ficaRate = num(e.target.value,0)/100; saveSettings(); renderAll(); });
+  document.getElementById('setStdDeduction').addEventListener('input', function(e){ settings.stdDeduction = num(e.target.value,0); saveSettings(); renderAll(); });
+  document.getElementById('setTipsDeduction').addEventListener('input', function(e){
+    var v = num(e.target.value,0); if(v<0) v=0; if(v>25000) v=25000;
+    settings.tipsDeductionAssumed = v; saveSettings(); renderAll();
+  });
+  document.getElementById('setTicketLow').addEventListener('input', function(e){ settings.tierTickets.low = num(e.target.value,0); saveSettings(); renderProjection(); });
+  document.getElementById('setTicketAvg').addEventListener('input', function(e){ settings.tierTickets.average = num(e.target.value,0); saveSettings(); renderProjection(); });
+  document.getElementById('setTicketHigh').addEventListener('input', function(e){ settings.tierTickets.high = num(e.target.value,0); saveSettings(); renderProjection(); });
+
+  document.getElementById('addBracket').addEventListener('click', function(){
+    var brackets = settings.brackets;
+    var last = brackets[brackets.length-1];
+    var prev = brackets.length>1 ? brackets[brackets.length-2].upTo : 0;
+    var newCap = (prev||0) + 25000;
+    brackets.splice(brackets.length-1, 0, { upTo:newCap, rate:last.rate });
+    saveSettings(); renderBracketRows(); renderAll();
+  });
+  document.getElementById('resetBrackets').addEventListener('click', function(){
+    settings.brackets = JSON.parse(JSON.stringify(DEFAULT_BRACKETS));
+    saveSettings(); renderBracketRows(); renderAll();
+  });
+  document.getElementById('resetAll').addEventListener('click', function(){
+    if(!confirm('Reset all settings to defaults? This clears anything you\'ve customized.')) return;
+    var keepStyle = settings.uiStyle, keepAccent = settings.uiAccent, keepRemember = settings.rememberLook;
+    settings = JSON.parse(JSON.stringify(DEFAULTS));
+    settings.uiStyle = keepStyle; settings.uiAccent = keepAccent; settings.rememberLook = keepRemember;
+    saveSettings(); applyLook(); populateStateDropdown(); renderSettingsForm(); renderAll();
+  });
+  document.getElementById('lookupWage').addEventListener('click', function(){
+    var q = encodeURIComponent(settings.state + ' minimum wage 2026');
+    window.open('https://www.google.com/search?q=' + q, '_blank');
+  });
+  document.getElementById('lookupTax').addEventListener('click', function(){
+    window.open('https://www.google.com/search?q=' + encodeURIComponent('IRS 2026 federal tax brackets single filer'), '_blank');
+  });
+
+  function fileToImage(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){
+        var img = new Image();
+        img.onload = function(){ resolve(img); };
+        img.onerror = reject;
+        img.src = reader.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+  function preprocess(img){
+    var scale = 2;
+    var canvas = document.createElement('canvas');
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    var id = ctx.getImageData(0,0,canvas.width,canvas.height);
+    var d = id.data;
+    for(var i=0;i<d.length;i+=4){
+      var gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+      var inv = 255 - gray;
+      d[i]=d[i+1]=d[i+2]=inv;
+    }
+    ctx.putImageData(id,0,0);
+    return canvas;
+  }
+
+  function moneyFrom(line){
+    var m = line.match(/\$?\s*([\d,]+\.\d{2})/);
+    return m ? parseFloat(m[1].replace(/,/g,'')) : null;
+  }
+
+  function parseSalesText(text){
+    var lines = text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+    var revenue=null, tips=null;
+    for(var i=0;i<lines.length;i++){
+      var low = lines[i].toLowerCase();
+      if(revenue===null && low.indexOf('service sales')!==-1){
+        revenue = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+      }
+      if(revenue===null && low.indexOf('total gross sales')!==-1){
+        revenue = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+      }
+      if(tips===null && /^tips\b/.test(low)){
+        tips = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+      }
+    }
+    return { revenue: revenue, tips: tips };
+  }
+  function parseTimesheetText(text){
+    var m = text.match(/Total[^\d]{0,20}(\d{1,3}):(\d{2})/i);
+    if(!m) return { hours:null };
+    return { hours: parseInt(m[1],10) + parseInt(m[2],10)/60 };
+  }
+
+  function setScanning(btn, isBusy, label, done){
+    btn.classList.toggle('busy', isBusy);
+    btn.classList.toggle('done', !!done && !isBusy);
+    if(label) document.getElementById('scanStatus').textContent = label;
+  }
+
+  function runOcr(file, btn, kind){
+    setScanning(btn, true, 'Reading image\u2026');
+    fileToImage(file).then(function(img){
+      var canvas = preprocess(img);
+      return Tesseract.recognize(canvas, 'eng', {
+        logger: function(m){
+          if(m.status === 'recognizing text'){
+            setScanning(btn, true, 'Reading\u2026 ' + Math.round((m.progress||0)*100) + '%');
+          }
+        }
+      });
+    }).then(function(result){
+      var text = result.data.text;
+      setScanning(btn, false, '', true);
+      if(kind === 'sales'){
+        document.getElementById('salesRawWrap').style.display = 'block';
+        document.getElementById('salesRawText').textContent = text;
+        var parsed = parseSalesText(text);
+        var summary = [];
+        if(parsed.revenue!==null){ ui.revenue = parsed.revenue; document.getElementById('inRevenue').value = parsed.revenue; summary.push('revenue $'+parsed.revenue); }
+        if(parsed.tips!==null){ ui.tips = parsed.tips; document.getElementById('inTips').value = parsed.tips; summary.push('tips $'+parsed.tips); }
+        document.getElementById('scanStatus').textContent = summary.length ? ('Read: ' + summary.join(', ') + ' \u2014 double-check below.') : 'Couldn\'t confidently read this one \u2014 check the raw text and enter manually.';
+        renderActual();
+      } else {
+        document.getElementById('timeRawWrap').style.display = 'block';
+        document.getElementById('timeRawText').textContent = text;
+        var parsedT = parseTimesheetText(text);
+        if(parsedT.hours!==null){
+          ui.hours = parsedT.hours; document.getElementById('inHours').value = parsedT.hours.toFixed(2);
+          document.getElementById('scanStatus').textContent = 'Read: ' + parsedT.hours.toFixed(2) + ' hours \u2014 double-check below.';
+        } else {
+          document.getElementById('scanStatus').textContent = 'Couldn\'t confidently read hours \u2014 check the raw text and enter manually.';
+        }
+        renderActual();
+      }
+    }).catch(function(err){
+      setScanning(btn, false, 'Scan failed \u2014 try a clearer screenshot, or enter the numbers by hand.');
+      console.error(err);
+    });
+  }
+
+  document.getElementById('scanSalesBtn').addEventListener('click', function(){ document.getElementById('scanSalesInput').click(); });
+  document.getElementById('scanTimeBtn').addEventListener('click', function(){ document.getElementById('scanTimeInput').click(); });
+  document.getElementById('scanSalesInput').addEventListener('change', function(e){
+    if(e.target.files[0]) runOcr(e.target.files[0], document.getElementById('scanSalesBtn'), 'sales');
+  });
+  document.getElementById('scanTimeInput').addEventListener('change', function(e){
+    if(e.target.files[0]) runOcr(e.target.files[0], document.getElementById('scanTimeBtn'), 'time');
+  });
+
+  function initReveal(){
+    var items = document.querySelectorAll('.reveal, .reveal-scale');
+    if(!('IntersectionObserver' in window)){
+      items.forEach(function(el){ el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry, i){
+        if(entry.isIntersecting){
+          var el = entry.target;
+          setTimeout(function(){ el.classList.add('in'); }, i * 40);
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+    items.forEach(function(el){ io.observe(el); });
+  }
+
+  // ---- Hero scroll behavior: pinned + zooming background, content that shrinks
+  // into a compact nav bar, gradient that eases off as you scroll. ----
+  function initHeroScroll(){
+    var heroBlock = document.getElementById('heroBlock');
+    var spacer = document.getElementById('heroSpacer');
+    if(!heroBlock || !spacer) return;
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion) return; // CSS fallback already restores the original static hero
+
+    var fullH = 0;
+    var ticking = false;
+
+    function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+    // Measure the hero's natural full-size height using its CSS min/max-height (the
+    // same rule that sizes it before JS runs), then hand height control over to JS by
+    // clearing those constraints — otherwise min-height would stop the shrink from
+    // ever going below ~62vh. The spacer is set ONCE per measure (not every scroll
+    // frame) so it reserves the hero's full height in document flow: the page below
+    // scrolls up and is gradually revealed from underneath the shrinking pinned hero,
+    // instead of the whole page rushing upward to chase a shrinking spacer.
+    function measure(){
+      heroBlock.style.minHeight = '';
+      heroBlock.style.maxHeight = '';
+      heroBlock.style.height = '';
+      var h = heroBlock.getBoundingClientRect().height;
+      fullH = h || (window.innerWidth <= 640 ? window.innerHeight * 0.52 : Math.min(window.innerHeight * 0.62, 640));
+      heroBlock.style.minHeight = '0px';
+      heroBlock.style.maxHeight = 'none';
+      spacer.style.height = fullH + 'px';
+    }
+
+    function update(){
+      var shrinkDistance = Math.max(160, fullH - NAV_H);
+      var progress = Math.max(0, Math.min(1, window.scrollY / shrinkDistance));
+      var eased = easeOutCubic(progress);
+      var h = fullH + (NAV_H - fullH) * eased;
+
+      heroBlock.style.height = h + 'px';
+
+      var contentP = Math.max(0, Math.min(1, progress / 0.65));
+      var navP = Math.max(0, Math.min(1, (progress - 0.45) / 0.55));
+
+      // Set on the root so the shared, page-wide background layer (#pageBg) can
+      // react to the same scroll progress as the hero itself, not just descendants
+      // of heroBlock.
+      var root = document.documentElement.style;
+      root.setProperty('--hero-progress', progress.toFixed(4));
+      root.setProperty('--hero-content-p', contentP.toFixed(4));
+      root.setProperty('--hero-nav-p', navP.toFixed(4));
+      heroBlock.classList.toggle('compact', progress > 0.92);
+
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', function(){
+      if(!ticking){ requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    window.addEventListener('resize', function(){ measure(); update(); });
+    window.addEventListener('orientationchange', function(){ measure(); update(); });
+    window.addEventListener('load', function(){ measure(); update(); });
+
+    measure();
+    update();
+
+    var navSettingsBtn = document.getElementById('navSettingsBtn');
+    if(navSettingsBtn){
+      navSettingsBtn.addEventListener('click', function(){
+        var gearBtn = document.getElementById('settingsToggle');
+        if(gearBtn) gearBtn.click();
+      });
+    }
+  }
+
+  // ---- Est. net pay box: pins itself just below the compact hero once it
+  // reaches that scroll position, and switches to a shrunk, side-by-side
+  // layout while pinned (number left, label/context stacked right). ----
+  function initNetHeroSticky(){
+    var box = document.getElementById('netHeroBox');
+    var sentinel = document.getElementById('netHeroSentinel');
+    if(!box || !sentinel || !('IntersectionObserver' in window)) return;
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion) return;
+
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        box.classList.toggle('stuck', !entry.isIntersecting);
+      });
+    }, { threshold: 0, rootMargin: '-' + (NAV_H + 1) + 'px 0px 0px 0px' });
+    io.observe(sentinel);
+  }
+
+  // ---- Once the main cards are on screen, add a touch of blur + grain to the
+  // shared page background so it recedes behind them instead of competing. ----
+  function initBgCardsObserver(){
+    var cards = document.querySelector('.cards-grid');
+    if(!cards || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        document.documentElement.classList.toggle('cards-visible', entry.isIntersecting);
+      });
+    }, { threshold: 0, rootMargin: '-15% 0px -55% 0px' });
+    io.observe(cards);
+  }
+
+  // ---- Add to Home Screen ----
+
+  // Builds a manual "Add to Home Screen" walkthrough tailored to the browser
+  // and OS version actually in use — e.g. iOS 26's Safari redesign tucks the
+  // Share icon behind a "•••" button, so the old two-step Share-first flow is
+  // wrong there even though it still works on iOS 25 and earlier.
+  function installStepsHTML(){
+    var ua = navigator.userAgent || '';
+    var isIOS = /iphone|ipad|ipod/i.test(ua) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if(isIOS){
+      var isCriOS = /CriOS/i.test(ua);
+      var isFxiOS = /FxiOS/i.test(ua);
+      var isEdgiOS = /EdgiOS/i.test(ua);
+      var isSafari = !isCriOS && !isFxiOS && !isEdgiOS;
+
+      var verMatch = ua.match(/OS (\d+)_\d+(?:_\d+)? like Mac OS X/);
+      var iosVer = verMatch ? parseInt(verMatch[1], 10) : null;
+
+      var steps;
+      if(isSafari){
+        if(iosVer !== null && iosVer >= 26){
+          steps = [
+            'Tap the <b>•••</b> button in Safari\u2019s toolbar (or the Share icon, if you see it directly)',
+            'Tap <b>Share</b> in the menu that opens',
+            'Scroll down and tap <b>Add to Home Screen</b>',
+            'Tap <b>Add</b> &mdash; The Take opens full-screen, like an app'
+          ];
+        } else {
+          steps = [
+            'Tap the <b>Share</b> icon in Safari\u2019s toolbar',
+            'Scroll down and tap <b>Add to Home Screen</b>',
+            'Tap <b>Add</b> &mdash; The Take opens full-screen, like an app'
+          ];
+        }
+      } else {
+        var browserName = isCriOS ? 'Chrome' : isFxiOS ? 'Firefox' : isEdgiOS ? 'Edge' : 'your browser';
+        steps = [
+          'Tap the <b>Share</b> or menu icon in ' + browserName,
+          'Choose <b>Add to Home Screen</b>',
+          'Confirm &mdash; The Take opens full-screen, like an app'
+        ];
+      }
+    } else {
+      // Non-iOS fallback (e.g. Firefox, which has no beforeinstallprompt event)
+      steps = [
+        'Open your browser\u2019s menu',
+        'Look for <b>Install app</b> or <b>Add to Home Screen</b>',
+        'Confirm &mdash; The Take opens full-screen, like an app'
+      ];
+    }
+
+    return steps.map(function(s, i){
+      return '<div class="iospop-step"><span class="iospop-num">' + (i + 1) + '</span> ' + s + '</div>';
+    }).join('');
+  }
+
+  function initInstallPrompt(){
+    var btn = document.getElementById('installBtn');
+    var iosPop = document.getElementById('iosInstallPop');
+    var stepsEl = document.getElementById('iospopSteps');
+    if(!btn) return;
+
+    var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if(isStandalone) return; // already installed, nothing to offer
+
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    var deferredPrompt = null;
+    var hideTimer = null;
+    var everShown = false;
+    var HIDE_AFTER_MS = 7000;
+
+    function showBtn(){
+      if(everShown) return;
+      everShown = true;
+      btn.style.display = 'flex';
+      hideTimer = setTimeout(hideBtn, HIDE_AFTER_MS);
+    }
+    function hideBtn(){
+      clearTimeout(hideTimer);
+      btn.classList.add('hide');
+    }
+
+    // Disappear the instant the user scrolls — the nudge shouldn't linger
+    // over content once they're engaging with the page.
+    window.addEventListener('scroll', hideBtn, { passive: true, once: true });
+
+    var iosPopClose = document.getElementById('iosPopClose');
+    if(iosPopClose && iosPop){
+      iosPopClose.addEventListener('click', function(){ iosPop.classList.remove('show'); });
+    }
+
+    if(isIOS){
+      // iOS has no beforeinstallprompt — show the button, and on tap, explain
+      // the manual Share -> Add to Home Screen flow (worded for this device's
+      // actual browser + iOS version).
+      if(stepsEl) stepsEl.innerHTML = installStepsHTML();
+      btn.addEventListener('click', function(){
+        if(iosPop) iosPop.classList.toggle('show');
+      });
+      showBtn();
+    } else {
+      window.addEventListener('beforeinstallprompt', function(e){
+        e.preventDefault();
+        deferredPrompt = e;
+        showBtn();
+      });
+      btn.addEventListener('click', function(){
+        if(!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(function(){
+          deferredPrompt = null;
+          hideBtn();
+        });
+      });
+      window.addEventListener('appinstalled', hideBtn);
+
+      // Browsers with no beforeinstallprompt support at all (Firefox desktop
+      // & Android, older Edge, etc.) — fall back to manual instructions
+      // rather than never offering the button.
+      setTimeout(function(){
+        if(deferredPrompt || everShown) return;
+        if(stepsEl) stepsEl.innerHTML = installStepsHTML();
+        btn.addEventListener('click', function(){
+          if(iosPop) iosPop.classList.toggle('show');
+        });
+        showBtn();
+      }, 2500);
+    }
+  }
+
+  function initServiceWorker(){
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', function(){
+        navigator.serviceWorker.register('sw.js').catch(function(){ /* offline caching is a bonus, not required */ });
+      });
+    }
+  }
+
+  applyLook();
+  populateStateDropdown();
+  renderSettingsForm();
+  renderAll();
+  initReveal();
+  initHeroScroll();
+  initNetHeroSticky();
+  initBgCardsObserver();
+  initInstallPrompt();
+  initServiceWorker();
+
+})();
+</script>
+</body>
+</html>
