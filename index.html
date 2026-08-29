@@ -9,9 +9,11 @@
 <!-- ---- PWA / installability ---- -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#141413">
+<meta name="application-name" content="The Take">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-touch-fullscreen" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="The Take">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +28,8 @@
     --ease: cubic-bezier(.16,1,.3,1);
     --ease-spring: cubic-bezier(.34,1.56,.64,1);
     --wx: 50%; --wy: 40px;
-    --nav-h: 64px;
+    --nav-content-h: 64px;
+    --nav-h: calc(var(--nav-content-h) + env(safe-area-inset-top, 0px));
     --sticky-gap: 14px;
     --netpay-stuck-h: 76px;
     --nav-fade-h: 25px;
@@ -316,9 +319,9 @@
 
   /* ---- Compact nav bar (crossfades in over the last part of the shrink) ---- */
   .hero-navbar{
-    position:absolute; inset:0; z-index:4;
+    position:absolute; top:0; left:0; right:0; height:var(--nav-h); z-index:4;
     display:flex; align-items:center; gap:12px;
-    padding: 0 clamp(18px, 5vw, 40px);
+    padding: env(safe-area-inset-top, 0px) clamp(18px, 5vw, 40px) 0;
     opacity: var(--hero-nav-p, 0);
     pointer-events:none;
   }
@@ -630,6 +633,7 @@
     overflow:hidden;
     -webkit-mask-image: -webkit-radial-gradient(white, black);
     transform: translateZ(0);
+    transition: padding .42s var(--ease), border-radius .42s var(--ease), border-color .42s var(--ease), box-shadow .42s var(--ease);
   }
   /* Same fix as .netpay-hero below: the blur/tint used to be the summary/card's
      own background+backdrop-filter, which on iOS Safari can composite ABOVE the
@@ -641,6 +645,7 @@
     position:absolute; inset:0; z-index:-1; border-radius: inherit;
     background: rgba(8,7,6,0.58);
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    transition: background .42s var(--ease), backdrop-filter .42s var(--ease), -webkit-backdrop-filter .42s var(--ease);
   }
   details.projection > summary{
     list-style:none; cursor:pointer; font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
@@ -650,6 +655,45 @@
   details.projection > summary::before{ content:"▸"; color: var(--acc3); font-size:15px; }
   details.projection[open] > summary::before{ content:"▾"; }
   details.projection > summary span{ font-family: var(--label-font); font-size:11px; color: rgba(243,241,236,0.68); font-weight:400; font-style:normal; }
+
+  /* Closed state: a high-contrast, softly frosted invitation instead of a dim
+     translucent card. .is-closing keeps these visual properties active while
+     JS animates the native <details> height down to the pill. */
+  details.projection:not([open]), details.projection.is-closing{
+    border-radius:999px;
+    border-color:rgba(255,255,255,0.42);
+    padding:8px 10px;
+    box-shadow:0 16px 42px -18px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.42);
+  }
+  details.projection:not([open]) .projection-bg,
+  details.projection.is-closing .projection-bg{
+    background:rgba(255,255,255,0.24);
+    backdrop-filter:blur(22px) saturate(145%); -webkit-backdrop-filter:blur(22px) saturate(145%);
+  }
+  details.projection:not([open]) > summary,
+  details.projection.is-closing > summary{
+    min-height:70px; padding:13px 18px; color:rgba(13,12,10,0.94); gap:12px;
+  }
+  details.projection:not([open]) > summary::before,
+  details.projection.is-closing > summary::before{
+    color:rgba(13,12,10,0.86); font-size:18px;
+  }
+  details.projection:not([open]) > summary span,
+  details.projection.is-closing > summary span{
+    color:rgba(13,12,10,0.68); font-weight:700; line-height:1.45;
+  }
+  details.projection.tap-cue{ animation:projectionTapCue 1.45s var(--ease) 2; }
+  @keyframes projectionTapCue{
+    0%,100%{ transform:scale(1); box-shadow:0 16px 42px -18px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.42); }
+    42%{ transform:scale(1.012); box-shadow:0 0 0 6px rgba(255,255,255,0.12), 0 20px 52px -16px rgba(255,255,255,0.30), inset 0 1px 0 rgba(255,255,255,0.58); }
+  }
+  @media (prefers-reduced-motion:reduce){ details.projection.tap-cue{ animation:none; } }
+  @media (max-width:640px){
+    details.projection:not([open]) > summary,
+    details.projection.is-closing > summary{ min-height:76px; padding:12px 14px; font-size:18px; }
+    details.projection:not([open]) > summary span,
+    details.projection.is-closing > summary span{ font-size:10.5px; }
+  }
 
   .tabbar{ display:flex; gap:7px; margin: 16px 0 14px; flex-wrap: wrap; background: var(--chip-bg); padding:6px; border-radius: var(--radius-md); }
   .controllabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.1em; text-transform:uppercase; color: var(--ink-faint); margin-bottom: 9px; font-weight:700; }
@@ -745,6 +789,8 @@
     border: none; background: transparent; color: var(--chip-fg); opacity:0.65; cursor:pointer;
   }
   .periodbtn.active{ background: var(--acc); color: var(--acc-ink); opacity:1; }
+  #periodbar, #goalPeriodBar{ width:100%; }
+  #periodbar .periodbtn, #goalPeriodBar .periodbtn{ flex:1 1 0; }
   .zoomcolheads{ display:grid; grid-template-columns: 1.3fr 0.85fr 0.85fr 0.9fr; gap: 6px; font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding: 0 0 9px; border-bottom: 1px solid rgba(0,0,0,0.12); font-weight:700; }
   .zoomcolheads .num{ text-align:right; }
   .zoomrow{ display:grid; grid-template-columns: 1.3fr 0.85fr 0.85fr 0.9fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
@@ -1096,7 +1142,7 @@
   </div>
 
   <!-- PROJECTION (planning tool, collapsible) -->
-  <details class="projection reveal" open>
+  <details class="projection reveal">
     <div class="projection-bg" aria-hidden="true"></div>
     <summary>Projected Earnings <span>&mdash; planning tool for a future week, not based on your scans</span></summary>
 
@@ -1241,7 +1287,8 @@
 <script>
 (function(){
 
-  var NAV_H = 64; // px — height of the compact hero nav bar; kept in sync with --nav-h in CSS
+  var navHeightProbe = document.getElementById('heroNavbar');
+  var NAV_H = navHeightProbe ? Math.round(parseFloat(getComputedStyle(navHeightProbe).height)) : 64;
 
   var DEFAULT_BRACKETS = [
     { upTo:12400,    rate:0.10 },
@@ -2129,6 +2176,77 @@
     items.forEach(function(el){ io.observe(el); });
   }
 
+  function initProjectionDetails(){
+    var details = document.querySelector('details.projection');
+    if(!details) return;
+    var summary = details.querySelector(':scope > summary');
+    var heightAnimation = null;
+
+    // Always begin as the compact invitation, including after form-state
+    // restoration in browsers that remember native <details> state.
+    details.removeAttribute('open');
+
+    function finish(open){
+      details.open = open;
+      details.classList.remove('is-closing');
+      details.style.height = '';
+      details.style.overflow = '';
+      heightAnimation = null;
+    }
+
+    summary.addEventListener('click', function(e){
+      e.preventDefault();
+      if(heightAnimation) return;
+      details.classList.remove('tap-cue');
+
+      var opening = !details.open;
+      if(!details.animate){
+        details.open = opening;
+        return;
+      }
+
+      var startHeight = details.getBoundingClientRect().height;
+      var endHeight;
+      details.style.overflow = 'hidden';
+
+      if(opening){
+        details.open = true;
+        endHeight = details.scrollHeight;
+      } else {
+        details.classList.add('is-closing');
+        var styles = getComputedStyle(details);
+        endHeight = summary.getBoundingClientRect().height +
+          parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom) +
+          parseFloat(styles.borderTopWidth) + parseFloat(styles.borderBottomWidth);
+      }
+
+      details.style.height = startHeight + 'px';
+      heightAnimation = details.animate(
+        { height:[startHeight + 'px', endHeight + 'px'] },
+        { duration:440, easing:'cubic-bezier(.16,1,.3,1)' }
+      );
+      heightAnimation.onfinish = function(){ finish(opening); };
+    });
+
+    function cue(){
+      if(details.open) return;
+      setTimeout(function(){ if(!details.open) details.classList.add('tap-cue'); }, 180);
+    }
+    details.addEventListener('animationend', function(e){
+      if(e.animationName === 'projectionTapCue') details.classList.remove('tap-cue');
+    });
+    if('IntersectionObserver' in window){
+      var cueObserver = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){ cue(); cueObserver.unobserve(details); }
+        });
+      }, { threshold:0.55 });
+      cueObserver.observe(details);
+    } else {
+      cue();
+    }
+  }
+
   // ---- Hero scroll behavior: pinned + zooming background, content that shrinks
   // into a compact nav bar, gradient that eases off as you scroll. ----
   function initHeroScroll(){
@@ -2398,6 +2516,7 @@
   renderSettingsForm();
   renderAll();
   initReveal();
+  initProjectionDetails();
   initHeroScroll();
   initNetHeroSticky();
   initBgCardsObserver();

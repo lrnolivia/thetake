@@ -4,7 +4,7 @@
 // caches static files so the page (and its OCR library) can load without a
 // network round-trip once it's been visited.
 
-var CACHE = 'thetake-shell-v1';
+var CACHE = 'thetake-shell-v2';
 var SHELL = [
   './',
   './index.html',

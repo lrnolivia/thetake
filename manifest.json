@@ -1,6 +1,7 @@
 {
   "name": "The Take — Chop Barbershop Pay Calculator",
   "short_name": "The Take",
+  "id": "./",
   "description": "Scan or enter your sales and hours to see what you actually take home.",
   "start_url": "./index.html",
   "scope": "./",
