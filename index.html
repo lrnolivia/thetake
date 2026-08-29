@@ -163,12 +163,32 @@
   }
   button{ font-family: inherit; -webkit-tap-highlight-color: transparent; }
   button{ transition: transform var(--motion-fast) var(--ease-snappy), box-shadow var(--motion-fast) var(--ease-standard), background-color var(--motion-base) var(--ease-standard), color var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard); }
-  button:active{ transform: scale(.97); }
+  .motion-press{ transform-origin:center; }
+  .motion-press.is-pressed{ transform:scale3d(.965,.965,1) !important; transition:transform 90ms var(--ease-standard) !important; }
+  .motion-press.is-releasing{ animation:motionPopSettle var(--motion-medium) var(--ease-snappy) both; }
+  @keyframes motionPopSettle{
+    0%{ transform:scale3d(.965,.965,1); }
+    55%{ transform:scale3d(1.025,1.025,1); }
+    80%{ transform:scale3d(.994,.994,1); }
+    100%{ transform:scale3d(1,1,1); }
+  }
 
-  .reveal{ opacity:0; transform:translate3d(0,18px,0) scale(.98); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft); }
+  .reveal{ opacity:0; transform:translate3d(0,18px,0) scale(.96); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft); transition-delay:var(--reveal-delay,0ms); }
   .reveal.in{ opacity:1; transform:translate3d(0,0,0) scale(1); }
   .reveal-scale{ opacity:0; transform:translate3d(0,12px,0) scale(.96); transition:opacity var(--motion-hero) var(--ease-out-soft), transform var(--motion-hero) var(--ease-out-soft); }
   .reveal-scale.in{ opacity:1; transform:translate3d(0,0,0) scale(1); }
+  .motion-focus{ transition:filter var(--motion-base) var(--ease-standard); filter:saturate(.86) brightness(.92); }
+  .motion-focus.is-focused{ filter:saturate(1) brightness(1); }
+
+  /* Motion-demo ambient field: two transform-only lights drift behind the
+     static hero photo. Their periods intentionally differ so they never pulse
+     in sync with the net-pay breathing loop. */
+  .ambient-orb{ position:absolute; z-index:0; width:min(62vw,620px); aspect-ratio:1; border-radius:50%; filter:blur(74px); opacity:.22; pointer-events:none; will-change:transform; }
+  .ambient-orb.a{ top:-18%; left:-16%; background:radial-gradient(circle,var(--acc) 0%,transparent 68%); animation:ambientDriftA 16s ease-in-out infinite; }
+  .ambient-orb.b{ right:-20%; bottom:-20%; background:radial-gradient(circle,var(--acc2) 0%,transparent 70%); animation:ambientDriftB 21s ease-in-out infinite; }
+  @keyframes ambientDriftA{ 0%,100%{ transform:translate3d(0,0,0) scale(1); } 50%{ transform:translate3d(10vw,8vh,0) scale(1.16); } }
+  @keyframes ambientDriftB{ 0%,100%{ transform:translate3d(0,0,0) scale(1); } 50%{ transform:translate3d(-8vw,-7vh,0) scale(1.1); } }
+  html.motion-paused .ambient-orb{ animation-play-state:paused; }
 
   .herohead{ display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
   .titlelogo{ height: clamp(64px, 11vw, 110px); width:auto; border-radius:50%; flex-shrink:0; }
@@ -366,7 +386,6 @@
     transition:transform var(--motion-fast) var(--ease-snappy), background-color var(--motion-fast) var(--ease-standard);
   }
   .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); }
-  .hero-navbar-btn:active{ transform: scale(0.9); }
   .paintwrap.navpaint{ position:relative; }
   .paintwrap.navpaint .paintpop{ top:48px; }
   @media (max-width: 480px){ .paintwrap.navpaint .paintpop{ right:-8px; } }
@@ -510,6 +529,12 @@
   @media (prefers-reduced-motion: reduce){ .netpay-hero .nph-num{ animation: none; } }
 
   .netpay-hero .nph-context{ order:3; font-family: var(--label-font); font-size:11.5px; margin-top:8px; opacity:0.75; transition: font-size .3s var(--ease), margin .3s var(--ease); }
+  .nph-sheen{
+    position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.52;
+    background:radial-gradient(360px circle at var(--glass-x,72%) var(--glass-y,18%),rgba(255,255,255,.22),transparent 56%);
+    transition:opacity var(--motion-base) var(--ease-standard);
+  }
+  .nph-content{ position:relative; z-index:1; }
   @media (max-width: 640px){ .netpay-hero{ padding: 20px 18px 18px; margin-top:-24px; } }
 
   .contenttoolbar{ display:flex; align-items:center; justify-content:space-between; margin: 8px 2px 14px; gap:10px; flex-wrap:wrap; }
@@ -535,6 +560,9 @@
     color: var(--onblock); box-shadow: var(--shadow-block);
     transition:background-color var(--motion-slow) var(--ease-standard), color var(--motion-slow) var(--ease-standard), border-color var(--motion-slow) var(--ease-standard);
   }
+  @media(hover:hover) and (pointer:fine){
+    .ledger.reveal.in:hover{ transform:translate3d(0,-4px,0) scale(1.012); box-shadow:0 26px 58px -18px rgba(0,0,0,.68); }
+  }
   .ledger-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
   .cardtitle{ font-family: var(--title-font); font-size: 24px; font-weight: var(--title-weight); font-style: var(--title-style); color: var(--onblock); letter-spacing: var(--title-tracking); }
   .cardtitle span{
@@ -555,7 +583,6 @@
     transition:transform var(--motion-fast) var(--ease-snappy), background-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
   }
   .payinfo-btn:hover, .payinfo-btn[aria-expanded="true"]{ background:var(--acc); color:var(--acc-ink); }
-  .payinfo-btn:active{ transform:scale(.92); }
   .payinfo-popover{
     position:absolute; top:48px; right:0; width:min(380px, calc(100vw - 72px));
     padding:18px; border-radius:var(--radius-md); color:#F3F1EC;
@@ -655,6 +682,8 @@
   }
   .manualbtn::before{ content:"+"; font-weight:900; }
   .manualentry[open] .manualbtn::before{ content:"\2212"; }
+  .manualentry[open] > :not(summary), details.rawtext[open] > :not(summary){ animation:detailBodyIn var(--motion-medium) var(--ease-out-soft) both; }
+  @keyframes detailBodyIn{ from{ opacity:0; transform:translate3d(0,10px,0) scale(.99); } to{ opacity:1; transform:translate3d(0,0,0) scale(1); } }
   .hourscheck{ margin:0 0 18px; }
   .hourscheck .cardnote{ margin:10px 2px 12px; }
   .hourscheck-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:stretch; }
@@ -671,7 +700,17 @@
   .productstepper output{ min-width:18px; text-align:center; font:800 12px/1 var(--label-font); }
   .producttotals{ display:flex; justify-content:space-between; gap:12px; padding:12px 2px 0; font-family:var(--label-font); font-size:11px; color:var(--onblock-dim); }
   .producttotals b{ color:var(--onblock); }
-  @media(max-width:640px){ .productgrid,.hourscheck-grid{ grid-template-columns:1fr; } }
+  @media(max-width:640px){
+    .hourscheck-grid{ grid-template-columns:1fr; }
+    .productgrid{
+      display:flex; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain;
+      scroll-snap-type:x mandatory; touch-action:pan-x pan-y; scrollbar-width:none;
+      margin-inline:-2px; padding:4px 2px 10px;
+    }
+    .productgrid::-webkit-scrollbar{ display:none; }
+    .productrow{ flex:0 0 min(78vw,280px); scroll-snap-align:center; scroll-snap-stop:always; transition:filter var(--motion-base) var(--ease-standard),opacity var(--motion-base) var(--ease-standard),transform var(--motion-base) var(--ease-standard); transform:scale(.94); opacity:.62; filter:saturate(.78) brightness(.88); }
+    .productrow.is-focused{ transform:scale(1); opacity:1; filter:saturate(1) brightness(1); }
+  }
   .fieldwrap{ display:flex; flex-direction:column; gap:7px; }
   .fieldlabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.06em; text-transform:uppercase; color: var(--onblock-dim); font-weight:700; }
   .fieldrow{ display:flex; align-items:center; gap:6px; background: var(--chip-bg); border: none; border-radius: var(--radius-sm); padding: 14px 14px; min-height: 52px; box-shadow: 0 0 0 0 var(--acc); transition:box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-snappy); }
@@ -740,56 +779,61 @@
     box-shadow: var(--shadow-block);
     overflow:hidden;
   }
-  /* Same fix as .netpay-hero below: the blur/tint used to be the summary/card's
-     own background+backdrop-filter, which on iOS Safari can composite ABOVE the
-     text inside a <details> once it repaints (open/close, scroll-pinning nearby).
-     Pulling it into its own inset:0 layer with a negative z-index, inside an
-     isolated stacking context, guarantees the blur paints behind and the real
-     content (summary text, tabs, everything else) stays on top. */
-  .projection-bg{
-    position:absolute; inset:0; z-index:0; border-radius: inherit;
+  /* A pseudo-element stays painted in both native <details> states. This gives
+     the compact pill and full card one identical live glass layer; ordinary
+     child elements are not painted by browsers while <details> is closed. */
+  details.projection::before{
+    content:""; position:absolute; inset:0; z-index:0; border-radius:inherit;
     background: rgba(8,7,6,0.58);
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-    transition:background var(--motion-medium) var(--ease-standard);
   }
+  details.projection::after{
+    content:""; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
+    background:radial-gradient(420px circle at var(--glass-x,78%) var(--glass-y,12%),rgba(255,255,255,.14),transparent 56%);
+    opacity:.7; transition:opacity var(--motion-base) var(--ease-standard);
+  }
+  details.projection.glass-flash::after{ animation:glassFlash var(--motion-slow) var(--ease-out-soft); }
+  @keyframes glassFlash{ 0%{ opacity:.25; filter:brightness(.8); } 48%{ opacity:1; filter:brightness(1.35); } 100%{ opacity:.7; filter:brightness(1); } }
+  .projection-bg{ display:none; }
   details.projection > :not(.projection-bg){ position:relative; z-index:1; }
   details.projection > summary{
     list-style:none; cursor:pointer; font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
     font-size: 20px; color: var(--acc); padding: 6px 0; display:flex; align-items:center; gap:10px;
   }
   details.projection > summary::-webkit-details-marker{ display:none; }
-  details.projection > summary::before{ content:"▸"; color: var(--acc3); font-size:15px; }
+  details.projection > summary::before{ content:"▸"; color:var(--acc3); font-size:15px; width:18px; flex:0 0 18px; text-align:center; }
   details.projection[open] > summary::before{ content:"▾"; }
   details.projection > summary span{ font-family: var(--label-font); font-size:11px; color: rgba(243,241,236,0.68); font-weight:400; font-style:normal; }
 
-  /* Closed state: the expanded card's frosted-black treatment compressed into
-     a fully rounded pill. The fill lives on <details> itself because browsers
-     do not paint non-summary children (including .projection-bg) while closed. */
+  /* Only geometry changes between states. Surface, title size, marker width,
+     and title coordinates stay identical so clicking never makes text jump. */
   details.projection:not([open]), details.projection.is-closing{
     border-radius:999px;
-    border-color:rgba(255,255,255,0.12);
-    background:rgba(8,7,6,0.82);
+    border-color:rgba(255,255,255,0.08);
+    background:transparent;
     padding:8px 10px;
-    box-shadow:0 18px 44px -18px rgba(0,0,0,0.88), inset 0 1px 0 rgba(255,255,255,0.10);
-  }
-  details.projection:not([open]) .projection-bg,
-  details.projection.is-closing .projection-bg{
-    background:rgba(8,7,6,0.72);
-    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    box-shadow:var(--shadow-block);
   }
   details.projection:not([open]) > summary,
   details.projection.is-closing > summary{
-    min-height:70px; padding:13px 18px; color:var(--acc); gap:12px;
+    box-sizing:border-box; min-height:70px; padding:20px 10px; color:var(--acc); gap:10px;
     text-shadow:none;
   }
   details.projection:not([open]) > summary::before,
   details.projection.is-closing > summary::before{
-    color:var(--acc3); font-size:18px;
+    color:var(--acc3); font-size:15px;
   }
   details.projection:not([open]) > summary span,
   details.projection.is-closing > summary span{
     color:rgba(243,241,236,0.68); font-weight:400; line-height:1.45;
   }
+  details.projection[open] > :not(summary):not(.projection-bg){ animation:projectionContentIn var(--motion-medium) var(--ease-out-soft) both; }
+  details.projection[open] > :nth-child(3){ animation-delay:40ms; }
+  details.projection[open] > :nth-child(4){ animation-delay:80ms; }
+  details.projection[open] > :nth-child(5){ animation-delay:120ms; }
+  details.projection[open] > :nth-child(6){ animation-delay:160ms; }
+  details.projection[open] > :nth-child(n+7){ animation-delay:200ms; }
+  @keyframes projectionContentIn{ from{ opacity:0; transform:translate3d(0,14px,0) scale(.985); } to{ opacity:1; transform:translate3d(0,0,0) scale(1); } }
   details.projection.tap-cue{ animation:projectionTapCue 1.45s var(--ease) 2; }
   html[data-preview-animations="off"] details.projection.tap-cue{ animation:none; }
   @keyframes projectionTapCue{
@@ -799,9 +843,7 @@
   @media (prefers-reduced-motion:reduce){ details.projection.tap-cue{ animation:none; } }
   @media (max-width:640px){
     details.projection:not([open]) > summary,
-    details.projection.is-closing > summary{ min-height:76px; padding:12px 14px; font-size:18px; }
-    details.projection:not([open]) > summary span,
-    details.projection.is-closing > summary span{ font-size:10.5px; }
+    details.projection.is-closing > summary{ min-height:70px; padding:20px 10px; }
   }
 
   .tabbar{ display:flex; gap:7px; margin: 16px 0 14px; flex-wrap: wrap; background: var(--chip-bg); padding:6px; border-radius: var(--radius-md); }
@@ -885,6 +927,8 @@
     font-size:11px; font-weight:700; color: rgba(255,255,255,0.42); cursor:pointer; min-width:28px;
   }
   .stepslider-ticks button.active{ color: var(--acc); }
+  .stepslider-ticks button.choice-pop{ animation:choicePop var(--motion-medium) var(--ease-snappy); }
+  @keyframes choicePop{ 0%{ transform:scale(.82); } 55%{ transform:scale(1.18); } 78%{ transform:scale(.96); } 100%{ transform:scale(1); } }
 
   .goalrow, .goalcolheads{ display:grid; grid-template-columns: 1.35fr 1.1fr 0.95fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
   .goalcolheads{ font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding-bottom: 9px; font-weight:700; }
@@ -915,10 +959,22 @@
   .drawer{
     position:fixed; top:0; right:0; width:min(440px, 100vw); height:100vh; height:100dvh;
     overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch;
-    background:var(--panel); z-index:50; padding:0 22px calc(44px + env(safe-area-inset-bottom, 0px));
+    background:color-mix(in srgb,var(--panel) 92%,transparent); z-index:50; padding:0 22px calc(44px + env(safe-area-inset-bottom, 0px));
+    backdrop-filter:blur(24px) saturate(145%); -webkit-backdrop-filter:blur(24px) saturate(145%);
+    box-shadow:inset 1px 0 0 rgba(255,255,255,.12),-24px 0 70px rgba(0,0,0,.36);
     transform:translate3d(100%,0,0); transition:transform var(--motion-medium) var(--ease-standard);
   }
   .drawer.show{ transform: translateX(0); }
+  .drawer > :not(.drawer-head){ opacity:0; transform:translate3d(18px,0,0); transition:opacity var(--motion-base) var(--ease-out-soft),transform var(--motion-medium) var(--ease-out-soft); }
+  .drawer.show > :not(.drawer-head){ opacity:1; transform:translate3d(0,0,0); }
+  .drawer.show > :nth-child(2){ transition-delay:60ms; }
+  .drawer.show > :nth-child(3){ transition-delay:100ms; }
+  .drawer.show > :nth-child(4){ transition-delay:140ms; }
+  .drawer.show > :nth-child(5){ transition-delay:180ms; }
+  .drawer.show > :nth-child(n+6){ transition-delay:220ms; }
+
+  .value-pop{ animation:valuePop var(--motion-medium) var(--ease-snappy); }
+  @keyframes valuePop{ 0%{ transform:scale(.94); filter:brightness(1); } 48%{ transform:scale(1.055); filter:brightness(1.28); } 78%{ transform:scale(.99); } 100%{ transform:scale(1); filter:brightness(1); } }
   .drawer-head{
     position:sticky; top:0; z-index:4;
     display:flex; justify-content:space-between; align-items:center;
@@ -952,6 +1008,14 @@
   .onboarding.show{ display:grid; }
   body.onboarding-open{ overflow:hidden; }
   .onboarding-card{ width:min(520px,100%); border-radius:var(--radius-lg); padding:28px; background:rgba(14,13,12,.92); border:1px solid rgba(255,255,255,.13); color:#F3F1EC; box-shadow:0 30px 90px rgba(0,0,0,.55); }
+  .onboarding.show .onboarding-card{ animation:onboardingRise var(--motion-hero) var(--ease-out-soft) both; }
+  .onboarding.show .onboarding-fields > *{ animation:onboardingField var(--motion-medium) var(--ease-out-soft) both; }
+  .onboarding.show .onboarding-fields > :nth-child(1){ animation-delay:140ms; }
+  .onboarding.show .onboarding-fields > :nth-child(2){ animation-delay:195ms; }
+  .onboarding.show .onboarding-fields > :nth-child(3){ animation-delay:250ms; }
+  .onboarding.show .onboarding-submit{ animation:onboardingField var(--motion-medium) var(--ease-out-soft) 305ms both; }
+  @keyframes onboardingRise{ from{ opacity:0; transform:translate3d(0,22px,0) scale(.94); } 72%{ opacity:1; transform:translate3d(0,-2px,0) scale(1.008); } to{ opacity:1; transform:translate3d(0,0,0) scale(1); } }
+  @keyframes onboardingField{ from{ opacity:0; transform:translate3d(0,12px,0); } to{ opacity:1; transform:translate3d(0,0,0); } }
   .onboarding-brand{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
   .onboarding-brand img{ width:54px; height:54px; object-fit:contain; }
   .onboarding-brand span{ font-family:var(--title-font); font-size:24px; }
@@ -1059,6 +1123,11 @@
     transition:transform var(--motion-medium) var(--ease-snappy);
   }
   .history-layer.show .history-popover{ transform:translate(-50%, 0) scale(1); }
+  .history-layer.show .history-popover > *{ animation:popoverChildIn var(--motion-medium) var(--ease-out-soft) both; }
+  .history-layer.show .history-popover > :nth-child(2){ animation-delay:45ms; }
+  .history-layer.show .history-popover > :nth-child(3){ animation-delay:90ms; }
+  .history-layer.show .history-popover > :nth-child(n+4){ animation-delay:135ms; }
+  @keyframes popoverChildIn{ from{ opacity:0; transform:translate3d(0,10px,0); } to{ opacity:1; transform:translate3d(0,0,0); } }
   .history-popover-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:10px; }
   .history-popover .closebtn{ flex-shrink:0; }
   @media (max-width:640px){
@@ -1072,6 +1141,8 @@
 <body>
 <div class="page-bg" id="pageBg" aria-hidden="true">
   <img class="page-bg-img" id="pageBgImg" src="assets/chop-hero.jpg" alt="">
+  <div class="ambient-orb a"></div>
+  <div class="ambient-orb b"></div>
   <div class="page-bg-tint" id="pageBgTint"></div>
   <div class="page-bg-blur" id="pageBgBlur"></div>
   <div class="page-bg-grain" id="pageBgGrain"></div>
@@ -1179,6 +1250,7 @@
     <div class="nph-blur" aria-hidden="true"></div>
     <div class="nph-grain" aria-hidden="true"></div>
     <div class="nph-fade" aria-hidden="true"></div>
+    <div class="nph-sheen" aria-hidden="true"></div>
     <div class="nph-content">
       <div class="nph-num" id="netHeroVal">$0</div>
       <div class="nph-textcol">
@@ -1590,6 +1662,7 @@
     var nameEl = document.getElementById(opts.nameId);
     var amtEl = document.getElementById(opts.amtId);
     var ticks = document.querySelectorAll('#' + opts.ticksId + ' button');
+    var previousKey = null;
 
     range.addEventListener('input', function(e){
       opts.onSelect(opts.order[parseInt(e.target.value, 10)]);
@@ -1607,7 +1680,12 @@
       amtEl.textContent = opts.amtFn(activeKey);
       ticks.forEach(function(btn){
         btn.classList.toggle('active', btn.getAttribute('data-key') === activeKey);
+        if(btn.getAttribute('data-key') === activeKey && previousKey !== activeKey){
+          btn.classList.remove('choice-pop'); void btn.offsetWidth; btn.classList.add('choice-pop');
+          setTimeout(function(){ btn.classList.remove('choice-pop'); }, 420);
+        }
       });
+      previousKey = activeKey;
     };
   }
 
@@ -1732,7 +1810,7 @@
         var id = btn.getAttribute('data-product');
         var delta = parseInt(btn.getAttribute('data-delta'),10);
         ui.projProductQty[id] = Math.max(0, parseInt(ui.projProductQty[id] || 0,10) + delta);
-        document.getElementById('qty-' + id).textContent = ui.projProductQty[id];
+        setPoppingText(document.getElementById('qty-' + id), ui.projProductQty[id]);
         syncProductSales(); renderProjection();
       });
     });
@@ -1901,6 +1979,19 @@
     requestAnimationFrame(step);
   }
 
+  function setPoppingText(el, value){
+    if(!el) return;
+    var next = String(value);
+    var hadValue = el.dataset.motionValue !== undefined;
+    if(el.dataset.motionValue === next) return;
+    el.dataset.motionValue = next;
+    el.textContent = next;
+    if(hadValue){
+      el.classList.remove('value-pop'); void el.offsetWidth; el.classList.add('value-pop');
+      setTimeout(function(){ el.classList.remove('value-pop'); }, 420);
+    }
+  }
+
   function staggerRows(container, selector){
     var rows = container.querySelectorAll(selector || '.nrow');
     rows.forEach(function(row){ row.classList.remove('in'); });
@@ -1922,9 +2013,9 @@
     var r = computePay(ui.hours, ui.revenue, ui.tips, ui.productSales);
 
     document.getElementById('floorFlagRow').style.display = r.floorApplies ? 'flex' : 'none';
-    document.getElementById('outGross').textContent = fmt(r.grossWeekly);
-    document.getElementById('outAfterFica').textContent = fmt(r.afterFicaWeekly);
-    document.getElementById('outNet').textContent = fmt(r.netWeekly);
+    setPoppingText(document.getElementById('outGross'), fmt(r.grossWeekly));
+    setPoppingText(document.getElementById('outAfterFica'), fmt(r.afterFicaWeekly));
+    setPoppingText(document.getElementById('outNet'), fmt(r.netWeekly));
 
     var netHeroEl = document.getElementById('netHeroVal');
     if(lastNet !== null && Math.round(lastNet) !== Math.round(r.netWeekly)){
@@ -2562,8 +2653,103 @@
     if(e.target.files[0]) runOcr(e.target.files[0], document.getElementById('scanTimeBtn'), 'time');
   });
 
+  function initPressMotion(){
+    var active = null;
+    var suppressed = null;
+    var startX = 0, startY = 0;
+    var dragThreshold = 8;
+
+    function clearActive(withRelease){
+      if(!active) return;
+      var el = active;
+      active = null;
+      el.classList.remove('is-pressed');
+      if(withRelease){
+        el.classList.remove('is-releasing');
+        void el.offsetWidth;
+        el.classList.add('is-releasing');
+        setTimeout(function(){ el.classList.remove('is-releasing'); }, 400);
+      }
+    }
+    document.addEventListener('pointerdown', function(e){
+      var el = e.target.closest('button:not(.installbtn)');
+      if(!el || el.disabled || e.button > 0) return;
+      active = el; startX = e.clientX; startY = e.clientY;
+      el.classList.add('motion-press');
+      el.classList.remove('is-releasing');
+      el.classList.add('is-pressed');
+    });
+    document.addEventListener('pointermove', function(e){
+      if(!active) return;
+      if(Math.abs(e.clientX-startX) > dragThreshold || Math.abs(e.clientY-startY) > dragThreshold){
+        var el = active;
+        el.dataset.suppressMotionClick = '1';
+        suppressed = el;
+        clearActive(false);
+      }
+    }, { passive:true });
+    document.addEventListener('pointerup', function(){
+      clearActive(true);
+      if(suppressed){
+        var el = suppressed; suppressed = null;
+        setTimeout(function(){ delete el.dataset.suppressMotionClick; }, 350);
+      }
+    });
+    document.addEventListener('pointercancel', function(){
+      clearActive(false);
+      if(suppressed){ delete suppressed.dataset.suppressMotionClick; suppressed = null; }
+    });
+    document.addEventListener('click', function(e){
+      var el = e.target.closest('button[data-suppress-motion-click]');
+      if(el){ delete el.dataset.suppressMotionClick; e.preventDefault(); e.stopImmediatePropagation(); }
+    }, true);
+  }
+
+  function initMotionFocus(){
+    if(!('IntersectionObserver' in window)) return;
+    var items = document.querySelectorAll('.ledger');
+    items.forEach(function(el){ el.classList.add('motion-focus'); });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        entry.target.classList.toggle('is-focused', entry.intersectionRatio >= .58);
+      });
+    }, { threshold:[0,.35,.58,.85], rootMargin:'-8% 0px -8% 0px' });
+    items.forEach(function(el){ io.observe(el); });
+  }
+
+  function initGlassLight(){
+    if(!window.matchMedia || !window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+    var surfaces = document.querySelectorAll('.netpay-hero, details.projection');
+    surfaces.forEach(function(surface){
+      var pending = false, px = 0, py = 0;
+      surface.addEventListener('pointermove', function(e){
+        var rect = surface.getBoundingClientRect();
+        px = ((e.clientX-rect.left)/rect.width*100).toFixed(1) + '%';
+        py = ((e.clientY-rect.top)/rect.height*100).toFixed(1) + '%';
+        if(pending) return;
+        pending = true;
+        requestAnimationFrame(function(){
+          surface.style.setProperty('--glass-x',px);
+          surface.style.setProperty('--glass-y',py);
+          pending = false;
+        });
+      }, { passive:true });
+    });
+  }
+
+  function initProductSnapFocus(){
+    var rail = document.getElementById('productGrid');
+    if(!rail || !('IntersectionObserver' in window) || window.innerWidth > 640) return;
+    var cards = rail.querySelectorAll('.productrow');
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){ entry.target.classList.toggle('is-focused',entry.intersectionRatio >= .72); });
+    }, { root:rail, threshold:[0,.5,.72,.95] });
+    cards.forEach(function(card){ io.observe(card); });
+  }
+
   function initReveal(){
     var items = document.querySelectorAll('.reveal, .reveal-scale');
+    items.forEach(function(el,idx){ el.style.setProperty('--reveal-delay', Math.min(idx,8)*55 + 'ms'); });
     if(!('IntersectionObserver' in window)){
       items.forEach(function(el){ el.classList.add('in'); });
       return;
@@ -2572,7 +2758,7 @@
       entries.forEach(function(entry, i){
         if(entry.isIntersecting){
           var el = entry.target;
-          setTimeout(function(){ el.classList.add('in'); }, i * 40);
+          el.classList.add('in');
           io.unobserve(el);
         }
       });
@@ -2596,6 +2782,11 @@
       // backdrop-filter on Safari/iOS and made the page blur disappear when
       // this card expanded.
       details.open = !details.open;
+      details.classList.remove('glass-flash');
+      if(details.open){
+        void details.offsetWidth; details.classList.add('glass-flash');
+        setTimeout(function(){ details.classList.remove('glass-flash'); }, 540);
+      }
     });
 
     function cue(){
@@ -2890,6 +3081,10 @@
   renderAll();
   initOnboarding();
   initReveal();
+  initPressMotion();
+  initMotionFocus();
+  initGlassLight();
+  initProductSnapFocus();
   initProjectionDetails();
   initHeroScroll();
   initNetHeroSticky();
