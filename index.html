@@ -592,6 +592,10 @@
   @media (max-width:640px){
     .payinfo-btn{ width:36px; height:36px; }
     .payinfo-popover{ top:46px; right:0; width:min(320px, calc(100vw - 88px)); max-height:70vh; overflow:auto; }
+    /* iOS Safari zooms the viewport whenever a focused form control renders
+       below 16px. Custom sliders focus their number field automatically, so
+       keep every mobile form control at the non-zooming threshold. */
+    input, select, textarea{ font-size:16px !important; }
   }
 
   .block-a{ background: var(--block-a-bg); --onblock: var(--block-a-ink); --onblock-dim: color-mix(in srgb, var(--block-a-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
@@ -896,16 +900,23 @@
   .backdrop.show{ display:block; }
   .backdrop.in{ opacity:1; }
   .drawer{
-    position:fixed; top:0; right:0; width: min(440px, 100vw); height:100vh; overflow-y:auto;
-    background: var(--panel); z-index:50; padding: 24px 22px 44px;
+    position:fixed; top:0; right:0; width:min(440px, 100vw); height:100vh; height:100dvh;
+    overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch;
+    background:var(--panel); z-index:50; padding:0 22px calc(44px + env(safe-area-inset-bottom, 0px));
     transform:translate3d(100%,0,0); transition:transform var(--motion-medium) var(--ease-standard);
   }
   .drawer.show{ transform: translateX(0); }
-  .drawer-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; }
+  .drawer-head{
+    position:sticky; top:0; z-index:4;
+    display:flex; justify-content:space-between; align-items:center;
+    margin:0 -22px 6px; padding:calc(14px + env(safe-area-inset-top, 0px)) 22px 12px;
+    background:linear-gradient(180deg, var(--panel) 0%, color-mix(in srgb, var(--panel) 96%, transparent) 78%, transparent 100%);
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  }
   .drawer-head h2{ font-family: var(--title-font); font-weight: var(--title-weight); font-size:26px; color: var(--acc); }
   .closebtn{ background: rgba(128,128,128,0.14); border:none; color: var(--ink); font-size:20px; cursor:pointer; line-height:1; padding:8px 12px; border-radius:999px; min-height:40px; }
   .closebtn:hover{ background: var(--acc); color: var(--acc-ink); }
-  .drawer-sub{ color: var(--ink-faint); font-size: 12.5px; line-height:1.5; margin-bottom: 22px; }
+  .drawer-sub{ color: var(--ink-faint); font-size: 12.5px; line-height:1.5; margin:10px 0 22px; }
 
   .setgroup{ margin-bottom: 24px; padding-bottom:22px; border-bottom: 1px solid var(--line); }
   .setgroup:last-child{ border-bottom:none; }
@@ -2101,6 +2112,7 @@
   var drawer = document.getElementById('drawer');
   var backdrop = document.getElementById('backdrop');
   function openDrawer(){
+    drawer.scrollTop = 0;
     drawer.classList.add('show'); backdrop.classList.add('show');
     requestAnimationFrame(function(){ backdrop.classList.add('in'); });
   }
