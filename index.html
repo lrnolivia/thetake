@@ -603,6 +603,7 @@
   .block-c{ background: var(--block-c-bg); --onblock: var(--block-c-ink); --onblock-dim: color-mix(in srgb, var(--block-c-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
 
   .uploadgrid{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .uploadgrid.sales-primary{ grid-template-columns:1fr; }
   /* Grid items default to min-width:auto, which lets an unbreakable bold/uppercase label
      force its track wider than its 1fr share — the classic CSS Grid "blowout" bug. That
      pushes content out past its card's own edge (and the parent's overflow:hidden can't
@@ -654,6 +655,23 @@
   }
   .manualbtn::before{ content:"+"; font-weight:900; }
   .manualentry[open] .manualbtn::before{ content:"\2212"; }
+  .hourscheck{ margin:0 0 18px; }
+  .hourscheck .cardnote{ margin:10px 2px 12px; }
+  .hourscheck-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:stretch; }
+  html[data-worker-type="full-time"] .hours-only{ display:none !important; }
+  .productentry{ margin:0 0 18px; }
+  .productsummary{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .productsummary-total{ font-family:var(--label-font); font-size:11px; opacity:.7; white-space:nowrap; }
+  .productgrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:12px; }
+  .productrow{ display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; padding:10px 11px; border-radius:var(--radius-sm); background:rgba(255,255,255,.16); }
+  .productname{ font-family:var(--label-font); font-size:11px; font-weight:800; line-height:1.25; }
+  .productprice{ display:block; margin-top:3px; font-size:10px; opacity:.62; font-weight:500; }
+  .productstepper{ display:flex; align-items:center; gap:7px; }
+  .productstepper button{ width:30px; height:30px; border:0; border-radius:50%; background:var(--chip-bg); color:var(--chip-fg); font:800 16px/1 var(--label-font); cursor:pointer; }
+  .productstepper output{ min-width:18px; text-align:center; font:800 12px/1 var(--label-font); }
+  .producttotals{ display:flex; justify-content:space-between; gap:12px; padding:12px 2px 0; font-family:var(--label-font); font-size:11px; color:var(--onblock-dim); }
+  .producttotals b{ color:var(--onblock); }
+  @media(max-width:640px){ .productgrid,.hourscheck-grid{ grid-template-columns:1fr; } }
   .fieldwrap{ display:flex; flex-direction:column; gap:7px; }
   .fieldlabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.06em; text-transform:uppercase; color: var(--onblock-dim); font-weight:700; }
   .fieldrow{ display:flex; align-items:center; gap:6px; background: var(--chip-bg); border: none; border-radius: var(--radius-sm); padding: 14px 14px; min-height: 52px; box-shadow: 0 0 0 0 var(--acc); transition:box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-snappy); }
@@ -715,22 +733,13 @@
 
   details.projection{
     position: relative; isolation: isolate;
-    view-transition-name:projection-card;
     margin-top: 30px;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: var(--radius-lg);
     padding: 22px 20px 26px;
     box-shadow: var(--shadow-block);
     overflow:hidden;
-    -webkit-mask-image: -webkit-radial-gradient(white, black);
-    transform: translateZ(0);
   }
-  ::view-transition-group(projection-card){
-    animation-duration:var(--motion-medium);
-    animation-timing-function:var(--ease-standard);
-  }
-  ::view-transition-old(projection-card), ::view-transition-new(projection-card){ mix-blend-mode:normal; }
-  @media (prefers-reduced-motion:reduce){ details.projection{ view-transition-name:none; } }
   /* Same fix as .netpay-hero below: the blur/tint used to be the summary/card's
      own background+backdrop-filter, which on iOS Safari can composite ABOVE the
      text inside a <details> once it repaints (open/close, scroll-pinning nearby).
@@ -741,7 +750,7 @@
     position:absolute; inset:0; z-index:0; border-radius: inherit;
     background: rgba(8,7,6,0.58);
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-    transition:background var(--motion-medium) var(--ease-standard), backdrop-filter var(--motion-medium) var(--ease-standard), -webkit-backdrop-filter var(--motion-medium) var(--ease-standard);
+    transition:background var(--motion-medium) var(--ease-standard);
   }
   details.projection > :not(.projection-bg){ position:relative; z-index:1; }
   details.projection > summary{
@@ -818,6 +827,10 @@
   details.projection .tabbtn.active::before{ background: var(--acc); mix-blend-mode: normal; }
   details.projection .tabbtn.active .ticket{ color: inherit; opacity:0.75; }
   details.projection .tabbtn-custom{ font-style: italic; }
+  details.projection .manualbtn{ color:rgba(255,255,255,.92); background:rgba(255,255,255,.08); }
+  details.projection .productrow{ background:rgba(255,255,255,.07); color:rgba(255,255,255,.92); }
+  details.projection .producttotals{ color:rgba(255,255,255,.62); }
+  details.projection .producttotals b{ color:#fff; }
   .customfield{
     display:none; align-items:center; gap:8px; margin: -6px 0 14px; padding: 10px 14px;
     background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--btn-radius);
@@ -931,6 +944,31 @@
     font-family: var(--label-font); font-size: 13px; padding: 11px 9px; border-radius: var(--radius-sm); width:100%; min-height:44px;
   }
 
+  .onboarding{
+    position:fixed; inset:0; z-index:1000; display:none; place-items:center; padding:20px;
+    background:rgba(5,5,5,.72); backdrop-filter:blur(24px) saturate(125%); -webkit-backdrop-filter:blur(24px) saturate(125%);
+    overflow:auto;
+  }
+  .onboarding.show{ display:grid; }
+  body.onboarding-open{ overflow:hidden; }
+  .onboarding-card{ width:min(520px,100%); border-radius:var(--radius-lg); padding:28px; background:rgba(14,13,12,.92); border:1px solid rgba(255,255,255,.13); color:#F3F1EC; box-shadow:0 30px 90px rgba(0,0,0,.55); }
+  .onboarding-brand{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+  .onboarding-brand img{ width:54px; height:54px; object-fit:contain; }
+  .onboarding-brand span{ font-family:var(--title-font); font-size:24px; }
+  .onboarding h2{ font-family:var(--title-font); font-size:clamp(28px,7vw,42px); color:var(--acc); line-height:1; margin-bottom:10px; }
+  .onboarding-copy{ color:rgba(243,241,236,.68); font-size:13px; line-height:1.55; margin-bottom:22px; }
+  .onboarding-fields{ display:grid; gap:14px; }
+  .onboarding .fieldlabel{ color:rgba(243,241,236,.65); }
+  .onboarding .fieldrow,.onboarding select{ background:rgba(255,255,255,.1); color:#fff; }
+  .onboarding .fieldrow input{ color:#fff; font-size:16px; }
+  .workerchoices{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .workerchoice{ position:relative; }
+  .workerchoice input{ position:absolute; opacity:0; pointer-events:none; }
+  .workerchoice span{ display:block; padding:13px 12px; border-radius:var(--btn-radius); background:rgba(255,255,255,.09); text-align:center; font:800 12px/1.2 var(--label-font); cursor:pointer; }
+  .workerchoice input:checked + span{ background:var(--acc); color:var(--acc-ink); }
+  .onboarding-submit{ width:100%; margin-top:20px; border:0; border-radius:var(--btn-radius); padding:15px; background:var(--acc); color:var(--acc-ink); font:900 13px/1 var(--label-font); cursor:pointer; }
+  .payformula{ padding:13px 14px; border-radius:var(--radius-sm); background:rgba(128,128,128,.10); color:var(--ink-dim); font-size:12.5px; line-height:1.55; }
+
   .bracketrow{ display:grid; grid-template-columns: 1fr 1fr auto; gap:6px; align-items:center; margin-bottom:7px; }
   .bracketrow .fieldrow{ padding: 8px 9px; background: rgba(128,128,128,0.10); min-height:40px; }
   .bracketrow input{ font-size:12.5px; }
@@ -1039,6 +1077,23 @@
   <div class="page-bg-grain" id="pageBgGrain"></div>
 </div>
 <div class="theme-wipe" id="themeWipe" aria-hidden="true"></div>
+
+<section class="onboarding" id="onboarding" aria-hidden="true">
+  <form class="onboarding-card" id="onboardingForm">
+    <div class="onboarding-brand"><img src="assets/chop-logo.png" alt=""><span>The Take</span></div>
+    <h2>Let&rsquo;s set up your take.</h2>
+    <p class="onboarding-copy">This stays in this browser. Your role changes whether hours are requested, and your CHOP location is saved now so location-specific themes can be added later.</p>
+    <div class="onboarding-fields">
+      <label class="fieldwrap"><span class="fieldlabel">Your name</span><span class="fieldrow"><input type="text" id="onboardName" autocomplete="name" maxlength="60" required placeholder="What should we call you?"></span></label>
+      <fieldset style="border:0;padding:0;margin:0;"><legend class="fieldlabel" style="margin-bottom:8px;">Schedule</legend><div class="workerchoices">
+        <label class="workerchoice"><input type="radio" name="workerType" value="full-time" required><span>Full time</span></label>
+        <label class="workerchoice"><input type="radio" name="workerType" value="part-time" required><span>Part time</span></label>
+      </div></fieldset>
+      <label class="fieldwrap"><span class="fieldlabel">CHOP location</span><select id="onboardLocation" required><option value="">Choose your shop</option></select></label>
+    </div>
+    <button class="onboarding-submit" type="submit">Start calculating</button>
+  </form>
+</section>
 
 <button type="button" class="installbtn" id="installBtn" aria-label="Add The Take to your home screen">
   <span class="installbtn-label">Add to Home Screen</span>
@@ -1183,13 +1238,11 @@
           </aside>
         </div>
       </div>
-      <p class="cardnote">Upload your Sales and Timesheet screenshots and this will read the numbers off them &mdash; or just type them in. Everything runs in your browser; nothing is uploaded anywhere.</p>
+      <p class="cardnote" id="actualIntro">Upload your sales screenshot or type the numbers in. Commission is the normal path; hours are only needed when you want to check the minimum-wage floor.</p>
 
-      <div class="uploadgrid">
+      <div class="uploadgrid sales-primary">
         <button type="button" class="uploadbtn" id="scanSalesBtn"><span class="icon">📊</span><span class="label"><span class="l1">Upload</span><span class="l2">Sales</span></span></button>
         <input type="file" id="scanSalesInput" accept="image/*" style="display:none">
-        <button type="button" class="uploadbtn" id="scanTimeBtn"><span class="icon">🕒</span><span class="label"><span class="l1">Upload</span><span class="l2">Hours</span></span></button>
-        <input type="file" id="scanTimeInput" accept="image/*" style="display:none">
       </div>
       <div class="scanstatus" id="scanStatus"></div>
 
@@ -1197,12 +1250,12 @@
         <summary class="manualbtn">Manually enter numbers</summary>
         <div class="inputgrid">
         <div class="fieldwrap">
-          <div class="fieldlabel">Hours worked</div>
-          <div class="fieldrow"><input type="number" id="inHours" step="0.01" min="0" placeholder="0"><span>hrs</span></div>
-        </div>
-        <div class="fieldwrap">
           <div class="fieldlabel">Gross service revenue</div>
           <div class="fieldrow"><span>$</span><input type="number" id="inRevenue" step="0.01" min="0" placeholder="0"></div>
+        </div>
+        <div class="fieldwrap">
+          <div class="fieldlabel">Product sales</div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inProductSales" step="0.01" min="0" placeholder="0"></div>
         </div>
         <div class="fieldwrap">
           <div class="fieldlabel">Actual tips</div>
@@ -1212,6 +1265,16 @@
           <div class="fieldlabel">Amount actually paid <span style="text-transform:none;">(optional)</span></div>
           <div class="fieldrow"><span>$</span><input type="number" id="inReceived" step="0.01" min="0" placeholder="e.g. 295.85"></div>
         </div>
+        </div>
+      </details>
+
+      <details class="manualentry hourscheck hours-only" id="hoursCheck">
+        <summary class="manualbtn">Check minimum-wage floor <span style="opacity:.65;text-transform:none;">(optional)</span></summary>
+        <p class="cardnote">Only add hours if this was an unusually low-sales period and you need to compare commission with the minimum-wage floor.</p>
+        <div class="hourscheck-grid">
+          <button type="button" class="uploadbtn" id="scanTimeBtn"><span class="icon">🕒</span><span class="label"><span class="l1">Upload</span><span class="l2">Hours</span></span></button>
+          <input type="file" id="scanTimeInput" accept="image/*" style="display:none">
+          <div class="fieldwrap"><div class="fieldlabel">Hours worked</div><div class="fieldrow"><input type="number" id="inHours" step="0.01" min="0" placeholder="0"><span>hrs</span></div></div>
         </div>
       </details>
 
@@ -1312,6 +1375,13 @@
 
     <p class="cardnote" id="tierintro" style="margin-top:14px;"></p>
 
+    <details class="manualentry productentry" id="productEntry">
+      <summary class="manualbtn productsummary"><span>Estimate weekly products</span><span class="productsummary-total" id="productSummaryTotal">$0 retail</span></summary>
+      <p class="cardnote" style="margin-top:10px;">Optional: tap + for the products you expect to sell in a week. Their photographed shelf prices feed the 10% retail commission estimate.</p>
+      <div class="productgrid" id="productGrid"></div>
+      <div class="producttotals"><span>Projected retail <b id="productRetailTotal">$0</b></span><span>10% commission <b id="productCommissionTotal">$0</b></span></div>
+    </details>
+
     <div class="periodtoggle" id="goalPeriodBar" style="margin: 2px 0 16px;">
       <button type="button" class="periodbtn" data-goalperiod="daily">Daily</button>
       <button type="button" class="periodbtn" data-goalperiod="weekly">Weekly</button>
@@ -1330,7 +1400,7 @@
   </details>
 
   <div class="footnotes reveal">
-    <p class="footnote"><span class="dot">&bull;</span> Base pay is whichever is greater &mdash; your commission rate on revenue, or the minimum-wage floor for the hours worked. All rates live in <b style="color:var(--ink-dim)">Settings</b> and are saved in this browser only.</p>
+    <p class="footnote"><span class="dot">&bull;</span> Service commission is 45% of the first $1,200 and 70% above $1,200, plus 10% of retail product sales. If hours are supplied, the app compares that earned commission with the minimum-wage floor.</p>
     <p class="footnote"><span class="dot">&bull;</span> FICA (Social Security + Medicare) applies to all pay including tips and floor wages. Federal income tax is an estimated <b style="color:var(--ink-dim)">annual liability</b> spread across the year, not a literal per-paycheck withholding figure &mdash; your actual withholding depends on your W-4 / 1099 status.</p>
     <p class="footnote"><span class="dot">&bull;</span> Screenshot scanning uses on-device OCR (Tesseract.js) &mdash; the image never leaves your browser. It's best-effort: always check the parsed numbers before trusting them, and correct any field by hand if it misreads.</p>
     <p class="footnote"><span class="dot">&bull;</span> Minimum wage and tax bracket figures in Settings are reference defaults, not live data &mdash; a static site like this one can't reliably auto-fetch government rate tables. Use the lookup links in Settings to confirm current numbers for your state.</p>
@@ -1344,6 +1414,14 @@
 <div class="drawer" id="drawer">
   <div class="drawer-head"><h2>Settings</h2><button type="button" class="closebtn" id="closeDrawer">&times;</button></div>
   <p class="drawer-sub">Everything here is saved in this browser (not synced anywhere) and drives both cards on the main page.</p>
+
+  <div class="setgroup">
+    <div class="setlabel">Your profile</div>
+    <div class="setrow"><label for="setProfileName">Name</label><div class="fieldrow"><input type="text" id="setProfileName" maxlength="60"></div></div>
+    <div class="setrow"><label for="setLocation">CHOP location</label><select id="setLocation" style="width:220px;flex-shrink:0;"></select></div>
+    <div class="setrow"><label>Schedule</label><div class="periodtoggle" id="workerTypeToggle" style="flex-shrink:0;width:auto;margin:0;"><button type="button" class="periodbtn" data-workertype="full-time">Full time</button><button type="button" class="periodbtn" data-workertype="part-time">Part time</button></div></div>
+    <div class="sethint">Full-time calculations skip hours. Part-time hours stay optional and are used only to check the wage floor. Store list from <a href="https://www.chopbarbershop.com/ourlocations" target="_blank" rel="noopener" style="color:var(--acc);">CHOP&rsquo;s official locations page</a>.</div>
+  </div>
 
   <div class="setgroup">
     <div class="setlabel">Location</div>
@@ -1370,7 +1448,7 @@
 
   <div class="setgroup">
     <div class="setlabel">Pay structure</div>
-    <div class="setrow"><label for="setCommission">Commission rate</label><div class="fieldrow"><input type="number" id="setCommission" step="0.5" min="0" max="100"><span>%</span></div></div>
+    <div class="payformula"><b>Services:</b> 45% of the first $1,200 + 70% of service revenue above $1,200.<br><b>Retail:</b> 10% of products sold.<br><b>Then:</b> add actual tips.</div>
     <div class="setrow"><label for="setTipRate">Assumed tip rate (projection only)</label><div class="fieldrow"><input type="number" id="setTipRate" step="0.5" min="0" max="100"><span>%</span></div></div>
     <div class="sethint">Actual pay uses the real tips you enter or scan &mdash; this rate only feeds the Projected Earnings planner.</div>
   </div>
@@ -1438,14 +1516,53 @@
     DC: { rate:17.95, tippedRate:10.00, note:'District of Columbia; tipped minimum is phasing up to match the full rate by 2027.' },
     TX: { rate:7.25,  tippedRate:2.13,  note:'No state minimum above the federal floor; federal tipped cash wage shown.' },
     GA: { rate:7.25,  tippedRate:2.13,  note:'State law sets $5.15, but the federal $7.25 floor applies to FLSA-covered employers; federal tipped cash wage shown.' },
+    NC: { rate:7.25,  tippedRate:2.13,  note:'Federal minimum and tipped cash-wage floors shown; verify any local or role-specific requirements.' },
+    SC: { rate:7.25,  tippedRate:2.13,  note:'Federal minimum and tipped cash-wage floors shown; verify any local or role-specific requirements.' },
     OTHER: { rate:7.25, tippedRate:2.13, note:'Federal floor shown as a placeholder — enter your actual state/local rate.' }
   };
 
+  var CHOP_LOCATIONS = [
+    { id:'fl-tallahassee-midtown', label:'Tallahassee — Midtown', state:'FL' },
+    { id:'fl-tallahassee-killearn', label:'Tallahassee — Killearn', state:'FL' },
+    { id:'fl-tallahassee-eastside', label:'Tallahassee — Eastside', state:'FL' },
+    { id:'fl-jacksonville-riverside', label:'Jacksonville — Riverside', state:'FL' },
+    { id:'fl-winter-springs', label:'Winter Springs (Orlando)', state:'FL' },
+    { id:'fl-pace', label:'Pace', state:'FL' },
+    { id:'fl-niceville', label:'Niceville', state:'FL' },
+    { id:'ga-pooler', label:'Pooler', state:'GA' },
+    { id:'ga-port-wentworth', label:'Port Wentworth', state:'GA' },
+    { id:'ga-warner-robins', label:'Warner Robins', state:'GA' },
+    { id:'ga-valdosta', label:'Valdosta', state:'GA' },
+    { id:'nc-holly-springs', label:'Holly Springs', state:'NC' },
+    { id:'sc-simpsonville', label:'Simpsonville', state:'SC' },
+    { id:'sc-greenville-pelham', label:'Greenville — Pelham', state:'SC' }
+  ];
+  var PRODUCTS = [
+    { id:'leave-in', name:'Leave-In', price:20 },
+    { id:'hair-spray', name:'Hair Spray', price:16 },
+    { id:'shampoo', name:'Shampoo', price:20 },
+    { id:'conditioner', name:'Conditioner', price:20 },
+    { id:'sea-salt-spray', name:'Sea Salt Spray', price:19 },
+    { id:'hair-dust', name:'Hair Dust', price:20 },
+    { id:'aftershave', name:'Aftershave', price:17 },
+    { id:'curl-cream', name:'Curl Cream', price:16 },
+    { id:'beard-oil', name:'Beard Oil', price:19 },
+    { id:'beard-balm', name:'Beard Balm', price:20 },
+    { id:'beard-wash', name:'Beard Wash', price:19 },
+    { id:'shave-gel', name:'Shave Gel', price:18 },
+    { id:'matte-clay', name:'Matte Clay', price:18 },
+    { id:'fiber-clay', name:'Fiber Clay', price:18 },
+    { id:'high-shine', name:'High Shine', price:18 }
+  ];
+
   var DEFAULTS = {
+    onboardingComplete: false,
+    profileName: '',
+    workerType: 'full-time',
+    location: '',
     state: 'FL',
     wageMode: 'tipped',
     minWage: 10.98,
-    commissionRate: 0.45,
     tipRateAssumed: 0.15,
     ficaRate: 0.0765,
     stdDeduction: 16100,
@@ -1523,8 +1640,9 @@
     settings.uiAccent = ACCENTS[Math.floor(Math.random()*ACCENTS.length)];
   }
   var ui = {
-    hours: 0, revenue: 0, tips: 0, received: null,
+    hours: 0, revenue: 0, tips: 0, received: null, productSales:0,
     projHours: 20, projTier: 'average', zoomPeriod: 'weekly',
+    projProductQty:{}, projProductSales:0,
     projHoursCustom: false, customHours: 20,
     projTierCustom: false, customTicket: 30,
     goalPeriod: 'daily'
@@ -1565,6 +1683,93 @@
   }
   function fmtDate(ts){
     return new Date(ts).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  function locationById(id){
+    return CHOP_LOCATIONS.filter(function(loc){ return loc.id === id; })[0] || null;
+  }
+  function locationOptions(includePrompt){
+    var html = includePrompt ? '<option value="">Choose your shop</option>' : '';
+    ['FL','GA','NC','SC'].forEach(function(state){
+      html += '<optgroup label="' + state + '">';
+      CHOP_LOCATIONS.filter(function(loc){ return loc.state === state; }).forEach(function(loc){
+        html += '<option value="' + loc.id + '">' + escapeHtml(loc.label) + '</option>';
+      });
+      html += '</optgroup>';
+    });
+    return html;
+  }
+  function applyWorkerType(){
+    document.documentElement.setAttribute('data-worker-type', settings.workerType || 'full-time');
+    if(settings.workerType === 'full-time'){
+      ui.hours = 0;
+      var hoursInput = document.getElementById('inHours');
+      if(hoursInput) hoursInput.value = '';
+    }
+    var intro = document.getElementById('actualIntro');
+    if(intro) intro.textContent = settings.workerType === 'full-time'
+      ? 'Upload your sales screenshot or type the numbers in. Full-time pay goes straight to commission, so no hours upload is needed.'
+      : 'Upload your sales screenshot or type the numbers in. Hours are optional and only needed to check the minimum-wage floor for a low-sales period.';
+  }
+  function syncProductSales(){
+    ui.projProductSales = PRODUCTS.reduce(function(total, product){
+      return total + product.price * Math.max(0, parseInt(ui.projProductQty[product.id] || 0, 10));
+    }, 0);
+    document.getElementById('productSummaryTotal').textContent = fmt(ui.projProductSales) + ' retail';
+    document.getElementById('productRetailTotal').textContent = fmt(ui.projProductSales);
+    document.getElementById('productCommissionTotal').textContent = fmt(ui.projProductSales * .10);
+  }
+  function renderProductCatalog(){
+    var grid = document.getElementById('productGrid');
+    grid.innerHTML = PRODUCTS.map(function(product){
+      var qty = Math.max(0, parseInt(ui.projProductQty[product.id] || 0,10));
+      return '<div class="productrow"><div class="productname">' + escapeHtml(product.name) + '<span class="productprice">$' + product.price + '</span></div>' +
+        '<div class="productstepper"><button type="button" data-product="' + product.id + '" data-delta="-1" aria-label="Remove one ' + escapeHtml(product.name) + '">&minus;</button>' +
+        '<output id="qty-' + product.id + '">' + qty + '</output><button type="button" data-product="' + product.id + '" data-delta="1" aria-label="Add one ' + escapeHtml(product.name) + '">+</button></div></div>';
+    }).join('');
+    grid.querySelectorAll('button[data-product]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-product');
+        var delta = parseInt(btn.getAttribute('data-delta'),10);
+        ui.projProductQty[id] = Math.max(0, parseInt(ui.projProductQty[id] || 0,10) + delta);
+        document.getElementById('qty-' + id).textContent = ui.projProductQty[id];
+        syncProductSales(); renderProjection();
+      });
+    });
+    syncProductSales();
+  }
+  function showOnboarding(){
+    var panel = document.getElementById('onboarding');
+    panel.classList.add('show'); panel.setAttribute('aria-hidden','false'); document.body.classList.add('onboarding-open');
+  }
+  function hideOnboarding(){
+    var panel = document.getElementById('onboarding');
+    panel.classList.remove('show'); panel.setAttribute('aria-hidden','true'); document.body.classList.remove('onboarding-open');
+  }
+  function initOnboarding(){
+    var locationSelect = document.getElementById('onboardLocation');
+    locationSelect.innerHTML = locationOptions(true);
+    document.getElementById('onboardName').value = settings.profileName || '';
+    locationSelect.value = settings.location || '';
+    if(settings.onboardingComplete){
+      var worker = document.querySelector('input[name="workerType"][value="' + (settings.workerType || 'full-time') + '"]');
+      if(worker) worker.checked = true;
+    }
+    document.getElementById('onboardingForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      settings.profileName = document.getElementById('onboardName').value.trim();
+      settings.workerType = document.querySelector('input[name="workerType"]:checked').value;
+      settings.location = locationSelect.value;
+      var loc = locationById(settings.location);
+      if(loc){
+        settings.state = loc.state;
+        var sw = STATE_MIN_WAGE[loc.state] || STATE_MIN_WAGE.OTHER;
+        settings.minWage = settings.wageMode === 'full' ? sw.rate : sw.tippedRate;
+      }
+      settings.onboardingComplete = true;
+      saveSettings(); applyWorkerType(); populateStateDropdown(); populateProfileSettings(); renderSettingsForm(); renderAll(); hideOnboarding();
+    });
+    if(!settings.onboardingComplete) showOnboarding();
   }
 
   var themeWipe = document.getElementById('themeWipe');
@@ -1645,11 +1850,20 @@
     return tax;
   }
 
-  function computePay(hours, revenue, tips){
-    var commission = revenue * settings.commissionRate;
-    var floor = settings.minWage * hours;
-    var base = Math.max(commission, floor);
-    var floorApplies = floor > commission;
+  function computePay(hours, revenue, tips, productSales, forceHours){
+    hours = Math.max(0, num(hours,0));
+    revenue = Math.max(0, num(revenue,0));
+    tips = Math.max(0, num(tips,0));
+    productSales = Math.max(0, num(productSales,0));
+    var serviceTierOne = Math.min(revenue, 1200) * 0.45;
+    var serviceTierTwo = Math.max(0, revenue - 1200) * 0.70;
+    var serviceCommission = serviceTierOne + serviceTierTwo;
+    var productCommission = productSales * 0.10;
+    var commission = serviceCommission + productCommission;
+    var hoursKnown = !!forceHours || (settings.workerType === 'part-time' && hours > 0);
+    var floor = hoursKnown ? settings.minWage * hours : 0;
+    var base = hoursKnown ? Math.max(commission, floor) : commission;
+    var floorApplies = hoursKnown && floor > commission;
     var grossWeekly = base + tips;
     var ficaWeekly = grossWeekly * settings.ficaRate;
     var afterFicaWeekly = grossWeekly - ficaWeekly;
@@ -1663,7 +1877,9 @@
     var netWeekly = afterFicaWeekly - fedWeekly;
 
     return {
-      commission: commission, floor: floor, base: base, floorApplies: floorApplies,
+      serviceTierOne:serviceTierOne, serviceTierTwo:serviceTierTwo, serviceCommission:serviceCommission,
+      productSales:productSales, productCommission:productCommission, commission:commission,
+      floor:floor, hoursKnown:hoursKnown, base:base, floorApplies:floorApplies,
       tips: tips, grossWeekly: grossWeekly, ficaWeekly: ficaWeekly,
       afterFicaWeekly: afterFicaWeekly, fedWeekly: fedWeekly, netWeekly: netWeekly
     };
@@ -1695,14 +1911,15 @@
 
   function renderHeader(){
     var wageLabel = settings.wageMode === 'full' ? 'full minimum wage' : 'tipped minimum wage';
+    var greeting = settings.profileName ? (escapeHtml(settings.profileName) + ', ') : '';
     document.getElementById('subtext').innerHTML =
-      'Enter or scan your sales and hours to see what you actually take home &mdash; commission vs. the ' + wageLabel + ' floor, FICA, and estimated federal tax, worked out live. ' +
-      'Commission at <b>' + Math.round(settings.commissionRate*100) + '%</b> of revenue, FICA at <b>' + (settings.ficaRate*100).toFixed(2) + '%</b>, ' +
-      wageLabel + ' floor <b>$' + settings.minWage.toFixed(2) + '/hr</b> (' + settings.state + '). All editable in Settings.';
+      greeting + 'enter or scan sales to see what you actually take home. Service commission is <b>45% of the first $1,200</b> and <b>70% above $1,200</b>, plus <b>10% of retail</b> and your tips. ' +
+      'FICA is estimated at <b>' + (settings.ficaRate*100).toFixed(2) + '%</b>. ' +
+      (settings.workerType === 'part-time' ? ('Hours are optional unless you need to check the ' + wageLabel + ' floor.') : 'Full-time calculations go straight to commission; no hours upload required.');
   }
 
   function renderActual(){
-    var r = computePay(ui.hours, ui.revenue, ui.tips);
+    var r = computePay(ui.hours, ui.revenue, ui.tips, ui.productSales);
 
     document.getElementById('floorFlagRow').style.display = r.floorApplies ? 'flex' : 'none';
     document.getElementById('outGross').textContent = fmt(r.grossWeekly);
@@ -1722,12 +1939,15 @@
       fmt(r.grossWeekly) + ' gross \u2192 ' + fmt(r.ficaWeekly) + ' FICA \u2192 ' + fmt(r.fedWeekly) + ' fed = net above';
     lastNet = r.netWeekly;
 
-    var baseLabel = r.floorApplies ? 'Base pay (floor)' : 'Base pay (commission)';
+    var baseLabel = r.floorApplies ? 'Base pay (floor)' : 'Earned commission';
 
     var nb = document.getElementById('nutritionRows');
     nb.innerHTML =
       '<div class="nrow"><div class="nk">' + baseLabel + '</div><div class="nv">' + fmt(r.base) + '</div></div>' +
-      '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> ' + (r.floorApplies ? ('minimum wage floor, ' + ui.hours + ' hrs') : 'commission on revenue') + '</div><div class="nv">' + fmt(r.floorApplies ? r.floor : r.commission) + '</div></div>' +
+      (r.floorApplies ? '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> minimum wage floor, ' + ui.hours + ' hrs</div><div class="nv">' + fmt(r.floor) + '</div></div>' : '') +
+      '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> 45% of first $1,200 services</div><div class="nv">' + fmt(r.serviceTierOne) + '</div></div>' +
+      (r.serviceTierTwo > 0 ? '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> 70% above $1,200</div><div class="nv">' + fmt(r.serviceTierTwo) + '</div></div>' : '') +
+      (r.productSales > 0 ? '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> 10% retail commission</div><div class="nv">' + fmt(r.productCommission) + '</div></div>' : '') +
       '<div class="nrow"><div class="nk"><span class="op">+</span> Tips</div><div class="nv">' + fmt(r.tips) + '</div></div>' +
       '<div class="nrow total"><div class="nk"><span class="op">=</span> Gross pay</div><div class="nv">' + fmt(r.grossWeekly) + '</div></div>' +
       '<div class="nrow"><div class="nk"><span class="op">&minus;</span> FICA</div><div class="nv">&minus;' + fmt(r.ficaWeekly) + '</div></div>' +
@@ -1781,14 +2001,15 @@
     var goal = computeGoal(fillPct);
     var weeklyRevenue = goal.revenue * shifts;
     var tips = weeklyRevenue * settings.tipRateAssumed;
-    return computePay(ui.projHours, weeklyRevenue, tips);
+    return computePay(ui.projHours, weeklyRevenue, tips, ui.projProductSales, settings.workerType === 'part-time');
   }
 
   function renderProjection(){
     var resolvedTicket = ui.projTierCustom ? ui.customTicket : settings.tierTickets[ui.projTier];
     document.getElementById('tierintro').innerHTML =
       'Assuming a <b style="color:var(--acc3)">$' + resolvedTicket + ' average ticket</b> per client' +
-      (ui.projTierCustom ? '' : ' at this tier') + ', ~' + SHIFT_CAPACITY + ' slots per 5-hr shift, and tips at ' + Math.round(settings.tipRateAssumed*100) + '% of revenue.';
+      (ui.projTierCustom ? '' : ' at this tier') + ', ~' + SHIFT_CAPACITY + ' slots per 5-hr shift, tips at ' + Math.round(settings.tipRateAssumed*100) + '% of services' +
+      (ui.projProductSales ? ', and ' + fmt(ui.projProductSales) + ' weekly retail' : '') + '.';
 
     var goalHtml = '';
     FILL_RATES.forEach(function(fr){
@@ -1799,7 +2020,7 @@
     document.getElementById('goalrows').innerHTML = goalHtml;
     staggerRows(document.getElementById('goalrows'), '.goalrow');
 
-    document.getElementById('breakdownfloor').textContent = 'floor $' + Math.round(settings.minWage * ui.projHours);
+    document.getElementById('breakdownfloor').textContent = settings.workerType === 'part-time' ? ('floor $' + Math.round(settings.minWage * ui.projHours)) : 'commission';
 
     var rowsHtml = '';
     FILL_RATES.forEach(function(fr){
@@ -1854,7 +2075,7 @@
       html += '<div class="historyrow" data-id="'+h.id+'">' +
         '<div class="historyrow-main"><div class="historylabel">' + labelHtml + '</div>' +
         '<div class="historynet">' + fmt(h.net) + '</div></div>' +
-        '<div class="historyrow-sub">' + hrs + ' hrs &middot; ' + fmt(h.revenue) + ' rev &middot; ' + fmt(h.tips) + ' tips' + (h.floorApplies ? ' &middot; floor' : '') + '</div>' +
+        '<div class="historyrow-sub">' + (hrs ? (hrs + ' hrs &middot; ') : '') + fmt(h.revenue) + ' services &middot; ' + fmt(h.productSales||0) + ' retail &middot; ' + fmt(h.tips) + ' tips' + (h.floorApplies ? ' &middot; floor' : '') + '</div>' +
         '<button type="button" class="historydel" data-id="'+h.id+'" aria-label="Delete saved period">&times;</button>' +
         '</div>';
     });
@@ -1866,9 +2087,11 @@
         var id = row.getAttribute('data-id');
         var rec = history.filter(function(h){ return h.id === id; })[0];
         if(!rec) return;
-        ui.hours = rec.hours; ui.revenue = rec.revenue; ui.tips = rec.tips; ui.received = rec.received;
+        ui.hours = rec.hours || 0; ui.revenue = rec.revenue; ui.tips = rec.tips; ui.received = rec.received;
+        ui.productSales = rec.productSales || 0;
         document.getElementById('inHours').value = rec.hours || '';
         document.getElementById('inRevenue').value = rec.revenue || '';
+        document.getElementById('inProductSales').value = rec.productSales || '';
         document.getElementById('inTips').value = rec.tips || '';
         document.getElementById('inReceived').value = (rec.received!==null && rec.received!==undefined) ? rec.received : '';
         document.getElementById('manualEntry').setAttribute('open','');
@@ -1941,9 +2164,18 @@
     sel.value = settings.state;
   }
 
+  function populateProfileSettings(){
+    var loc = document.getElementById('setLocation');
+    loc.innerHTML = locationOptions(true);
+    loc.value = settings.location || '';
+    document.getElementById('setProfileName').value = settings.profileName || '';
+    document.querySelectorAll('#workerTypeToggle .periodbtn').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-workertype') === settings.workerType);
+    });
+  }
+
   function renderSettingsForm(){
     document.getElementById('setMinWage').value = settings.minWage;
-    document.getElementById('setCommission').value = settings.commissionRate*100;
     document.getElementById('setTipRate').value = settings.tipRateAssumed*100;
     document.getElementById('setFica').value = (settings.ficaRate*100).toFixed(2);
     document.getElementById('setStdDeduction').value = settings.stdDeduction;
@@ -1962,20 +2194,21 @@
 
   document.getElementById('inHours').addEventListener('input', function(e){ ui.hours = num(e.target.value,0); renderActual(); });
   document.getElementById('inRevenue').addEventListener('input', function(e){ ui.revenue = num(e.target.value,0); renderActual(); });
+  document.getElementById('inProductSales').addEventListener('input', function(e){ ui.productSales = num(e.target.value,0); renderActual(); });
   document.getElementById('inTips').addEventListener('input', function(e){ ui.tips = num(e.target.value,0); renderActual(); });
   document.getElementById('inReceived').addEventListener('input', function(e){
     ui.received = e.target.value === '' ? null : num(e.target.value, null);
     renderActual();
   });
-
   document.getElementById('saveHistoryBtn').addEventListener('click', function(){
-    var r = computePay(ui.hours, ui.revenue, ui.tips);
+    var r = computePay(ui.hours, ui.revenue, ui.tips, ui.productSales);
     var labelInput = document.getElementById('historyLabel');
     var rec = {
       id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
       savedAt: Date.now(),
       label: labelInput.value.trim(),
       hours: ui.hours, revenue: ui.revenue, tips: ui.tips, received: ui.received,
+      productSales:ui.productSales,
       gross: r.grossWeekly, fica: r.ficaWeekly, fed: r.fedWeekly, net: r.netWeekly,
       floorApplies: r.floorApplies
     };
@@ -2150,7 +2383,23 @@
     });
   });
   document.getElementById('setMinWage').addEventListener('input', function(e){ settings.minWage = num(e.target.value, settings.minWage); saveSettings(); renderAll(); });
-  document.getElementById('setCommission').addEventListener('input', function(e){ settings.commissionRate = num(e.target.value,0)/100; saveSettings(); renderAll(); });
+  document.getElementById('setProfileName').addEventListener('input', function(e){ settings.profileName = e.target.value.trimStart(); saveSettings(); renderHeader(); });
+  document.getElementById('setLocation').addEventListener('change', function(e){
+    settings.location = e.target.value;
+    var loc = locationById(settings.location);
+    if(loc){
+      settings.state = loc.state;
+      var sw = STATE_MIN_WAGE[loc.state] || STATE_MIN_WAGE.OTHER;
+      settings.minWage = settings.wageMode === 'full' ? sw.rate : sw.tippedRate;
+    }
+    saveSettings(); populateStateDropdown(); renderSettingsForm(); renderAll();
+  });
+  document.querySelectorAll('#workerTypeToggle .periodbtn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      settings.workerType = btn.getAttribute('data-workertype');
+      saveSettings(); applyWorkerType(); populateProfileSettings(); renderAll();
+    });
+  });
   document.getElementById('setTipRate').addEventListener('input', function(e){ settings.tipRateAssumed = num(e.target.value,0)/100; saveSettings(); renderAll(); });
   document.getElementById('setFica').addEventListener('input', function(e){ settings.ficaRate = num(e.target.value,0)/100; saveSettings(); renderAll(); });
   document.getElementById('setStdDeduction').addEventListener('input', function(e){ settings.stdDeduction = num(e.target.value,0); saveSettings(); renderAll(); });
@@ -2179,9 +2428,11 @@
   document.getElementById('resetAll').addEventListener('click', function(){
     if(!confirm('Reset all settings to defaults? This clears anything you\'ve customized.')) return;
     var keepAccent = settings.uiAccent, keepRemember = settings.rememberLook;
+    var keepProfile = { onboardingComplete:settings.onboardingComplete, profileName:settings.profileName, workerType:settings.workerType, location:settings.location };
     settings = JSON.parse(JSON.stringify(DEFAULTS));
     settings.uiAccent = keepAccent; settings.rememberLook = keepRemember;
-    saveSettings(); applyLook(); populateStateDropdown(); renderSettingsForm(); renderAll();
+    Object.assign(settings, keepProfile);
+    saveSettings(); applyLook(); applyWorkerType(); populateStateDropdown(); populateProfileSettings(); renderSettingsForm(); renderAll();
   });
   document.getElementById('lookupWage').addEventListener('click', function(){
     var q = encodeURIComponent(settings.state + ' minimum wage 2026');
@@ -2229,20 +2480,24 @@
 
   function parseSalesText(text){
     var lines = text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
-    var revenue=null, tips=null;
+    var revenue=null, productSales=null, grossTotal=null, tips=null;
     for(var i=0;i<lines.length;i++){
       var low = lines[i].toLowerCase();
       if(revenue===null && low.indexOf('service sales')!==-1){
         revenue = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
       }
-      if(revenue===null && low.indexOf('total gross sales')!==-1){
-        revenue = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+      if(grossTotal===null && low.indexOf('total gross sales')!==-1){
+        grossTotal = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+      }
+      if(productSales===null && (low.indexOf('product sales')!==-1 || low.indexOf('retail sales')!==-1)){
+        productSales = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
       }
       if(tips===null && /^tips\b/.test(low)){
         tips = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
       }
     }
-    return { revenue: revenue, tips: tips };
+    if(revenue===null && grossTotal!==null) revenue = Math.max(0, grossTotal - (productSales||0));
+    return { revenue: revenue, productSales:productSales, tips: tips };
   }
   function parseTimesheetText(text){
     var m = text.match(/Total[^\d]{0,20}(\d{1,3}):(\d{2})/i);
@@ -2276,6 +2531,7 @@
         var parsed = parseSalesText(text);
         var summary = [];
         if(parsed.revenue!==null){ ui.revenue = parsed.revenue; document.getElementById('inRevenue').value = parsed.revenue; summary.push('revenue $'+parsed.revenue); }
+        if(parsed.productSales!==null){ ui.productSales = parsed.productSales; document.getElementById('inProductSales').value = parsed.productSales; summary.push('products $'+parsed.productSales); }
         if(parsed.tips!==null){ ui.tips = parsed.tips; document.getElementById('inTips').value = parsed.tips; summary.push('tips $'+parsed.tips); }
         document.getElementById('scanStatus').textContent = summary.length ? ('Read: ' + summary.join(', ') + ' \u2014 double-check below.') : 'Couldn\'t confidently read this one \u2014 check the raw text and enter manually.';
         renderActual();
@@ -2336,14 +2592,10 @@
     summary.addEventListener('click', function(e){
       e.preventDefault();
       details.classList.remove('tap-cue');
-
-      var opening = !details.open;
-      function applyState(){
-        details.open = opening;
-      }
-      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if(document.startViewTransition && !reduceMotion) document.startViewTransition(applyState);
-      else applyState();
+      // Keep the backdrop-filter layer live. View Transition snapshots flatten
+      // backdrop-filter on Safari/iOS and made the page blur disappear when
+      // this card expanded.
+      details.open = !details.open;
     });
 
     function cue(){
@@ -2630,9 +2882,13 @@
   }
 
   applyLook();
+  applyWorkerType();
+  renderProductCatalog();
   populateStateDropdown();
+  populateProfileSettings();
   renderSettingsForm();
   renderAll();
+  initOnboarding();
   initReveal();
   initProjectionDetails();
   initHeroScroll();
