@@ -27,6 +27,10 @@
     --ease-spring: cubic-bezier(.34,1.56,.64,1);
     --wx: 50%; --wy: 40px;
     --nav-h: 64px;
+    --sticky-gap: 14px;
+    --netpay-stuck-h: 76px;
+    --nav-fade-h: 25px;
+    --hero-top-space: clamp(96px, 12vh, 140px);
   }
 
   /* ---- Subtle grain, dopamine only — quiets the flat dark fills ---- */
@@ -77,7 +81,11 @@
   }
 
   *{ box-sizing:border-box; margin:0; padding:0; }
-  html{ -webkit-tap-highlight-color: transparent; }
+  html{
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   body{
     background: var(--bg);
     color: var(--ink);
@@ -149,27 +157,33 @@
   .paintbtn:hover{ background: var(--acc); color: var(--acc-ink); }
 
   /* ---- Add to Home Screen ---- */
+  /* ---- Add to Home Screen ----
+     A quiet, translucent toast — appears once on first load, and permanently retires
+     the moment the person scrolls (or after a few seconds either way), rather than
+     sitting around as a persistent floating button. */
   .installbtn{
-    display:none; align-items:center; gap:8px; position:fixed; right:18px; bottom:22px; z-index:45;
-    background: var(--acc); color: var(--acc-ink); border:none; border-radius: var(--btn-radius);
-    padding: 13px 20px; font-family: var(--label-font); font-size:12.5px; font-weight:800;
-    letter-spacing:0.03em; cursor:pointer; box-shadow: 0 14px 34px -10px rgba(0,0,0,0.55);
-    opacity:1; transform: translateY(0);
-    transition: transform .22s var(--ease-spring), box-shadow .22s var(--ease), opacity .3s var(--ease);
+    display:none; align-items:center; position:fixed; left:50%; bottom:26px; z-index:45;
+    transform: translateX(-50%) translateY(0) scale(1); opacity:1;
+    background: rgba(10,9,8,0.72); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+    color:#F5F3EE; border:1px solid rgba(255,255,255,0.14); border-radius: 999px;
+    padding: 14px 22px; font-family: var(--label-font); font-size:12.5px; font-weight:700;
+    letter-spacing:0.03em; cursor:pointer; box-shadow: 0 16px 40px -12px rgba(0,0,0,0.55);
+    transition: opacity .5s var(--ease), transform .55s var(--ease-spring);
   }
-  .installbtn:hover{ transform: translateY(-3px); }
-  .installbtn:active{ transform: scale(0.94); }
-  .installbtn.hide{ opacity:0; transform: translateY(14px) scale(.94); pointer-events:none; }
-  @media (max-width: 640px){ .installbtn{ right:14px; bottom:18px; padding:12px 18px; } }
+  .installbtn:hover{ transform: translateX(-50%) translateY(-3px); }
+  .installbtn:active{ transform: translateX(-50%) scale(0.95); }
+  .installbtn.hide{ opacity:0; transform: translateX(-50%) translateY(16px) scale(.92); pointer-events:none; }
+  @media (max-width: 640px){ .installbtn{ bottom:20px; padding:13px 20px; } }
 
   .iospop{
-    display:none; position:fixed; right:18px; bottom:78px; z-index:46; width: min(300px, calc(100vw - 36px));
+    display:none; position:fixed; left:50%; bottom:88px; z-index:46; width: min(300px, calc(100vw - 36px));
+    transform: translateX(-50%) translateY(10px) scale(.96);
     background: var(--panel); color: var(--ink); border-radius: var(--radius-md); padding:18px;
     box-shadow: 0 24px 60px -12px rgba(0,0,0,0.5);
-    opacity:0; transform: translateY(10px) scale(.96);
-    transition: opacity .28s var(--ease), transform .28s var(--ease-spring);
+    opacity:0;
+    transition: opacity .28s var(--ease), transform .32s var(--ease-spring);
   }
-  .iospop.show{ display:block; opacity:1; transform: translateY(0) scale(1); }
+  .iospop.show{ display:block; opacity:1; transform: translateX(-50%) translateY(0) scale(1); }
   .iospop-title{ font-family: var(--title-font); font-weight: var(--title-weight); color: var(--acc); font-size:18px; margin-bottom:12px; }
   .iospop-step{ display:flex; align-items:flex-start; gap:10px; font-size:13px; line-height:1.5; color: var(--ink-dim); margin-bottom:10px; }
   .iospop-num{
@@ -211,9 +225,13 @@
   /* ---- Hero: stays put in the viewport and shrinks into a compact nav bar as you scroll ---- */
   .hero-spacer{
     position:relative; margin: 0 calc(var(--page-pad) * -1) 0;
-    min-height: 62vh; max-height: 640px; /* pre-JS fallback size; JS syncs this to the live hero height */
+    min-height: calc(62vh + var(--hero-top-space));
+    max-height: calc(640px + var(--hero-top-space)); /* pre-JS fallback size; JS syncs this to the live hero height */
   }
-  @media (max-width: 640px){ .hero-spacer{ min-height: 52vh; } }
+  @media (max-width: 640px){
+    :root{ --hero-top-space: clamp(72px, 10vh, 104px); }
+    .hero-spacer{ min-height: calc(52vh + var(--hero-top-space)); }
+  }
 
   .hero-block{
     /* NOTE: centered with left/right/margin, not a translateX transform — this element
@@ -223,7 +241,8 @@
     position: fixed; top:0; left:0; right:0; z-index:5;
     width: min(100vw, calc(var(--maxw) + var(--page-pad) * 2));
     margin: 0 auto;
-    min-height: 62vh; max-height: 640px; /* used only for the very first measurement, before JS pins a px height */
+    min-height: calc(62vh + var(--hero-top-space));
+    max-height: calc(640px + var(--hero-top-space)); /* used only for the very first measurement, before JS pins a px height */
     display:flex; flex-direction:column; justify-content:flex-end;
     isolation: isolate;
     /* No fill of its own while expanded — the shared #pageBg shows straight through.
@@ -231,7 +250,9 @@
     background: transparent;
     transition: background-color .35s var(--ease);
   }
-  @media (max-width: 640px){ .hero-block{ min-height: 52vh; } }
+  @media (max-width: 640px){
+    .hero-block{ min-height: calc(52vh + var(--hero-top-space)); }
+  }
   /* Reduced motion / no-JS: fall back to the original static, in-flow hero */
   @media (prefers-reduced-motion: reduce){
     .hero-block{ position:static !important; width:100% !important; transform:none !important; height:auto !important; }
@@ -244,48 +265,40 @@
      box, deep into the content) carries all the visual weight, so there's
      nothing to draw a hard boundary. ---- */
   .hero-block.compact{ width:100%; left:0; right:0; margin:0; }
-  /* Original: iOS-style progressive blur + dark tint, extended ~280px past the
-     bar's own 64px box so both the blur and the color fade out very gradually
-     *over the content underneath*. A short fade (as before) still reads as an
-     edge once high-contrast content scrolls through it — this needs enough
-     runway that no single frame shows a visible step. */
+  .hero-block.theme-flyout-open{ z-index:35; }
+  /* Compact sticky stack: nav + gap + pinned net-pay card + one short fade.
+     The hard height cap keeps the effect from washing over the page controls. */
   .hero-navbar-blur{
     position:absolute; top:0; left:0; right:0; z-index:1; overflow:hidden;
-    height: calc(100% + 280px);
+    height: calc(var(--nav-h) + var(--sticky-gap) + var(--netpay-stuck-h) + var(--nav-fade-h));
     opacity:0; pointer-events:none; transition: opacity .3s var(--ease);
   }
   .hero-block.compact .hero-navbar-blur{ opacity:1; }
   html[data-style="dopamine"] .hero-navbar-blur .tint{
-    position:absolute; inset:0;
+    position:absolute; inset:0; z-index:3;
     background: linear-gradient(180deg,
-      color-mix(in srgb, var(--bg) 95%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 91%, transparent) 8%,
-      color-mix(in srgb, var(--bg) 84%, transparent) 16%,
-      color-mix(in srgb, var(--bg) 74%, transparent) 25%,
-      color-mix(in srgb, var(--bg) 62%, transparent) 34%,
-      color-mix(in srgb, var(--bg) 49%, transparent) 44%,
-      color-mix(in srgb, var(--bg) 37%, transparent) 54%,
-      color-mix(in srgb, var(--bg) 26%, transparent) 64%,
-      color-mix(in srgb, var(--bg) 17%, transparent) 74%,
-      color-mix(in srgb, var(--bg) 10%, transparent) 83%,
-      color-mix(in srgb, var(--bg) 5%, transparent) 91%,
+      color-mix(in srgb, var(--bg) 99%, black) 0%,
+      color-mix(in srgb, var(--bg) 97%, transparent) 34%,
+      color-mix(in srgb, var(--bg) 90%, transparent) 58%,
+      color-mix(in srgb, var(--bg) 64%, transparent) 76%,
+      color-mix(in srgb, var(--bg) 26%, transparent) 89%,
       transparent 100%);
   }
-  html[data-style="dopamine"] .hero-navbar-blur span{ position:absolute; inset:0; }
+  html[data-style="dopamine"] .hero-navbar-blur span{ position:absolute; inset:0; z-index:1; }
   html[data-style="dopamine"] .hero-navbar-blur span:nth-child(2){
     backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
-    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 10%, transparent 22%);
-    mask-image: linear-gradient(180deg, #000 0%, #000 10%, transparent 22%);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 64%, transparent 82%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 64%, transparent 82%);
   }
   html[data-style="dopamine"] .hero-navbar-blur span:nth-child(3){
-    backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-    -webkit-mask-image: linear-gradient(180deg, transparent 5%, #000 16%, #000 32%, transparent 48%);
-    mask-image: linear-gradient(180deg, transparent 5%, #000 16%, #000 32%, transparent 48%);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 46%, #000 66%, #000 78%, transparent 92%);
+    mask-image: linear-gradient(180deg, transparent 46%, #000 66%, #000 78%, transparent 92%);
   }
   html[data-style="dopamine"] .hero-navbar-blur span:nth-child(4){
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    -webkit-mask-image: linear-gradient(180deg, transparent 20%, #000 34%, #000 62%, transparent 100%);
-    mask-image: linear-gradient(180deg, transparent 20%, #000 34%, #000 62%, transparent 100%);
+    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 66%, #000 78%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 66%, #000 78%, transparent 100%);
   }
   .hero-inner{
     position:relative; z-index:2; padding: 0 clamp(20px, 5vw, 56px) clamp(28px, 5vw, 52px); width:100%;
@@ -359,12 +372,40 @@
     text-shadow: 0 10px 40px rgba(0,0,0,0.5);
   }
   html[data-style="dopamine"] .hero-titlewrap{ overflow: hidden; margin-bottom: 4px; padding-bottom: 6px; }
+
+  /* ---- Whimsical squiggle underline ----
+     Longer + more chaotic than a simple wave, drawn on with a pen-flourish feel, and
+     the whole group slides in from off-screen left at the same time it draws — two
+     kinds of motion stacked, for a stronger sense of arrival. Finishes as a small
+     hand-drawn "$" (an S-curve + crossbar, drawn last, like a signature flourish). */
+  .title-squiggle{ display:none; }
+  html[data-style="dopamine"] .title-squiggle{
+    display:block; width: min(300px, 78%); height:30px; margin: -2px 0 0 -6px; overflow:visible;
+    transform: translateX(-46px);
+    transition: transform .9s var(--ease-spring) .15s;
+  }
+  .hero-block.in .title-squiggle{ transform: translateX(0); }
+  .title-squiggle .squiggle-line{
+    fill:none; stroke: var(--acc3, var(--acc)); stroke-width:4.5; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray: 460; stroke-dashoffset: 460;
+    transition: stroke-dashoffset 1.15s var(--ease) .3s;
+  }
+  .title-squiggle .squiggle-dollar{
+    fill:none; stroke: var(--acc3, var(--acc)); stroke-width:5; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray: 90; stroke-dashoffset: 90;
+    transition: stroke-dashoffset .4s var(--ease) 1.35s;
+  }
+  .title-squiggle .squiggle-dollar-bar{
+    stroke: var(--acc3, var(--acc)); stroke-width:5; stroke-linecap:round;
+    stroke-dasharray: 40; stroke-dashoffset: 40;
+    transition: stroke-dashoffset .25s var(--ease) 1.7s;
+  }
+  .hero-block.in .title-squiggle .squiggle-line{ stroke-dashoffset: 0; }
+  .hero-block.in .title-squiggle .squiggle-dollar{ stroke-dashoffset: 0; }
+  .hero-block.in .title-squiggle .squiggle-dollar-bar{ stroke-dashoffset: 0; }
+
   .sub{ color: rgba(255,246,228,0.82); font-size: 15px; line-height: 1.6; max-width: 60ch; margin-top: 2px; }
   .sub b{ color: #fff; font-weight:700; }
-
-  @media (max-width: 640px){
-    .hero-block{ min-height: 52vh; }
-  }
 
   #netHeroSentinel{ height:0; }
 
@@ -390,7 +431,7 @@
   .netpay-hero.stuck{
     display:flex; align-items:center;
     padding: 13px 22px;
-    min-height: 0;
+    min-height: var(--netpay-stuck-h);
     border-radius: var(--radius-lg);
     box-shadow: 0 16px 34px -14px rgba(0,0,0,0.55);
   }
@@ -431,6 +472,7 @@
   @media (max-width: 640px){ .netpay-hero{ padding: 20px 18px 18px; margin-top:-24px; } }
 
   .contenttoolbar{ display:flex; align-items:center; justify-content:space-between; margin: 8px 2px 14px; gap:10px; flex-wrap:wrap; }
+  .toolbar-actions{ display:flex; align-items:center; gap:8px; }
   .toolbar-title{ font-family: var(--label-font); font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color: var(--ink-faint); font-weight:700; }
   .gearbtn{
     display:flex; align-items:center; gap:8px;
@@ -468,6 +510,17 @@
   .block-c{ background: var(--block-c-bg); --onblock: var(--block-c-ink); --onblock-dim: color-mix(in srgb, var(--block-c-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
 
   .uploadgrid{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  /* Grid items default to min-width:auto, which lets an unbreakable bold/uppercase label
+     force its track wider than its 1fr share — the classic CSS Grid "blowout" bug. That
+     pushes content out past its card's own edge (and the parent's overflow:hidden can't
+     rescue it, since the box itself has genuinely grown). min-width:0 makes every track
+     respect its fr share and lets content wrap/shrink to fit instead. */
+  .uploadgrid > *{ min-width: 0; }
+  .bigrow > *{ min-width: 0; }
+  .goalrow, .goalcolheads{ min-width: 0; }
+  .goalrow > *, .goalcolheads > *{ min-width: 0; }
+  .zoomcolheads > *, .zoomrow > *{ min-width: 0; }
+  .bracketrow > *{ min-width: 0; }
   .uploadbtn{
     display:flex; flex-direction:row; align-items:center; justify-content:center; gap:16px;
     background: rgba(255,255,255,0.38); color: var(--onblock); border: none; border-radius: var(--radius-sm);
@@ -476,6 +529,11 @@
   .uploadbtn .icon{ font-size: 40px; line-height:1; }
   .uploadbtn .label{ display:flex; flex-direction:column; align-items:flex-start; line-height:1.08; }
   .uploadbtn .label .l1, .uploadbtn .label .l2{ font-family: var(--label-font); font-size: 19px; font-weight:900; letter-spacing:0.01em; text-transform:uppercase; }
+  @media (max-width: 400px){
+    .uploadbtn{ gap:10px; padding: 20px 10px; }
+    .uploadbtn .icon{ font-size:30px; }
+    .uploadbtn .label .l1, .uploadbtn .label .l2{ font-size:14.5px; }
+  }
   .uploadbtn:hover{ background: rgba(255,255,255,0.5); transform: translateY(-2px); }
   .uploadbtn.busy{ background: var(--acc3); color: var(--acc3-ink); animation: scanPulse 1.15s ease-in-out infinite; }
   .uploadbtn.done{ background: color-mix(in srgb, var(--acc2) 88%, black 0%); animation: scanPop .45s var(--ease-spring); }
@@ -563,13 +621,26 @@
   .reconcile b{ color: var(--acc3); }
 
   details.projection{
+    position: relative; isolation: isolate;
     margin-top: 30px;
-    background: rgba(8,7,6,0.58);
-    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: var(--radius-lg);
     padding: 22px 20px 26px;
     box-shadow: var(--shadow-block);
+    overflow:hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    transform: translateZ(0);
+  }
+  /* Same fix as .netpay-hero below: the blur/tint used to be the summary/card's
+     own background+backdrop-filter, which on iOS Safari can composite ABOVE the
+     text inside a <details> once it repaints (open/close, scroll-pinning nearby).
+     Pulling it into its own inset:0 layer with a negative z-index, inside an
+     isolated stacking context, guarantees the blur paints behind and the real
+     content (summary text, tabs, everything else) stays on top. */
+  .projection-bg{
+    position:absolute; inset:0; z-index:-1; border-radius: inherit;
+    background: rgba(8,7,6,0.58);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   }
   details.projection > summary{
     list-style:none; cursor:pointer; font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
@@ -580,7 +651,7 @@
   details.projection[open] > summary::before{ content:"▾"; }
   details.projection > summary span{ font-family: var(--label-font); font-size:11px; color: rgba(243,241,236,0.68); font-weight:400; font-style:normal; }
 
-  .tabbar{ display:flex; gap:7px; margin: 16px 0 14px; flex-wrap: wrap; background: var(--chip-bg); padding:6px; border-radius: var(--btn-radius); }
+  .tabbar{ display:flex; gap:7px; margin: 16px 0 14px; flex-wrap: wrap; background: var(--chip-bg); padding:6px; border-radius: var(--radius-md); }
   .controllabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.1em; text-transform:uppercase; color: var(--ink-faint); margin-bottom: 9px; font-weight:700; }
   details.projection .controllabel{ color: rgba(243,241,236,0.68); }
   /* Glassy pills: a translucent white layer blended with mix-blend-mode against
@@ -625,6 +696,38 @@
   .tabbtn .ticket{ display:block; font-size: 10px; color: var(--ink-faint); margin-top:3px; }
   .tabbtn.active{ background: var(--acc); color: var(--acc-ink); font-weight:800; }
   .tabbtn.active .ticket{ color: inherit; opacity: 0.75; }
+  .tierglyph{ display:inline-block; font-size:11px; letter-spacing:-1px; opacity:0.65; margin-right:5px; }
+  .tabbtn.active .tierglyph{ opacity:0.85; }
+
+  /* Card-shaped step selector shared by ticket tiers and shift schedule. */
+  .selector-wide{ display:none; }
+  .stepslider{ display:block; }
+  .stepslider{
+    margin: 16px 0 14px; padding: 16px 18px 14px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--radius-md);
+  }
+  .stepslider-label{ display:flex; align-items:baseline; gap:9px; margin-bottom:14px; }
+  .stepslider-glyph{ font-family: var(--label-font); font-size:15px; font-weight:800; color: var(--acc); letter-spacing:-1px; min-width:52px; }
+  .stepslider-name{ font-family: var(--label-font); font-size:15px; font-weight:800; color: rgba(255,255,255,0.94); text-transform:uppercase; letter-spacing:.03em; }
+  .stepslider-amt{ font-family: var(--label-font); font-size:12px; color: rgba(255,255,255,0.6); margin-left:auto; }
+  .stepslider input[type="range"]{
+    -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:999px;
+    background: rgba(255,255,255,0.16); outline:none; margin: 4px 0 12px; touch-action:none; display:block;
+  }
+  .stepslider input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:26px; height:26px; border-radius:50%; background: var(--acc);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.45); cursor:pointer; border: 3px solid rgba(0,0,0,0.35);
+  }
+  .stepslider input[type="range"]::-moz-range-thumb{
+    width:26px; height:26px; border-radius:50%; background: var(--acc); border: 3px solid rgba(0,0,0,0.35); cursor:pointer;
+  }
+  .stepslider input[type="range"]::-moz-range-track{ height:6px; border-radius:999px; background: rgba(255,255,255,0.16); }
+  .stepslider-ticks{ display:flex; justify-content:space-between; padding: 0 3px; }
+  .stepslider-ticks button{
+    background:none; border:none; padding:4px 2px; font-family: var(--label-font);
+    font-size:11px; font-weight:700; color: rgba(255,255,255,0.42); cursor:pointer; min-width:28px;
+  }
+  .stepslider-ticks button.active{ color: var(--acc); }
 
   .goalrow, .goalcolheads{ display:grid; grid-template-columns: 1.35fr 1.1fr 0.95fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
   .goalcolheads{ font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding-bottom: 9px; font-weight:700; }
@@ -689,7 +792,18 @@
   .btnrow{ display:flex; gap:8px; flex-wrap:wrap; }
   .lookupbtn{ font-size:10.5px; }
 
-  .footnotes{ margin-top: 34px; max-width: 82ch; }
+  .footnotes{ margin:34px auto 0; width:min(82ch, 100%); position:relative; isolation:isolate; }
+  /* Dark gradient behind the footer, same spirit as the nav bar's scrim but running
+     the opposite direction — rises up behind the last card and the footnotes text so
+     it stays legible against the page's photo background once you reach the true end
+     of the page. Anchored to -90px (not further) so it lines up exactly with body's
+     own bottom padding instead of adding extra scrollable space past the real content. */
+  .footnotes::before{
+    content:""; position:absolute; z-index:-1; pointer-events:none;
+    left:50%; right:auto; width:100vw; transform:translateX(-50%);
+    top: -160px; bottom: -90px;
+    background: linear-gradient(180deg, transparent 0%, rgba(8,7,6,0.5) 45%, rgba(8,7,6,0.88) 78%, rgba(8,7,6,0.94) 100%);
+  }
   .footnote{ color: var(--ink-faint); font-size: 12.5px; line-height: 1.65; padding: 7px 4px 0; }
   .footnote .dot{ color:var(--acc2); font-weight:700; }
   .footnote:nth-child(4n+1) .dot{ color: var(--acc); }
@@ -725,6 +839,43 @@
   }
   .historydel:hover{ background: var(--acc); color:#fff; }
 
+  .history-layer{
+    position:fixed; inset: var(--nav-h) 0 0; z-index:30;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition: opacity .24s var(--ease), visibility 0s linear .24s;
+  }
+  .history-layer.show{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition: opacity .24s var(--ease), visibility 0s;
+  }
+  .history-dismiss{
+    position:absolute; inset:0; border:0; border-radius:0; cursor:default;
+    background: rgba(5,5,4,0.34); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  }
+  .history-popover{
+    --onblock: var(--ink);
+    --onblock-dim: rgba(243,241,236,0.68);
+    --chip-bg: rgba(255,255,255,0.08);
+    --chip-fg: var(--ink);
+    position:absolute; z-index:1; top:16px; left:50%;
+    width:min(520px, calc(100vw - 32px)); max-height:calc(100% - 32px); overflow:auto;
+    padding:24px 22px 22px; border-radius:var(--radius-lg);
+    border:1px solid rgba(255,255,255,0.12);
+    background:rgba(25,24,22,0.90);
+    backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
+    box-shadow:0 28px 80px -20px rgba(0,0,0,0.78);
+    transform:translate(-50%, -12px) scale(.96);
+    transition:transform .3s var(--ease-spring);
+  }
+  .history-layer.show .history-popover{ transform:translate(-50%, 0) scale(1); }
+  .history-popover-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:10px; }
+  .history-popover .closebtn{ flex-shrink:0; }
+  @media (max-width:640px){
+    .toolbar-actions{ width:100%; }
+    .toolbar-actions .gearbtn{ flex:1; justify-content:center; padding-inline:12px; }
+    .history-popover{ top:12px; max-height:calc(100% - 24px); padding:20px 18px 18px; }
+  }
+
 </style>
 </head>
 <body>
@@ -737,7 +888,7 @@
 <div class="theme-wipe" id="themeWipe" aria-hidden="true"></div>
 
 <button type="button" class="installbtn" id="installBtn" aria-label="Add The Take to your home screen">
-  <span class="installbtn-label">Add app</span>
+  <span class="installbtn-label">Add to Home Screen</span>
 </button>
 <div class="iospop" id="iosInstallPop">
   <div class="iospop-title">Add to Home Screen</div>
@@ -772,7 +923,14 @@
       <div class="herohead">
         <img class="titlelogo" src="assets/chop-logo.png" alt="Chop Barbershop logo">
         <div class="eyebrow">Chop Barbershop &mdash; Pay Calculator</div>
-        <div class="hero-titlewrap"><h1>The Take</h1></div>
+        <div class="hero-titlewrap">
+          <h1>The Take</h1>
+          <svg class="title-squiggle" viewBox="0 0 300 46" preserveAspectRatio="xMinYMid meet" aria-hidden="true">
+            <path class="squiggle-line" d="M -30 30 C -14 6, 10 48, 32 24 S 66 -8, 90 20 S 126 46, 146 16 S 180 -6, 202 22 S 232 42, 246 16 C 252 6, 256 2, 260 8"/>
+            <path class="squiggle-dollar" d="M 268 24 C 260 18, 260 8, 271 8 C 282 8, 282 17, 271 17 C 260 17, 260 28, 271 28 C 282 28, 283 19, 276 15"/>
+            <line class="squiggle-dollar-bar" x1="271" y1="2" x2="271" y2="34"/>
+          </svg>
+        </div>
       </div>
       <p class="sub" id="subtext"></p>
     </div>
@@ -799,6 +957,7 @@
           <label class="rememberrow"><input type="checkbox" class="rememberChk" id="rememberLook2"> Remember this look</label>
         </div>
       </div>
+      <button type="button" class="hero-navbar-btn" id="navHistoryBtn" aria-label="History" aria-haspopup="dialog" aria-controls="historyLayer" aria-expanded="false">🕘</button>
       <button type="button" class="hero-navbar-btn" id="navSettingsBtn" aria-label="Settings">⚙️</button>
     </div>
   </div>
@@ -821,7 +980,33 @@
 
   <div class="contenttoolbar reveal">
     <div class="toolbar-title">Your numbers</div>
-    <button type="button" class="gearbtn" id="settingsToggle">⚙️ Settings</button>
+    <div class="toolbar-actions">
+      <button type="button" class="gearbtn" id="historyToggle" aria-haspopup="dialog" aria-controls="historyLayer">🕘 History</button>
+      <button type="button" class="gearbtn" id="settingsToggle">⚙️ Settings</button>
+    </div>
+  </div>
+
+  <div class="history-layer" id="historyLayer" aria-hidden="true">
+    <button type="button" class="history-dismiss" id="historyDismiss" aria-label="Close history"></button>
+    <section class="history-popover" id="historyPopover" role="dialog" aria-modal="false" aria-labelledby="historyTitle" tabindex="-1">
+      <div class="history-popover-head">
+        <div class="cardtitle pill-below" id="historyTitle">History<span id="historyCount">0 SAVED</span></div>
+        <button type="button" class="closebtn" id="closeHistory" aria-label="Close history">&times;</button>
+      </div>
+      <p class="cardnote">Save this period's numbers to build a running record. Saved locally in this browser only &mdash; tap any saved period to load it back into the fields above.</p>
+      <div class="historysave">
+        <div class="fieldwrap">
+          <div class="fieldlabel">Label <span style="text-transform:none;">(optional)</span></div>
+          <div class="fieldrow"><input type="text" id="historyLabel" placeholder="e.g. Aug 18–24" maxlength="40"></div>
+        </div>
+        <button type="button" class="smallbtn" id="saveHistoryBtn">Save this period</button>
+      </div>
+      <div id="historyEmpty" class="cardnote">No saved periods yet &mdash; enter or scan a period above, then save it here.</div>
+      <div id="historyRows"></div>
+      <div class="btnrow" id="historyClearRow" style="display:none; margin-top:12px;">
+        <button type="button" class="smallbtn danger" id="clearHistoryBtn">Clear history</button>
+      </div>
+    </section>
   </div>
 
   <div class="cards-grid">
@@ -908,56 +1093,52 @@
       <div id="zoomrows"></div>
     </div>
 
-    <!-- HISTORY -->
-    <div class="ledger card-full block-b reveal">
-      <div class="ledger-head">
-        <div class="cardtitle pill-below">History<span id="historyCount">0 SAVED</span></div>
-      </div>
-      <p class="cardnote">Save this period's numbers to build a running record. Saved locally in this browser only &mdash; tap any saved period to load it back into the fields above.</p>
-
-      <div class="historysave">
-        <div class="fieldwrap">
-          <div class="fieldlabel">Label <span style="text-transform:none;">(optional)</span></div>
-          <div class="fieldrow"><input type="text" id="historyLabel" placeholder="e.g. Aug 18\u201324" maxlength="40"></div>
-        </div>
-        <button type="button" class="smallbtn" id="saveHistoryBtn">\ud83d\udcbe Save this period</button>
-      </div>
-
-      <div id="historyEmpty" class="cardnote">No saved periods yet &mdash; enter or scan a period above, then save it here.</div>
-      <div id="historyRows"></div>
-      <div class="btnrow" id="historyClearRow" style="display:none; margin-top:12px;">
-        <button type="button" class="smallbtn danger" id="clearHistoryBtn">Clear history</button>
-      </div>
-    </div>
-
   </div>
 
   <!-- PROJECTION (planning tool, collapsible) -->
   <details class="projection reveal" open>
+    <div class="projection-bg" aria-hidden="true"></div>
     <summary>Projected Earnings <span>&mdash; planning tool for a future week, not based on your scans</span></summary>
 
     <div class="controllabel">Shift schedule</div>
-    <div class="tabbar" id="shiftbar">
-      <button type="button" class="tabbtn" data-hours="10">10 hrs/wk<span class="ticket">2 shifts</span></button>
-      <button type="button" class="tabbtn" data-hours="20">20 hrs/wk<span class="ticket">4 shifts</span></button>
-      <button type="button" class="tabbtn" data-hours="30">30 hrs/wk<span class="ticket">6 shifts</span></button>
-      <button type="button" class="tabbtn" data-hours="40">40 hrs/wk<span class="ticket">8 shifts</span></button>
-      <button type="button" class="tabbtn" data-hours="50">50 hrs/wk<span class="ticket">10 shifts</span></button>
-      <button type="button" class="tabbtn tabbtn-custom" data-hours="custom">Custom<span class="ticket">exact hrs</span></button>
+    <div class="stepslider" id="shiftSlider">
+      <div class="stepslider-label">
+        <span class="stepslider-glyph" id="shiftSliderGlyph" aria-hidden="true">&#10074;&#10074;</span>
+        <span class="stepslider-name" id="shiftSliderName">20 hrs/wk</span>
+        <span class="stepslider-amt" id="shiftSliderAmt">4 shifts</span>
+      </div>
+      <input type="range" id="shiftRangeInput" min="0" max="5" step="1" value="1" aria-label="Shift schedule">
+      <div class="stepslider-ticks" id="shiftSliderTicks" role="presentation">
+        <button type="button" data-key="10" aria-label="10 hours per week">10</button>
+        <button type="button" data-key="20" aria-label="20 hours per week">20</button>
+        <button type="button" data-key="30" aria-label="30 hours per week">30</button>
+        <button type="button" data-key="40" aria-label="40 hours per week">40</button>
+        <button type="button" data-key="50" aria-label="50 hours per week">50</button>
+        <button type="button" data-key="custom" aria-label="Custom hours">&#9998;</button>
+      </div>
     </div>
     <div class="customfield" id="shiftCustomWrap">
       <input type="number" id="shiftCustomInput" min="1" max="80" step="1" inputmode="numeric" placeholder="e.g. 32"><span>hrs/wk, exact</span>
     </div>
 
     <div class="controllabel">Average ticket tier</div>
-    <div class="tabbar" id="tierbar">
-      <button type="button" class="tabbtn" data-tier="budget">Budget<span class="ticket" id="budgetTicket">$18 avg</span></button>
-      <button type="button" class="tabbtn" data-tier="low">Low<span class="ticket" id="lowTicket">$22 avg</span></button>
-      <button type="button" class="tabbtn" data-tier="average">Average<span class="ticket" id="avgTicket">$30 avg</span></button>
-      <button type="button" class="tabbtn" data-tier="high">High<span class="ticket" id="highTicket">$42 avg</span></button>
-      <button type="button" class="tabbtn" data-tier="premium">Premium<span class="ticket" id="premiumTicket">$58 avg</span></button>
-      <button type="button" class="tabbtn tabbtn-custom" data-tier="custom">Custom<span class="ticket">exact $</span></button>
+    <div class="stepslider" id="tierSlider">
+      <div class="stepslider-label">
+        <span class="stepslider-glyph" id="tierSliderGlyph" aria-hidden="true">$</span>
+        <span class="stepslider-name" id="tierSliderName">Budget</span>
+        <span class="stepslider-amt" id="tierSliderAmt">$18 avg</span>
+      </div>
+      <input type="range" id="tierRangeInput" min="0" max="5" step="1" value="0" aria-label="Average ticket tier">
+      <div class="stepslider-ticks" id="tierSliderTicks" role="presentation">
+        <button type="button" data-key="budget" aria-label="Budget">$</button>
+        <button type="button" data-key="low" aria-label="Low">$$</button>
+        <button type="button" data-key="average" aria-label="Average">$$$</button>
+        <button type="button" data-key="high" aria-label="High">$$$$</button>
+        <button type="button" data-key="premium" aria-label="Premium">$$$$$</button>
+        <button type="button" data-key="custom" aria-label="Custom">&#9998;</button>
+      </div>
     </div>
+
     <div class="customfield" id="tierCustomWrap">
       <span>$</span><input type="number" id="tierCustomInput" min="0" step="1" inputmode="numeric" placeholder="e.g. 35"><span>avg ticket</span>
     </div>
@@ -1045,9 +1226,11 @@
 
   <div class="setgroup">
     <div class="setlabel">Projection ticket prices</div>
+    <div class="setrow"><label for="setTicketBudget">Budget tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketBudget" step="1" min="0"></div></div>
     <div class="setrow"><label for="setTicketLow">Low tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketLow" step="1" min="0"></div></div>
     <div class="setrow"><label for="setTicketAvg">Average tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketAvg" step="1" min="0"></div></div>
     <div class="setrow"><label for="setTicketHigh">High tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketHigh" step="1" min="0"></div></div>
+    <div class="setrow"><label for="setTicketPremium">Premium tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketPremium" step="1" min="0"></div></div>
   </div>
 
   <div class="btnrow">
@@ -1106,6 +1289,42 @@
     rememberLook: false
   };
   var ACCENTS = ['coral','teal','gold'];
+
+  // Order for each step slider — index doubles as the range input's value.
+  var TIER_ORDER = ['budget','low','average','high','premium','custom'];
+  var TIER_GLYPHS = { budget:'$', low:'$$', average:'$$$', high:'$$$$', premium:'$$$$$', custom:'\u270E' };
+  var TIER_NAMES  = { budget:'Budget', low:'Low', average:'Average', high:'High', premium:'Premium', custom:'Custom' };
+  var HOUR_ORDER = ['10','20','30','40','50','custom'];
+  var HOUR_GLYPHS = { '10':'\u2758', '20':'\u2758\u2758', '30':'\u2758\u2758\u2758', '40':'\u2758\u2758\u2758\u2758', '50':'\u2758\u2758\u2758\u2758\u2758', custom:'\u270E' };
+  var HOUR_NAMES  = { '10':'10 hrs/wk', '20':'20 hrs/wk', '30':'30 hrs/wk', '40':'40 hrs/wk', '50':'50 hrs/wk', custom:'Custom' };
+  var HOUR_SHIFTS = { '10':2, '20':4, '30':6, '40':8, '50':10 };
+
+  function initStepSlider(opts){
+    var range = document.getElementById(opts.rangeId);
+    var glyphEl = document.getElementById(opts.glyphId);
+    var nameEl = document.getElementById(opts.nameId);
+    var amtEl = document.getElementById(opts.amtId);
+    var ticks = document.querySelectorAll('#' + opts.ticksId + ' button');
+
+    range.addEventListener('input', function(e){
+      opts.onSelect(opts.order[parseInt(e.target.value, 10)]);
+    });
+    ticks.forEach(function(btn){
+      btn.addEventListener('click', function(){ opts.onSelect(btn.getAttribute('data-key')); });
+    });
+
+    return function sync(activeKey){
+      var idx = opts.order.indexOf(activeKey);
+      if(idx < 0) return;
+      range.value = idx;
+      glyphEl.textContent = opts.glyphs[activeKey];
+      nameEl.textContent = opts.names[activeKey];
+      amtEl.textContent = opts.amtFn(activeKey);
+      ticks.forEach(function(btn){
+        btn.classList.toggle('active', btn.getAttribute('data-key') === activeKey);
+      });
+    };
+  }
 
   var SHIFT_CAPACITY = 11;
   var FILL_RATES = [
@@ -1212,6 +1431,7 @@
       var willShow = !pop.classList.contains('show');
       paintPops.forEach(function(p){ p.pop.classList.remove('show'); });
       if(willShow) pop.classList.add('show');
+      document.getElementById('heroBlock').classList.toggle('theme-flyout-open', willShow);
     });
   }
   wirePaintToggle('paintToggle', 'paintPop');
@@ -1220,6 +1440,9 @@
     paintPops.forEach(function(p){
       if(!p.pop.contains(e.target) && e.target !== p.btn){ p.pop.classList.remove('show'); }
     });
+    if(!paintPops.some(function(p){ return p.pop.classList.contains('show'); })){
+      document.getElementById('heroBlock').classList.remove('theme-flyout-open');
+    }
   });
   document.querySelectorAll('.accentbtn').forEach(function(btn){
     btn.addEventListener('click', function(){ settings.uiAccent = btn.getAttribute('data-accentval'); fireWipe(btn); applyLook(); });
@@ -1388,12 +1611,6 @@
   }
 
   function renderProjection(){
-    document.getElementById('budgetTicket').textContent = '$' + settings.tierTickets.budget + ' avg';
-    document.getElementById('lowTicket').textContent = '$' + settings.tierTickets.low + ' avg';
-    document.getElementById('avgTicket').textContent = '$' + settings.tierTickets.average + ' avg';
-    document.getElementById('highTicket').textContent = '$' + settings.tierTickets.high + ' avg';
-    document.getElementById('premiumTicket').textContent = '$' + settings.tierTickets.premium + ' avg';
-
     var resolvedTicket = ui.projTierCustom ? ui.customTicket : settings.tierTickets[ui.projTier];
     document.getElementById('tierintro').innerHTML =
       'Assuming a <b style="color:var(--acc3)">$' + resolvedTicket + ' average ticket</b> per client' +
@@ -1434,6 +1651,9 @@
       btn.classList.toggle('active', ui.projTierCustom ? isCustom : (!isCustom && t === ui.projTier));
     });
     document.getElementById('tierCustomWrap').classList.toggle('show', ui.projTierCustom);
+
+    syncTierSlider(ui.projTierCustom ? 'custom' : ui.projTier);
+    syncShiftSlider(ui.projHoursCustom ? 'custom' : String(ui.projHours));
   }
 
   function renderHistory(){
@@ -1479,6 +1699,7 @@
         document.getElementById('inReceived').value = (rec.received!==null && rec.received!==undefined) ? rec.received : '';
         document.getElementById('manualEntry').setAttribute('open','');
         renderActual();
+        closeHistory();
         window.scrollTo({ top:0, behavior:'smooth' });
       });
     });
@@ -1553,9 +1774,11 @@
     document.getElementById('setFica').value = (settings.ficaRate*100).toFixed(2);
     document.getElementById('setStdDeduction').value = settings.stdDeduction;
     document.getElementById('setTipsDeduction').value = settings.tipsDeductionAssumed;
+    document.getElementById('setTicketBudget').value = settings.tierTickets.budget;
     document.getElementById('setTicketLow').value = settings.tierTickets.low;
     document.getElementById('setTicketAvg').value = settings.tierTickets.average;
     document.getElementById('setTicketHigh').value = settings.tierTickets.high;
+    document.getElementById('setTicketPremium').value = settings.tierTickets.premium;
     document.getElementById('minWageNote').textContent = (STATE_MIN_WAGE[settings.state]||STATE_MIN_WAGE.OTHER).note + ' (reference figure, always verify.)';
     document.querySelectorAll('#wageModeToggle .periodbtn').forEach(function(btn){
       btn.classList.toggle('active', btn.getAttribute('data-wagemode') === settings.wageMode);
@@ -1593,21 +1816,21 @@
     saveHistory(); renderHistory();
   });
 
+  function selectHours(h){
+    if(h === 'custom'){
+      ui.projHoursCustom = true;
+      ui.projHours = ui.customHours;
+      document.getElementById('shiftCustomInput').value = ui.customHours;
+      renderProjection();
+      document.getElementById('shiftCustomInput').focus();
+    } else {
+      ui.projHoursCustom = false;
+      ui.projHours = parseInt(h, 10);
+      renderProjection();
+    }
+  }
   document.querySelectorAll('#shiftbar .tabbtn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var h = btn.getAttribute('data-hours');
-      if(h === 'custom'){
-        ui.projHoursCustom = true;
-        ui.projHours = ui.customHours;
-        document.getElementById('shiftCustomInput').value = ui.customHours;
-        renderProjection();
-        document.getElementById('shiftCustomInput').focus();
-      } else {
-        ui.projHoursCustom = false;
-        ui.projHours = parseInt(h,10);
-        renderProjection();
-      }
-    });
+    btn.addEventListener('click', function(){ selectHours(btn.getAttribute('data-hours')); });
   });
   document.getElementById('shiftCustomInput').addEventListener('input', function(e){
     ui.customHours = Math.max(1, num(e.target.value, ui.customHours));
@@ -1615,24 +1838,39 @@
     renderProjection();
   });
 
+  function selectTier(t){
+    if(t === 'custom'){
+      ui.projTierCustom = true;
+      document.getElementById('tierCustomInput').value = ui.customTicket;
+      renderProjection();
+      document.getElementById('tierCustomInput').focus();
+    } else {
+      ui.projTierCustom = false;
+      ui.projTier = t;
+      renderProjection();
+    }
+  }
   document.querySelectorAll('#tierbar .tabbtn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var t = btn.getAttribute('data-tier');
-      if(t === 'custom'){
-        ui.projTierCustom = true;
-        document.getElementById('tierCustomInput').value = ui.customTicket;
-        renderProjection();
-        document.getElementById('tierCustomInput').focus();
-      } else {
-        ui.projTierCustom = false;
-        ui.projTier = t;
-        renderProjection();
-      }
-    });
+    btn.addEventListener('click', function(){ selectTier(btn.getAttribute('data-tier')); });
   });
   document.getElementById('tierCustomInput').addEventListener('input', function(e){
     ui.customTicket = Math.max(0, num(e.target.value, ui.customTicket));
     renderProjection();
+  });
+
+  var syncShiftSlider = initStepSlider({
+    order: HOUR_ORDER, glyphs: HOUR_GLYPHS, names: HOUR_NAMES,
+    rangeId: 'shiftRangeInput', glyphId: 'shiftSliderGlyph', nameId: 'shiftSliderName', amtId: 'shiftSliderAmt',
+    ticksId: 'shiftSliderTicks',
+    amtFn: function(k){ return k === 'custom' ? 'exact hrs' : (HOUR_SHIFTS[k] + ' shifts'); },
+    onSelect: selectHours
+  });
+  var syncTierSlider = initStepSlider({
+    order: TIER_ORDER, glyphs: TIER_GLYPHS, names: TIER_NAMES,
+    rangeId: 'tierRangeInput', glyphId: 'tierSliderGlyph', nameId: 'tierSliderName', amtId: 'tierSliderAmt',
+    ticksId: 'tierSliderTicks',
+    amtFn: function(k){ return k === 'custom' ? 'exact $' : ('$' + settings.tierTickets[k] + ' avg'); },
+    onSelect: selectTier
   });
 
   document.querySelectorAll('#goalPeriodBar .periodbtn').forEach(function(btn){
@@ -1641,7 +1879,7 @@
       ui.goalPeriod = gp;
       document.querySelectorAll('#goalPeriodBar .periodbtn').forEach(function(b){ b.classList.toggle('active', b===btn); });
       document.querySelectorAll('.goalperiod-panel').forEach(function(p){
-        p.style.display = (p.getAttribute('data-goalperiod') === gp) ? '' : 'none';
+        p.style.display = (p.getAttribute('data-goalperiod') === gp) ? 'block' : 'none';
       });
     });
   });
@@ -1649,11 +1887,34 @@
     btn.classList.toggle('active', btn.getAttribute('data-goalperiod') === ui.goalPeriod);
   });
   document.querySelectorAll('.goalperiod-panel').forEach(function(p){
-    p.style.display = (p.getAttribute('data-goalperiod') === ui.goalPeriod) ? '' : 'none';
+    p.style.display = (p.getAttribute('data-goalperiod') === ui.goalPeriod) ? 'block' : 'none';
   });
   document.querySelectorAll('#periodbar .periodbtn').forEach(function(btn){
     btn.addEventListener('click', function(){ ui.zoomPeriod = btn.getAttribute('data-period'); renderActual(); document.querySelectorAll('#periodbar .periodbtn').forEach(function(b){ b.classList.toggle('active', b===btn); }); });
   });
+
+  var historyLayer = document.getElementById('historyLayer');
+  var historyToggle = document.getElementById('historyToggle');
+  var navHistoryToggle = document.getElementById('navHistoryBtn');
+  function setHistoryExpanded(expanded){
+    historyToggle.setAttribute('aria-expanded', String(expanded));
+    if(navHistoryToggle) navHistoryToggle.setAttribute('aria-expanded', String(expanded));
+  }
+  function openHistory(){
+    closeDrawer();
+    var heroBottom = document.getElementById('heroBlock').getBoundingClientRect().bottom;
+    historyLayer.style.top = Math.max(NAV_H, Math.round(heroBottom)) + 'px';
+    historyLayer.classList.add('show');
+    historyLayer.setAttribute('aria-hidden', 'false');
+    setHistoryExpanded(true);
+    requestAnimationFrame(function(){ document.getElementById('historyPopover').focus(); });
+  }
+  function closeHistory(){
+    if(!historyLayer) return;
+    historyLayer.classList.remove('show');
+    historyLayer.setAttribute('aria-hidden', 'true');
+    setHistoryExpanded(false);
+  }
 
   var drawer = document.getElementById('drawer');
   var backdrop = document.getElementById('backdrop');
@@ -1665,9 +1926,19 @@
     drawer.classList.remove('show'); backdrop.classList.remove('in');
     setTimeout(function(){ backdrop.classList.remove('show'); }, 300);
   }
-  document.getElementById('settingsToggle').addEventListener('click', openDrawer);
+  historyToggle.addEventListener('click', openHistory);
+  if(navHistoryToggle) navHistoryToggle.addEventListener('click', openHistory);
+  document.getElementById('closeHistory').addEventListener('click', closeHistory);
+  document.getElementById('historyDismiss').addEventListener('click', closeHistory);
+  document.getElementById('settingsToggle').addEventListener('click', function(){ closeHistory(); openDrawer(); });
   document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
   backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      closeHistory();
+      closeDrawer();
+    }
+  });
 
   document.getElementById('setState').addEventListener('change', function(e){
     settings.state = e.target.value;
@@ -1692,9 +1963,11 @@
     var v = num(e.target.value,0); if(v<0) v=0; if(v>25000) v=25000;
     settings.tipsDeductionAssumed = v; saveSettings(); renderAll();
   });
+  document.getElementById('setTicketBudget').addEventListener('input', function(e){ settings.tierTickets.budget = num(e.target.value,0); saveSettings(); renderProjection(); });
   document.getElementById('setTicketLow').addEventListener('input', function(e){ settings.tierTickets.low = num(e.target.value,0); saveSettings(); renderProjection(); });
   document.getElementById('setTicketAvg').addEventListener('input', function(e){ settings.tierTickets.average = num(e.target.value,0); saveSettings(); renderProjection(); });
   document.getElementById('setTicketHigh').addEventListener('input', function(e){ settings.tierTickets.high = num(e.target.value,0); saveSettings(); renderProjection(); });
+  document.getElementById('setTicketPremium').addEventListener('input', function(e){ settings.tierTickets.premium = num(e.target.value,0); saveSettings(); renderProjection(); });
 
   document.getElementById('addBracket').addEventListener('click', function(){
     var brackets = settings.brackets;
@@ -1861,6 +2134,7 @@
   function initHeroScroll(){
     var heroBlock = document.getElementById('heroBlock');
     var spacer = document.getElementById('heroSpacer');
+    var heroNavbar = document.getElementById('heroNavbar');
     if(!heroBlock || !spacer) return;
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1883,7 +2157,8 @@
       heroBlock.style.maxHeight = '';
       heroBlock.style.height = '';
       var h = heroBlock.getBoundingClientRect().height;
-      fullH = h || (window.innerWidth <= 640 ? window.innerHeight * 0.52 : Math.min(window.innerHeight * 0.62, 640));
+      var topSpace = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hero-top-space')) || 0;
+      fullH = h || ((window.innerWidth <= 640 ? window.innerHeight * 0.52 : Math.min(window.innerHeight * 0.62, 640)) + topSpace);
       heroBlock.style.minHeight = '0px';
       heroBlock.style.maxHeight = 'none';
       spacer.style.height = fullH + 'px';
@@ -1908,6 +2183,7 @@
       root.setProperty('--hero-content-p', contentP.toFixed(4));
       root.setProperty('--hero-nav-p', navP.toFixed(4));
       heroBlock.classList.toggle('compact', progress > 0.92);
+      if(heroNavbar) heroNavbar.setAttribute('aria-hidden', progress > 0.92 ? 'false' : 'true');
 
       ticking = false;
     }
