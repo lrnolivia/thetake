@@ -668,33 +668,33 @@
   details.projection[open] > summary::before{ content:"▾"; }
   details.projection > summary span{ font-family: var(--label-font); font-size:11px; color: rgba(243,241,236,0.68); font-weight:400; font-style:normal; }
 
-  /* Closed state: a high-contrast, softly frosted invitation instead of a dim
-     translucent card. .is-closing keeps these visual properties active while
-     JS animates the native <details> height down to the pill. */
+  /* Closed state: the expanded card's frosted-black treatment compressed into
+     a fully rounded pill. The fill lives on <details> itself because browsers
+     do not paint non-summary children (including .projection-bg) while closed. */
   details.projection:not([open]), details.projection.is-closing{
     border-radius:999px;
-    border-color:rgba(255,255,255,0.68);
-    background:rgba(248,246,241,0.82);
+    border-color:rgba(255,255,255,0.12);
+    background:rgba(8,7,6,0.82);
     padding:8px 10px;
-    box-shadow:0 18px 44px -18px rgba(0,0,0,0.78), inset 0 1px 0 rgba(255,255,255,0.72);
+    box-shadow:0 18px 44px -18px rgba(0,0,0,0.88), inset 0 1px 0 rgba(255,255,255,0.10);
   }
   details.projection:not([open]) .projection-bg,
   details.projection.is-closing .projection-bg{
-    background:rgba(248,246,241,0.72);
-    backdrop-filter:blur(22px) saturate(125%); -webkit-backdrop-filter:blur(22px) saturate(125%);
+    background:rgba(8,7,6,0.72);
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
   }
   details.projection:not([open]) > summary,
   details.projection.is-closing > summary{
-    min-height:70px; padding:13px 18px; color:#11100e; gap:12px;
-    text-shadow:0 1px 0 rgba(255,255,255,0.55);
+    min-height:70px; padding:13px 18px; color:var(--acc); gap:12px;
+    text-shadow:none;
   }
   details.projection:not([open]) > summary::before,
   details.projection.is-closing > summary::before{
-    color:rgba(13,12,10,0.86); font-size:18px;
+    color:var(--acc3); font-size:18px;
   }
   details.projection:not([open]) > summary span,
   details.projection.is-closing > summary span{
-    color:rgba(17,16,14,0.78); font-weight:700; line-height:1.45;
+    color:rgba(243,241,236,0.68); font-weight:400; line-height:1.45;
   }
   details.projection.tap-cue{ animation:projectionTapCue 1.45s var(--ease) 2; }
   html[data-preview-animations="off"] details.projection.tap-cue{ animation:none; }
