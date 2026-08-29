@@ -25,8 +25,18 @@
   :root{
     --page-pad: 20px;
     --maxw: 1180px;
-    --ease: cubic-bezier(.16,1,.3,1);
-    --ease-spring: cubic-bezier(.34,1.56,.64,1);
+    --motion-instant:100ms;
+    --motion-fast:180ms;
+    --motion-base:260ms;
+    --motion-medium:380ms;
+    --motion-slow:500ms;
+    --motion-hero:650ms;
+    --ease-standard:cubic-bezier(.32,.72,0,1);
+    --ease-out-soft:cubic-bezier(.16,1,.3,1);
+    --ease-in-soft:cubic-bezier(.7,0,.84,0);
+    --ease-snappy:cubic-bezier(.22,1,.36,1);
+    --ease:var(--ease-standard);
+    --ease-spring:var(--ease-snappy);
     --wx: 50%; --wy: 40px;
     --nav-content-h: 64px;
     --nav-h: calc(var(--nav-content-h) + env(safe-area-inset-top, 0px));
@@ -43,7 +53,7 @@
   body::before{
     content:""; position:fixed; inset:-100px; z-index:1; pointer-events:none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0; mix-blend-mode: overlay; transition: opacity .6s var(--ease);
+    opacity:0; mix-blend-mode:overlay; transition:opacity var(--motion-slow) var(--ease-standard);
   }
   html[data-style="dopamine"] body::before{ opacity: 0.05; }
 
@@ -55,7 +65,7 @@
     opacity: 0;
   }
   .theme-wipe.go{
-    transition: clip-path .68s var(--ease), opacity .5s ease .42s;
+    transition: clip-path var(--motion-hero) var(--ease-standard), opacity var(--motion-slow) var(--ease-in-soft) 150ms;
     clip-path: circle(140% at var(--wx) var(--wy));
     opacity: 0.9;
   }
@@ -86,7 +96,12 @@
     --btn-radius: 999px;
   }
 
-  *{ box-sizing:border-box; margin:0; padding:0; }
+  *{
+    box-sizing:border-box; margin:0; padding:0;
+    -webkit-user-drag:none; -webkit-touch-callout:none;
+    -webkit-user-select:none; user-select:none;
+  }
+  p, pre, input, textarea, select, .payinfo-popover{ -webkit-user-select:text; user-select:text; }
   html{
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
@@ -100,9 +115,9 @@
     display:flex;
     justify-content:center;
     padding: 0 0 90px;
-    transition: background-color .5s var(--ease), color .5s var(--ease);
+    transition: background-color var(--motion-slow) var(--ease-standard), color var(--motion-slow) var(--ease-standard);
   }
-  .page{ width:100%; max-width: var(--maxw); padding: 0 var(--page-pad); position:relative; z-index:1; }
+  .page{ width:100%; max-width: var(--maxw); padding: 0 var(--page-pad); position:relative; z-index:1; touch-action:pan-y; }
 
   /* ---- Page background: the hero image lives here now, pinned behind the entire
      page (both themes) instead of scoped to the hero block. It never scrolls or
@@ -112,15 +127,15 @@
   .page-bg-img{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 32%;
   }
-  .page-bg-tint{ position:absolute; inset:0; transition: opacity .5s var(--ease); }
+  .page-bg-tint{ position:absolute; inset:0; transition: opacity var(--motion-slow) var(--ease-standard); }
   .page-bg-blur{
     position:absolute; inset:0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
-    transition: backdrop-filter .8s var(--ease), -webkit-backdrop-filter .8s var(--ease);
+    transition: backdrop-filter var(--motion-slow) var(--ease-standard), -webkit-backdrop-filter var(--motion-slow) var(--ease-standard);
   }
   html.cards-visible .page-bg-blur{ backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
   .page-bg-grain{
     position:absolute; inset:-100px; opacity:0; mix-blend-mode:overlay; pointer-events:none;
-    transition: opacity .8s var(--ease);
+    transition: opacity var(--motion-slow) var(--ease-standard);
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   html.cards-visible .page-bg-grain{ opacity:0.14; }
@@ -135,19 +150,25 @@
   }
   @media (prefers-reduced-motion: reduce){ .page-bg-img{ transform:none !important; } }
 
-  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; scroll-behavior:auto !important; } }
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:.01ms !important; transition-delay:0ms !important;
+      scroll-behavior:auto !important;
+    }
+  }
   html{ scroll-behavior: smooth; }
   button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible{
     outline: 3px solid var(--acc); outline-offset: 3px; border-radius: 4px;
   }
   button{ font-family: inherit; -webkit-tap-highlight-color: transparent; }
-  button{ transition: transform .18s var(--ease-spring), box-shadow .18s var(--ease), background-color .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease); }
-  button:active{ transform: scale(0.96); }
+  button{ transition: transform var(--motion-fast) var(--ease-snappy), box-shadow var(--motion-fast) var(--ease-standard), background-color var(--motion-base) var(--ease-standard), color var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard); }
+  button:active{ transform: scale(.97); }
 
-  .reveal{ opacity:0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
-  .reveal.in{ opacity:1; transform: none; }
-  .reveal-scale{ opacity:0; transform: scale(.94); transition: opacity .7s var(--ease), transform .7s var(--ease); }
-  .reveal-scale.in{ opacity:1; transform: none; }
+  .reveal{ opacity:0; transform:translate3d(0,18px,0) scale(.98); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft); }
+  .reveal.in{ opacity:1; transform:translate3d(0,0,0) scale(1); }
+  .reveal-scale{ opacity:0; transform:translate3d(0,12px,0) scale(.96); transition:opacity var(--motion-hero) var(--ease-out-soft), transform var(--motion-hero) var(--ease-out-soft); }
+  .reveal-scale.in{ opacity:1; transform:translate3d(0,0,0) scale(1); }
 
   .herohead{ display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
   .titlelogo{ height: clamp(64px, 11vw, 110px); width:auto; border-radius:50%; flex-shrink:0; }
@@ -174,7 +195,7 @@
     color:#F5F3EE; border:1px solid rgba(255,255,255,0.14); border-radius: 999px;
     padding: 14px 22px; font-family: var(--label-font); font-size:12.5px; font-weight:700;
     letter-spacing:0.03em; cursor:pointer; box-shadow: 0 16px 40px -12px rgba(0,0,0,0.55);
-    transition: opacity .5s var(--ease), transform .55s var(--ease-spring);
+    transition:opacity var(--motion-slow) var(--ease-standard), transform var(--motion-slow) var(--ease-snappy);
   }
   .installbtn:hover{ transform: translateX(-50%) translateY(-3px); }
   .installbtn:active{ transform: translateX(-50%) scale(0.95); }
@@ -187,7 +208,7 @@
     background: var(--panel); color: var(--ink); border-radius: var(--radius-md); padding:18px;
     box-shadow: 0 24px 60px -12px rgba(0,0,0,0.5);
     opacity:0;
-    transition: opacity .28s var(--ease), transform .32s var(--ease-spring);
+    transition:opacity var(--motion-base) var(--ease-standard), transform var(--motion-medium) var(--ease-snappy);
   }
   .iospop.show{ display:block; opacity:1; transform: translateX(-50%) translateY(0) scale(1); }
   .iospop-title{ font-family: var(--title-font); font-weight: var(--title-weight); color: var(--acc); font-size:18px; margin-bottom:12px; }
@@ -207,7 +228,7 @@
     background: var(--panel); border-radius: var(--radius-md); padding: 18px;
     box-shadow: 0 24px 60px -12px rgba(0,0,0,0.45);
     opacity:0; transform: translateY(-8px) scale(.96); pointer-events:none;
-    transition: opacity .28s var(--ease), transform .28s var(--ease-spring);
+    transition:opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-snappy);
     border: var(--border-w) solid var(--border-c);
   }
   .paintpop.show{ opacity:1; transform: translateY(0) scale(1); pointer-events:auto; }
@@ -254,7 +275,7 @@
     /* No fill of its own while expanded — the shared #pageBg shows straight through.
        Only .compact (the shrunk nav bar) paints a background, below. */
     background: transparent;
-    transition: background-color .35s var(--ease);
+    transition:background-color var(--motion-base) var(--ease-standard);
   }
   @media (max-width: 640px){
     .hero-block{ min-height: calc(52vh + var(--hero-top-space)); }
@@ -277,7 +298,7 @@
   .hero-navbar-blur{
     position:absolute; top:0; left:0; right:0; z-index:1; overflow:hidden;
     height: calc(var(--nav-h) + var(--sticky-gap) + var(--netpay-stuck-h) + var(--nav-fade-h));
-    opacity:0; pointer-events:none; transition: opacity .3s var(--ease);
+    opacity:0; pointer-events:none; transition:opacity var(--motion-base) var(--ease-standard);
   }
   .hero-block.compact .hero-navbar-blur{ opacity:1; }
   html[data-style="dopamine"] .hero-navbar-blur .tint{
@@ -290,6 +311,10 @@
       color-mix(in srgb, var(--bg) 26%, transparent) 89%,
       transparent 100%);
   }
+  /* Safari turns the progressive backdrop-filter slices into offset, blurry
+     duplicates of page text. Keep the compact-nav gradient, but remove those
+     filter slices so content below stays crisp. */
+  html[data-style="dopamine"] .hero-navbar-blur > span{ display:none; }
   html[data-style="dopamine"] .hero-navbar-blur span{ position:absolute; inset:0; z-index:1; }
   html[data-style="dopamine"] .hero-navbar-blur span:nth-child(2){
     backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
@@ -338,7 +363,7 @@
     width:34px; height:34px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0;
     background: rgba(255,255,255,0.14); color: var(--ink); font-size:14px;
     display:flex; align-items:center; justify-content:center;
-    transition: transform .18s var(--ease-spring), background-color .2s var(--ease);
+    transition:transform var(--motion-fast) var(--ease-snappy), background-color var(--motion-fast) var(--ease-standard);
   }
   .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); }
   .hero-navbar-btn:active{ transform: scale(0.9); }
@@ -353,17 +378,17 @@
     text-transform: uppercase; background: var(--acc); color: var(--acc-ink); padding: 5px 10px; border-radius: var(--radius-sm);
     margin-bottom: 14px; font-weight:700; display:inline-block;
     opacity:0; transform: translateY(14px);
-    transition: opacity .6s var(--ease) .1s, transform .6s var(--ease) .1s;
+    transition:opacity var(--motion-medium) var(--ease-out-soft) var(--motion-instant), transform var(--motion-medium) var(--ease-out-soft) var(--motion-instant);
   }
   .hero-block.in .eyebrow{ opacity:1; transform: translateY(0); }
 
   html[data-style="dopamine"] .hero-titlewrap h1{
     transform: translateY(112%);
-    transition: transform 1s var(--ease-spring) .22s;
+    transition: transform var(--motion-hero) var(--ease-out-soft) 180ms;
   }
   html[data-style="dopamine"] .hero-block.in .hero-titlewrap h1{ transform: translateY(0); }
-  .sub{ opacity:0; transform: translateY(10px); transition: opacity .6s var(--ease) .38s, transform .6s var(--ease) .38s; }
-  .hero-block.in .sub{ opacity:1; transform: translateY(0); }
+  .sub{ opacity:0; transform:translate3d(0,10px,0); transition:opacity var(--motion-medium) var(--ease-out-soft) 280ms, transform var(--motion-medium) var(--ease-out-soft) 280ms; }
+  .hero-block.in .sub{ opacity:1; transform:translate3d(0,0,0); }
 
   h1{
     font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
@@ -477,9 +502,11 @@
   }
   .netpay-hero .nph-label{ order:1; font-family: var(--label-font); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; font-weight:700; opacity:0.75; margin-bottom:6px; transition: font-size .3s var(--ease), margin .3s var(--ease); }
   .netpay-hero .nph-num{ order:2; font-family: var(--title-font); font-weight: var(--title-weight); font-size: clamp(52px, 11vw, 92px); line-height:0.95; letter-spacing: var(--title-tracking); display:inline-block; animation: nphBreathe 4.5s ease-in-out infinite; color: var(--acc); transition: font-size .3s var(--ease); }
-  .netpay-hero .nph-num.bump{ animation: nphBump .5s var(--ease-spring); }
-  @keyframes nphBump{ 0%{ transform: scale(1); } 35%{ transform: scale(1.06); } 100%{ transform: scale(1); } }
+  .netpay-hero .nph-num.bump{ animation:nphBump var(--motion-medium) var(--ease-snappy); }
+  @keyframes nphBump{ 0%{ transform:scale(1); } 42%{ transform:scale(1.025); } 100%{ transform:scale(1); } }
   @keyframes nphBreathe{ 0%,100%{ filter: brightness(1); } 50%{ filter: brightness(1.07); } }
+  html.motion-paused .netpay-hero .nph-num,
+  html.motion-paused .uploadbtn.busy{ animation-play-state:paused; }
   @media (prefers-reduced-motion: reduce){ .netpay-hero .nph-num{ animation: none; } }
 
   .netpay-hero .nph-context{ order:3; font-family: var(--label-font); font-size:11.5px; margin-top:8px; opacity:0.75; transition: font-size .3s var(--ease), margin .3s var(--ease); }
@@ -506,7 +533,7 @@
     border-radius: var(--radius-lg);
     padding: 28px 24px 24px; position: relative; overflow: hidden;
     color: var(--onblock); box-shadow: var(--shadow-block);
-    transition: background-color .5s var(--ease), color .5s var(--ease), border-color .5s var(--ease);
+    transition:background-color var(--motion-slow) var(--ease-standard), color var(--motion-slow) var(--ease-standard), border-color var(--motion-slow) var(--ease-standard);
   }
   .ledger-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
   .cardtitle{ font-family: var(--title-font); font-size: 24px; font-weight: var(--title-weight); font-style: var(--title-style); color: var(--onblock); letter-spacing: var(--title-tracking); }
@@ -518,6 +545,54 @@
   .cardtitle.pill-below{ display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
   .cardtitle.pill-below span{ margin-left:0; vertical-align:baseline; }
   .cardnote{ color: var(--onblock-dim); font-size: 13.5px; line-height:1.6; margin-bottom: 18px; }
+
+  .payinfo-wrap{ position:relative; margin-left:auto; align-self:flex-start; z-index:6; }
+  .payinfo-btn{
+    width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,0.16);
+    display:grid; place-items:center; padding:0; cursor:pointer;
+    color:var(--chip-fg); background:var(--chip-bg); box-shadow:0 8px 22px -10px rgba(0,0,0,0.65);
+    font-family:Inter, sans-serif; font-size:17px; line-height:1; font-weight:800;
+    transition:transform var(--motion-fast) var(--ease-snappy), background-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
+  }
+  .payinfo-btn:hover, .payinfo-btn[aria-expanded="true"]{ background:var(--acc); color:var(--acc-ink); }
+  .payinfo-btn:active{ transform:scale(.92); }
+  .payinfo-popover{
+    position:absolute; top:48px; right:0; width:min(380px, calc(100vw - 72px));
+    padding:18px; border-radius:var(--radius-md); color:#F3F1EC;
+    border:1px solid rgba(255,255,255,0.14); background:rgba(12,11,10,0.94);
+    backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%);
+    box-shadow:0 24px 60px -18px rgba(0,0,0,0.82);
+    opacity:0; visibility:hidden; pointer-events:none; transform:translateY(-8px) scale(.97);
+    transform-origin:top right; transition:opacity var(--motion-fast) var(--ease-standard), transform var(--motion-base) var(--ease-snappy), visibility 0s linear var(--motion-base);
+  }
+  .payinfo-popover.show{
+    opacity:1; visibility:visible; pointer-events:auto; transform:translateY(0) scale(1);
+    transition:opacity var(--motion-fast) var(--ease-standard), transform var(--motion-base) var(--ease-snappy), visibility 0s;
+  }
+  .payinfo-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:12px; }
+  .payinfo-title{ font-family:var(--title-font); font-size:18px; color:var(--acc); line-height:1.15; }
+  .payinfo-close{
+    width:30px; height:30px; flex:0 0 auto; border:0; border-radius:50%; cursor:pointer;
+    background:rgba(255,255,255,0.10); color:#F3F1EC; font-size:20px; line-height:1;
+  }
+  .payinfo-close:hover{ background:var(--acc); color:var(--acc-ink); }
+  .payinfo-item{
+    display:grid; grid-template-columns:8px 1fr; gap:10px; font-size:12.5px; line-height:1.55; color:rgba(243,241,236,0.76);
+    opacity:0; transform:translate3d(0,8px,0); transition:opacity var(--motion-base) var(--ease-out-soft), transform var(--motion-base) var(--ease-out-soft);
+  }
+  .payinfo-popover.show .payinfo-item{ opacity:1; transform:translate3d(0,0,0); }
+  .payinfo-popover.show .payinfo-item:nth-child(2){ transition-delay:40ms; }
+  .payinfo-popover.show .payinfo-item:nth-child(3){ transition-delay:80ms; }
+  .payinfo-popover.show .payinfo-item:nth-child(4){ transition-delay:120ms; }
+  .payinfo-item + .payinfo-item{ margin-top:10px; }
+  .payinfo-dot{ width:7px; height:7px; margin-top:.5em; border-radius:50%; background:var(--acc); }
+  .payinfo-item:nth-child(3) .payinfo-dot{ background:var(--acc2); }
+  .payinfo-item:nth-child(4) .payinfo-dot{ background:var(--acc3); }
+  .payinfo-item b{ color:#fff; }
+  @media (max-width:640px){
+    .payinfo-btn{ width:36px; height:36px; }
+    .payinfo-popover{ top:46px; right:0; width:min(320px, calc(100vw - 88px)); max-height:70vh; overflow:auto; }
+  }
 
   .block-a{ background: var(--block-a-bg); --onblock: var(--block-a-ink); --onblock-dim: color-mix(in srgb, var(--block-a-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
   .block-b{ background: var(--block-b-bg); --onblock: var(--block-b-ink); --onblock-dim: color-mix(in srgb, var(--block-b-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
@@ -549,10 +624,10 @@
     .uploadbtn .label .l1, .uploadbtn .label .l2{ font-size:14.5px; }
   }
   .uploadbtn:hover{ background: rgba(255,255,255,0.5); transform: translateY(-2px); }
-  .uploadbtn.busy{ background: var(--acc3); color: var(--acc3-ink); animation: scanPulse 1.15s ease-in-out infinite; }
-  .uploadbtn.done{ background: color-mix(in srgb, var(--acc2) 88%, black 0%); animation: scanPop .45s var(--ease-spring); }
-  @keyframes scanPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.045); } }
-  @keyframes scanPop{ 0%{ transform:scale(0.94); } 55%{ transform:scale(1.06); } 100%{ transform:scale(1); } }
+  .uploadbtn.busy{ background: var(--acc3); color: var(--acc3-ink); animation:scanPulse 1.6s var(--ease-standard) infinite; }
+  .uploadbtn.done{ background: color-mix(in srgb, var(--acc2) 88%, black 0%); animation:scanPop var(--motion-medium) var(--ease-snappy); }
+  @keyframes scanPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.025); } }
+  @keyframes scanPop{ 0%{ transform:scale(.97); } 58%{ transform:scale(1.025); } 100%{ transform:scale(1); } }
   .scanstatus{ font-family: var(--label-font); font-size: 11.5px; color: var(--onblock-dim); margin-bottom:4px; min-height: 14px; }
 
   details.rawtext{ margin-bottom: 16px; }
@@ -577,9 +652,9 @@
   .manualentry[open] .manualbtn::before{ content:"\2212"; }
   .fieldwrap{ display:flex; flex-direction:column; gap:7px; }
   .fieldlabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.06em; text-transform:uppercase; color: var(--onblock-dim); font-weight:700; }
-  .fieldrow{ display:flex; align-items:center; gap:6px; background: var(--chip-bg); border: none; border-radius: var(--radius-sm); padding: 14px 14px; min-height: 52px; box-shadow: 0 0 0 0 var(--acc); transition: box-shadow .3s var(--ease), transform .3s var(--ease-spring); }
+  .fieldrow{ display:flex; align-items:center; gap:6px; background: var(--chip-bg); border: none; border-radius: var(--radius-sm); padding: 14px 14px; min-height: 52px; box-shadow: 0 0 0 0 var(--acc); transition:box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-snappy); }
   .fieldrow:focus-within{ box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 55%, transparent); transform: translateY(-1px); }
-  .fieldwrap .fieldlabel{ transition: color .25s var(--ease); }
+  .fieldwrap .fieldlabel{ transition:color var(--motion-base) var(--ease-standard); }
   .fieldwrap:focus-within .fieldlabel{ color: var(--acc); }
   .fieldrow span{ color: var(--chip-fg); opacity:0.6; font-family: var(--label-font); font-size:14px; }
   .fieldrow input{
@@ -605,9 +680,9 @@
   .nrow{
     display:flex; justify-content:space-between; align-items:center; padding: 9px 14px;
     border-bottom: 1px solid rgba(0,0,0,0.14); font-family: var(--label-font); font-size: 13px;
-    opacity:0; transform: translateX(-8px); transition: opacity .4s var(--ease), transform .4s var(--ease);
+    opacity:0; transform:translate3d(0,12px,0); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft);
   }
-  .nrow.in{ opacity:1; transform: translateX(0); }
+  .nrow.in{ opacity:1; transform:translate3d(0,0,0); }
   .nrow:last-child{ border-bottom:none; }
   .nrow .nk{ color: var(--onblock); font-weight:600; display:flex; align-items:center; gap:6px; }
   .nrow .nk .op{ opacity:0.5; font-weight:400; }
@@ -636,6 +711,7 @@
 
   details.projection{
     position: relative; isolation: isolate;
+    view-transition-name:projection-card;
     margin-top: 30px;
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: var(--radius-lg);
@@ -644,8 +720,13 @@
     overflow:hidden;
     -webkit-mask-image: -webkit-radial-gradient(white, black);
     transform: translateZ(0);
-    transition: padding .42s var(--ease), border-radius .42s var(--ease), border-color .42s var(--ease), box-shadow .42s var(--ease);
   }
+  ::view-transition-group(projection-card){
+    animation-duration:var(--motion-medium);
+    animation-timing-function:var(--ease-standard);
+  }
+  ::view-transition-old(projection-card), ::view-transition-new(projection-card){ mix-blend-mode:normal; }
+  @media (prefers-reduced-motion:reduce){ details.projection{ view-transition-name:none; } }
   /* Same fix as .netpay-hero below: the blur/tint used to be the summary/card's
      own background+backdrop-filter, which on iOS Safari can composite ABOVE the
      text inside a <details> once it repaints (open/close, scroll-pinning nearby).
@@ -656,7 +737,7 @@
     position:absolute; inset:0; z-index:0; border-radius: inherit;
     background: rgba(8,7,6,0.58);
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-    transition: background .42s var(--ease), backdrop-filter .42s var(--ease), -webkit-backdrop-filter .42s var(--ease);
+    transition:background var(--motion-medium) var(--ease-standard), backdrop-filter var(--motion-medium) var(--ease-standard), -webkit-backdrop-filter var(--motion-medium) var(--ease-standard);
   }
   details.projection > :not(.projection-bg){ position:relative; z-index:1; }
   details.projection > summary{
@@ -725,7 +806,7 @@
   details.projection .tabbtn::before{
     content:""; position:absolute; inset:0; border-radius: inherit; z-index:-1;
     background: rgba(255,255,255,0.16); mix-blend-mode: overlay;
-    transition: background .2s var(--ease);
+    transition:background var(--motion-fast) var(--ease-standard);
   }
   details.projection .tabbtn:hover::before{ background: rgba(255,255,255,0.26); }
   details.projection .tabbtn .ticket{ color: rgba(255,255,255,0.62); }
@@ -791,7 +872,7 @@
   .goalrow, .goalcolheads{ display:grid; grid-template-columns: 1.35fr 1.1fr 0.95fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
   .goalcolheads{ font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding-bottom: 9px; font-weight:700; }
   .goalrow:last-child{ border-bottom:none; }
-  .goalrow, .zoomrow{ opacity:0; transform: translateX(-8px); transition: opacity .4s var(--ease), transform .4s var(--ease); }
+  .goalrow, .zoomrow{ opacity:0; transform:translate3d(0,12px,0); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft); }
   .goalrow.in, .zoomrow.in{ opacity:1; transform: translateX(0); }
   .num{ font-family: var(--label-font); font-size: 14px; text-align:right; color: var(--onblock-dim); font-variant-numeric: tabular-nums; }
   .filllabel{ font-size: 13.5px; font-weight:700; color: var(--onblock); display:flex; align-items:center; gap:6px; }
@@ -811,13 +892,13 @@
   .zoomrow{ display:grid; grid-template-columns: 1.3fr 0.85fr 0.85fr 0.9fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
   .zoomrow:last-child{ border-bottom:none; }
 
-  .backdrop{ position:fixed; inset:0; background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); display:none; z-index:40; opacity:0; transition: opacity .3s var(--ease); }
+  .backdrop{ position:fixed; inset:0; background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); display:none; z-index:40; opacity:0; transition:opacity var(--motion-base) var(--ease-standard); }
   .backdrop.show{ display:block; }
   .backdrop.in{ opacity:1; }
   .drawer{
     position:fixed; top:0; right:0; width: min(440px, 100vw); height:100vh; overflow-y:auto;
     background: var(--panel); z-index:50; padding: 24px 22px 44px;
-    transform: translateX(100%); transition: transform .38s var(--ease);
+    transform:translate3d(100%,0,0); transition:transform var(--motion-medium) var(--ease-standard);
   }
   .drawer.show{ transform: translateX(0); }
   .drawer-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; }
@@ -884,9 +965,9 @@
   .historysummary{ font-family: var(--label-font); font-size:11.5px; color: var(--onblock-dim); margin-bottom:6px; font-weight:700; }
   .historyrow{
     position:relative; padding:12px 34px 12px 0; border-bottom:1px solid rgba(0,0,0,0.12); cursor:pointer;
-    opacity:0; transform: translateX(-8px); transition: opacity .4s var(--ease), transform .4s var(--ease), background-color .2s var(--ease);
+    opacity:0; transform:translate3d(0,12px,0); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft), background-color var(--motion-fast) var(--ease-standard);
   }
-  .historyrow.in{ opacity:1; transform: translateX(0); }
+  .historyrow.in{ opacity:1; transform:translate3d(0,0,0); }
   .historyrow:last-child{ border-bottom:none; }
   .historyrow:hover{ background: rgba(0,0,0,0.05); }
   .historyrow-main{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
@@ -903,11 +984,11 @@
   .history-layer{
     position:fixed; inset: var(--nav-h) 0 0; z-index:30;
     opacity:0; visibility:hidden; pointer-events:none;
-    transition: opacity .24s var(--ease), visibility 0s linear .24s;
+    transition:opacity var(--motion-base) var(--ease-standard), visibility 0s linear var(--motion-base);
   }
   .history-layer.show{
     opacity:1; visibility:visible; pointer-events:auto;
-    transition: opacity .24s var(--ease), visibility 0s;
+    transition:opacity var(--motion-base) var(--ease-standard), visibility 0s;
   }
   .history-dismiss{
     position:absolute; inset:0; border:0; border-radius:0; cursor:default;
@@ -926,7 +1007,7 @@
     backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
     box-shadow:0 28px 80px -20px rgba(0,0,0,0.78);
     transform:translate(-50%, -12px) scale(.96);
-    transition:transform .3s var(--ease-spring);
+    transition:transform var(--motion-medium) var(--ease-snappy);
   }
   .history-layer.show .history-popover{ transform:translate(-50%, 0) scale(1); }
   .history-popover-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:10px; }
@@ -1078,6 +1159,18 @@
     <div class="ledger actual card-full block-a reveal">
       <div class="ledger-head">
         <div class="cardtitle pill-below">This Period's Pay<span>SCAN OR ENTER</span></div>
+        <div class="payinfo-wrap" id="payInfoWrap">
+          <button type="button" class="payinfo-btn" id="payInfoToggle" aria-label="Privacy and how this works" aria-haspopup="dialog" aria-controls="payInfoPopover" aria-expanded="false">i</button>
+          <aside class="payinfo-popover" id="payInfoPopover" role="dialog" aria-modal="false" aria-labelledby="payInfoTitle" aria-hidden="true" tabindex="-1">
+            <div class="payinfo-head">
+              <div class="payinfo-title" id="payInfoTitle">Private by Design</div>
+              <button type="button" class="payinfo-close" id="payInfoClose" aria-label="Close privacy information">&times;</button>
+            </div>
+            <div class="payinfo-item"><span class="payinfo-dot"></span><div><b>Your screenshots stay on this device.</b> The app reads them inside your browser with on-device OCR; it does not upload the images to a server.</div></div>
+            <div class="payinfo-item"><span class="payinfo-dot"></span><div><b>The calculation happens live.</b> Hours, revenue, tips, FICA, and estimated federal tax are calculated locally as you enter them. Uploaded images and unsaved entries disappear when the page is reloaded.</div></div>
+            <div class="payinfo-item"><span class="payinfo-dot"></span><div><b>Only browser-local preferences are retained.</b> Settings and periods you explicitly save to History use this browser's local storage. They are not tied to an account or synced to the cloud, and History can be cleared at any time.</div></div>
+          </aside>
+        </div>
       </div>
       <p class="cardnote">Upload your Sales and Timesheet screenshots and this will read the numbers off them &mdash; or just type them in. Everything runs in your browser; nothing is uploaded anywhere.</p>
 
@@ -1408,6 +1501,12 @@
   var STORAGE_KEY = 'thetake_chop_settings_v2';
   var HISTORY_KEY = 'thetake_chop_history_v1';
 
+  function syncMotionVisibility(){
+    document.documentElement.classList.toggle('motion-paused', document.hidden);
+  }
+  document.addEventListener('visibilitychange', syncMotionVisibility);
+  syncMotionVisibility();
+
   var settings = loadSettings();
   if(!settings.rememberLook){
     settings.uiAccent = ACCENTS[Math.floor(Math.random()*ACCENTS.length)];
@@ -1605,9 +1704,9 @@
       void netHeroEl.offsetWidth;
       netHeroEl.classList.add('bump');
       clearTimeout(netHeroEl._bumpTimer);
-      netHeroEl._bumpTimer = setTimeout(function(){ netHeroEl.classList.remove('bump'); }, 520);
+      netHeroEl._bumpTimer = setTimeout(function(){ netHeroEl.classList.remove('bump'); }, 420);
     }
-    animateNumberTo(netHeroEl, lastNet, r.netWeekly, 650);
+    animateNumberTo(netHeroEl, lastNet, r.netWeekly, 380);
     document.getElementById('netHeroContext').textContent =
       fmt(r.grossWeekly) + ' gross \u2192 ' + fmt(r.ficaWeekly) + ' FICA \u2192 ' + fmt(r.fedWeekly) + ' fed = net above';
     lastNet = r.netWeekly;
@@ -1957,6 +2056,25 @@
     btn.addEventListener('click', function(){ ui.zoomPeriod = btn.getAttribute('data-period'); renderActual(); document.querySelectorAll('#periodbar .periodbtn').forEach(function(b){ b.classList.toggle('active', b===btn); }); });
   });
 
+  var payInfoWrap = document.getElementById('payInfoWrap');
+  var payInfoToggle = document.getElementById('payInfoToggle');
+  var payInfoPopover = document.getElementById('payInfoPopover');
+  function setPayInfo(open){
+    payInfoPopover.classList.toggle('show', open);
+    payInfoPopover.setAttribute('aria-hidden', String(!open));
+    payInfoToggle.setAttribute('aria-expanded', String(open));
+    if(open) requestAnimationFrame(function(){ payInfoPopover.focus(); });
+  }
+  payInfoToggle.addEventListener('click', function(){
+    setPayInfo(payInfoToggle.getAttribute('aria-expanded') !== 'true');
+  });
+  document.getElementById('payInfoClose').addEventListener('click', function(){
+    setPayInfo(false); payInfoToggle.focus();
+  });
+  document.addEventListener('click', function(e){
+    if(payInfoToggle.getAttribute('aria-expanded') === 'true' && !payInfoWrap.contains(e.target)) setPayInfo(false);
+  });
+
   var historyLayer = document.getElementById('historyLayer');
   var historyToggle = document.getElementById('historyToggle');
   var navHistoryToggle = document.getElementById('navHistoryBtn');
@@ -1999,6 +2117,7 @@
   backdrop.addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape'){
+      setPayInfo(false);
       closeHistory();
       closeDrawer();
     }
@@ -2197,52 +2316,22 @@
     var details = document.querySelector('details.projection');
     if(!details) return;
     var summary = details.querySelector(':scope > summary');
-    var heightAnimation = null;
 
     // Always begin as the compact invitation, including after form-state
     // restoration in browsers that remember native <details> state.
     details.removeAttribute('open');
 
-    function finish(open){
-      details.open = open;
-      details.classList.remove('is-closing');
-      details.style.height = '';
-      details.style.overflow = '';
-      heightAnimation = null;
-    }
-
     summary.addEventListener('click', function(e){
       e.preventDefault();
-      if(heightAnimation) return;
       details.classList.remove('tap-cue');
 
       var opening = !details.open;
-      if(!details.animate){
+      function applyState(){
         details.open = opening;
-        return;
       }
-
-      var startHeight = details.getBoundingClientRect().height;
-      var endHeight;
-      details.style.overflow = 'hidden';
-
-      if(opening){
-        details.open = true;
-        endHeight = details.scrollHeight;
-      } else {
-        details.classList.add('is-closing');
-        var styles = getComputedStyle(details);
-        endHeight = summary.getBoundingClientRect().height +
-          parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom) +
-          parseFloat(styles.borderTopWidth) + parseFloat(styles.borderBottomWidth);
-      }
-
-      details.style.height = startHeight + 'px';
-      heightAnimation = details.animate(
-        { height:[startHeight + 'px', endHeight + 'px'] },
-        { duration:440, easing:'cubic-bezier(.16,1,.3,1)' }
-      );
-      heightAnimation.onfinish = function(){ finish(opening); };
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(document.startViewTransition && !reduceMotion) document.startViewTransition(applyState);
+      else applyState();
     });
 
     function cue(){
