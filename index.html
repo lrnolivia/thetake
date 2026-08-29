@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-style="dopamine">
+<html lang="en" data-style="dopamine" data-preview-animations="off">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -34,6 +34,9 @@
     --netpay-stuck-h: 76px;
     --nav-fade-h: 25px;
     --hero-top-space: clamp(96px, 12vh, 140px);
+    --chop-teal:#00C59A;
+    --chop-gold:#FFC21C;
+    --chop-red:#FF101A;
   }
 
   /* ---- Subtle grain, dopamine only — quiets the flat dark fills ---- */
@@ -368,46 +371,54 @@
     letter-spacing: var(--title-tracking); color: var(--ink); margin: 0 0 12px; line-height: 0.86;
   }
   html[data-style="dopamine"] h1{
+    margin-bottom:0;
     margin-left: -4px;
     max-width: 100%;
     white-space: nowrap;
     overflow: visible;
     text-shadow: 0 10px 40px rgba(0,0,0,0.5);
   }
-  html[data-style="dopamine"] .hero-titlewrap{ overflow: hidden; margin-bottom: 4px; padding-bottom: 6px; }
+  html[data-style="dopamine"] .hero-titlewrap{ overflow:visible; margin-bottom:0; }
+  html[data-style="dopamine"] .hero-titleclip{ overflow:hidden; padding:0; }
 
-  /* ---- Whimsical squiggle underline ----
-     Longer + more chaotic than a simple wave, drawn on with a pen-flourish feel, and
-     the whole group slides in from off-screen left at the same time it draws — two
-     kinds of motion stacked, for a stronger sense of arrival. Finishes as a small
-     hand-drawn "$" (an S-curve + crossbar, drawn last, like a signature flourish). */
-  .title-squiggle{ display:none; }
-  html[data-style="dopamine"] .title-squiggle{
-    display:block; width: min(300px, 78%); height:30px; margin: -2px 0 0 -6px; overflow:visible;
-    transform: translateX(-46px);
-    transition: transform .9s var(--ease-spring) .15s;
+  /* Oversized logo-color trails live in a clipped background layer above the
+     title. Hard angular turns echo the badge's pointed lettering and ornament. */
+  .hero-ink-wrap{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+  /* Preview flag: preserve the unfinished hero artwork without displaying it. */
+  html[data-preview-animations="off"] .hero-ink-wrap{ display:none; }
+  .hero-ink{ position:absolute; left:-8%; top:0; width:158%; height:46%; overflow:visible; opacity:.9; }
+  .hero-ink .trail{
+    fill:none; stroke-linecap:round; stroke-linejoin:miter;
+    vector-effect:non-scaling-stroke;
   }
-  .hero-block.in .title-squiggle{ transform: translateX(0); }
-  .title-squiggle .squiggle-line{
-    fill:none; stroke: var(--acc3, var(--acc)); stroke-width:4.5; stroke-linecap:round; stroke-linejoin:round;
-    stroke-dasharray: 460; stroke-dashoffset: 460;
-    transition: stroke-dashoffset 1.15s var(--ease) .3s;
+  .hero-ink .trail{ stroke-dasharray:20 80; stroke-dashoffset:100; opacity:0; }
+  .hero-ink .trail.a{ stroke:var(--chop-teal); stroke-width:11; }
+  .hero-ink .trail.b{ stroke:var(--chop-gold); stroke-width:8; stroke-dasharray:14 86; }
+  .hero-ink .trail.c{ stroke:var(--chop-red); stroke-width:6; stroke-dasharray:10 90; }
+  .hero-block.in .hero-ink .trail.a{ animation:heroTrail 1.9s cubic-bezier(.35,.01,.65,1) .28s forwards; }
+  .hero-block.in .hero-ink .trail.b{ animation:heroTrail 1.72s cubic-bezier(.35,.01,.65,1) .46s forwards; }
+  .hero-block.in .hero-ink .trail.c{ animation:heroTrail 1.52s cubic-bezier(.35,.01,.65,1) .68s forwards; }
+  @keyframes heroTrail{
+    0%{ opacity:0; stroke-dashoffset:100; }
+    6%,88%{ opacity:.9; }
+    100%{ opacity:0; stroke-dashoffset:-20; }
   }
-  .title-squiggle .squiggle-dollar{
-    fill:none; stroke: var(--acc3, var(--acc)); stroke-width:5; stroke-linecap:round; stroke-linejoin:round;
-    stroke-dasharray: 90; stroke-dashoffset: 90;
-    transition: stroke-dashoffset .4s var(--ease) 1.35s;
+  @media (max-width:640px){
+    html[data-style="dopamine"] .hero-titlewrap{ margin-bottom:0; }
+    .hero-ink{ left:-38%; top:0; width:235%; height:34%; }
+    .hero-ink .trail.a{ stroke-width:8; }
+    .hero-ink .trail.b{ stroke-width:5; }
+    .hero-ink .trail.c{ stroke-width:4; }
   }
-  .title-squiggle .squiggle-dollar-bar{
-    stroke: var(--acc3, var(--acc)); stroke-width:5; stroke-linecap:round;
-    stroke-dasharray: 40; stroke-dashoffset: 40;
-    transition: stroke-dashoffset .25s var(--ease) 1.7s;
-  }
-  .hero-block.in .title-squiggle .squiggle-line{ stroke-dashoffset: 0; }
-  .hero-block.in .title-squiggle .squiggle-dollar{ stroke-dashoffset: 0; }
-  .hero-block.in .title-squiggle .squiggle-dollar-bar{ stroke-dashoffset: 0; }
+  @media (prefers-reduced-motion:reduce){ .hero-ink-wrap{ display:none; } }
 
-  .sub{ color: rgba(255,246,228,0.82); font-size: 15px; line-height: 1.6; max-width: 60ch; margin-top: 2px; }
+  .sub{
+    color:rgba(255,246,228,0.92); font-size:15px; line-height:1.6; max-width:60ch; margin:0;
+    width:fit-content; padding:0; border-radius:0; background:none;
+    backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:none;
+    text-shadow:0 2px 3px rgba(0,0,0,1), 0 5px 12px rgba(0,0,0,.96), 0 0 26px rgba(0,0,0,.92), 0 0 44px rgba(0,0,0,.72);
+  }
+  @media (max-width:640px){ .sub{ text-shadow:0 2px 3px #000, 0 5px 13px #000, 0 0 28px rgba(0,0,0,.96); } }
   .sub b{ color: #fff; font-weight:700; }
 
   #netHeroSentinel{ height:0; }
@@ -642,11 +653,12 @@
      isolated stacking context, guarantees the blur paints behind and the real
      content (summary text, tabs, everything else) stays on top. */
   .projection-bg{
-    position:absolute; inset:0; z-index:-1; border-radius: inherit;
+    position:absolute; inset:0; z-index:0; border-radius: inherit;
     background: rgba(8,7,6,0.58);
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
     transition: background .42s var(--ease), backdrop-filter .42s var(--ease), -webkit-backdrop-filter .42s var(--ease);
   }
+  details.projection > :not(.projection-bg){ position:relative; z-index:1; }
   details.projection > summary{
     list-style:none; cursor:pointer; font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
     font-size: 20px; color: var(--acc); padding: 6px 0; display:flex; align-items:center; gap:10px;
@@ -661,18 +673,20 @@
      JS animates the native <details> height down to the pill. */
   details.projection:not([open]), details.projection.is-closing{
     border-radius:999px;
-    border-color:rgba(255,255,255,0.42);
+    border-color:rgba(255,255,255,0.68);
+    background:rgba(248,246,241,0.82);
     padding:8px 10px;
-    box-shadow:0 16px 42px -18px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.42);
+    box-shadow:0 18px 44px -18px rgba(0,0,0,0.78), inset 0 1px 0 rgba(255,255,255,0.72);
   }
   details.projection:not([open]) .projection-bg,
   details.projection.is-closing .projection-bg{
-    background:rgba(255,255,255,0.24);
-    backdrop-filter:blur(22px) saturate(145%); -webkit-backdrop-filter:blur(22px) saturate(145%);
+    background:rgba(248,246,241,0.72);
+    backdrop-filter:blur(22px) saturate(125%); -webkit-backdrop-filter:blur(22px) saturate(125%);
   }
   details.projection:not([open]) > summary,
   details.projection.is-closing > summary{
-    min-height:70px; padding:13px 18px; color:rgba(13,12,10,0.94); gap:12px;
+    min-height:70px; padding:13px 18px; color:#11100e; gap:12px;
+    text-shadow:0 1px 0 rgba(255,255,255,0.55);
   }
   details.projection:not([open]) > summary::before,
   details.projection.is-closing > summary::before{
@@ -680,9 +694,10 @@
   }
   details.projection:not([open]) > summary span,
   details.projection.is-closing > summary span{
-    color:rgba(13,12,10,0.68); font-weight:700; line-height:1.45;
+    color:rgba(17,16,14,0.78); font-weight:700; line-height:1.45;
   }
   details.projection.tap-cue{ animation:projectionTapCue 1.45s var(--ease) 2; }
+  html[data-preview-animations="off"] details.projection.tap-cue{ animation:none; }
   @keyframes projectionTapCue{
     0%,100%{ transform:scale(1); box-shadow:0 16px 42px -18px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.42); }
     42%{ transform:scale(1.012); box-shadow:0 0 0 6px rgba(255,255,255,0.12), 0 20px 52px -16px rgba(255,255,255,0.30), inset 0 1px 0 rgba(255,255,255,0.58); }
@@ -947,6 +962,13 @@
   <div class="hero-spacer" id="heroSpacer">
   <div class="hero-block reveal-scale" id="heroBlock">
     <div class="hero-navbar-blur" aria-hidden="true"><div class="tint"></div><span></span><span></span><span></span></div>
+    <div class="hero-ink-wrap" aria-hidden="true">
+      <svg class="hero-ink" viewBox="0 0 1600 600" preserveAspectRatio="none">
+        <path class="trail a" pathLength="100" d="M-90 332 L22 104 L112 294 L202 74 L286 318 L374 116 L452 282 L538 62 L624 324 L706 126 L792 274 L884 86 L966 312 L1050 118 L1138 286 L1224 72 L1310 316 L1398 106 L1492 274 L1658 52"/>
+        <path class="trail b" pathLength="100" d="M-74 442 L54 218 L142 430 L240 188 L330 446 L422 226 L514 414 L604 170 L698 440 L788 208 L880 424 L972 184 L1068 448 L1158 224 L1250 404 L1344 166 L1434 428 L1532 206 L1666 392"/>
+        <path class="trail c" pathLength="100" d="M-60 238 L40 364 L126 176 L218 354 L310 148 L398 376 L492 184 L578 346 L674 132 L760 370 L856 166 L944 348 L1038 142 L1128 382 L1220 178 L1312 350 L1404 124 L1498 366 L1650 154"/>
+      </svg>
+    </div>
     <div class="paintwrap floating">
       <button type="button" class="paintbtn" id="paintToggle" aria-label="Change look">🖌️</button>
       <div class="paintpop" id="paintPop">
@@ -970,12 +992,7 @@
         <img class="titlelogo" src="assets/chop-logo.png" alt="Chop Barbershop logo">
         <div class="eyebrow">Chop Barbershop &mdash; Pay Calculator</div>
         <div class="hero-titlewrap">
-          <h1>The Take</h1>
-          <svg class="title-squiggle" viewBox="0 0 300 46" preserveAspectRatio="xMinYMid meet" aria-hidden="true">
-            <path class="squiggle-line" d="M -30 30 C -14 6, 10 48, 32 24 S 66 -8, 90 20 S 126 46, 146 16 S 180 -6, 202 22 S 232 42, 246 16 C 252 6, 256 2, 260 8"/>
-            <path class="squiggle-dollar" d="M 268 24 C 260 18, 260 8, 271 8 C 282 8, 282 17, 271 17 C 260 17, 260 28, 271 28 C 282 28, 283 19, 276 15"/>
-            <line class="squiggle-dollar-bar" x1="271" y1="2" x2="271" y2="34"/>
-          </svg>
+          <div class="hero-titleclip"><h1>The Take</h1></div>
         </div>
       </div>
       <p class="sub" id="subtext"></p>
