@@ -496,9 +496,18 @@
     display:flex; align-items:center;
     padding: 13px 22px;
     min-height: var(--netpay-stuck-h);
-    border-radius: var(--radius-lg);
+    border-radius: 999px;
+    overflow: clip;
+    clip-path: inset(0 round 999px);
+    -webkit-mask-image: none;
+    contain: paint;
     box-shadow: 0 16px 34px -14px rgba(0,0,0,0.55);
   }
+  .netpay-hero.stuck > .nph-bg,
+  .netpay-hero.stuck > .nph-blur,
+  .netpay-hero.stuck > .nph-grain,
+  .netpay-hero.stuck > .nph-fade,
+  .netpay-hero.stuck > .nph-sheen{ border-radius:inherit; clip-path:inset(0 round 999px); }
   .netpay-hero.stuck .nph-content{ flex-direction: row; align-items:center; gap:14px; width:100%; }
   .netpay-hero.stuck .nph-textcol{ display:flex; flex-direction:column; order:2; gap:2px; }
   .netpay-hero.stuck .nph-num{ order:1; font-size: clamp(32px, 9vw, 44px); flex-shrink:0; }
@@ -757,15 +766,16 @@
   .nrow{
     display:flex; justify-content:space-between; align-items:center; padding: 9px 14px;
     border-bottom: 1px solid rgba(0,0,0,0.14); font-family: var(--label-font); font-size: 13px;
-    opacity:0; transform:translate3d(0,12px,0); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft);
+    opacity:0; transform:none; filter:none; -webkit-filter:none;
+    transition:opacity var(--motion-medium) var(--ease-out-soft);
   }
-  .nrow.in{ opacity:1; transform:translate3d(0,0,0); }
+  .nrow.in{ opacity:1; transform:none; }
   .nrow:last-child{ border-bottom:none; }
   .nrow .nk{ color: var(--onblock); font-weight:600; display:flex; align-items:center; gap:6px; }
   .nrow .nk .op{ opacity:0.5; font-weight:400; }
   .nrow .nv{ color: var(--onblock); font-weight:700; font-variant-numeric: tabular-nums; }
-  .nrow.sub .nk, .nrow.sub .nv{ opacity:0.75; font-weight:500; font-size:12.5px; padding-left: 10px; }
-  .nutrition .nrow,.nutrition .nrow *{ text-shadow:none !important; }
+  .nrow.nutrition-sub .nk, .nrow.nutrition-sub .nv{ opacity:0.75; font-weight:500; font-size:12.5px; padding-left: 10px; }
+  .nutrition .nrow,.nutrition .nrow *{ text-shadow:none !important; filter:none !important; -webkit-filter:none !important; }
   .nrow.total{ border-top: 4px solid rgba(0,0,0,0.6); border-bottom:none; padding-top:12px; margin-top:2px; }
   .nrow.total .nk, .nrow.total .nv{ font-size: 15px; font-weight:800; }
   .nrow.net{ background: rgba(0,0,0,0.14); border-radius: 0 0 10px 10px; padding: 14px; }

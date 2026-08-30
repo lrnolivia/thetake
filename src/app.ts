@@ -468,10 +468,10 @@ import { createWorker } from 'tesseract.js';
     var nb = document.getElementById('nutritionRows');
     nb.innerHTML =
       '<div class="nrow"><div class="nk">' + baseLabel + '</div><div class="nv">' + fmt(r.base) + '</div></div>' +
-      (r.floorApplies ? '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> minimum wage floor, ' + ui.hours + ' hrs</div><div class="nv">' + fmt(r.floor) + '</div></div>' : '') +
-      '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> 45% of first $1,200 services</div><div class="nv">' + fmt(r.serviceTierOne) + '</div></div>' +
-      (r.serviceTierTwo > 0 ? '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> 70% above $1,200</div><div class="nv">' + fmt(r.serviceTierTwo) + '</div></div>' : '') +
-      (r.productSales > 0 ? '<div class="nrow sub"><div class="nk"><span class="op">\u00b7</span> 10% retail commission</div><div class="nv">' + fmt(r.productCommission) + '</div></div>' : '') +
+      (r.floorApplies ? '<div class="nrow nutrition-sub"><div class="nk"><span class="op">\u00b7</span> minimum wage floor, ' + ui.hours + ' hrs</div><div class="nv">' + fmt(r.floor) + '</div></div>' : '') +
+      '<div class="nrow nutrition-sub"><div class="nk"><span class="op">\u00b7</span> 45% of first $1,200 services</div><div class="nv">' + fmt(r.serviceTierOne) + '</div></div>' +
+      (r.serviceTierTwo > 0 ? '<div class="nrow nutrition-sub"><div class="nk"><span class="op">\u00b7</span> 70% above $1,200</div><div class="nv">' + fmt(r.serviceTierTwo) + '</div></div>' : '') +
+      (r.productSales > 0 ? '<div class="nrow nutrition-sub"><div class="nk"><span class="op">\u00b7</span> 10% retail commission</div><div class="nv">' + fmt(r.productCommission) + '</div></div>' : '') +
       '<div class="nrow"><div class="nk"><span class="op">+</span> Tips</div><div class="nv">' + fmt(r.tips) + '</div></div>' +
       '<div class="nrow total"><div class="nk"><span class="op">=</span> Gross pay</div><div class="nv">' + fmt(r.grossWeekly) + '</div></div>' +
       '<div class="nrow"><div class="nk"><span class="op">&minus;</span> FICA</div><div class="nv">&minus;' + fmt(r.ficaWeekly) + '</div></div>' +
