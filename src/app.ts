@@ -427,17 +427,39 @@ import { createWorker } from 'tesseract.js';
     });
   }
 
+  var PROFILE_GREETINGS = [
+    'Hello, {name}! Stay groovy.',
+    'Hey, {name}! Looking dyn-o-mite.',
+    'Right on, {name}! Let\u2019s count that cheddar.',
+    'Yo, {name}! All that and a bag of chips.',
+    'What\u2019s crackalackin\u2019, {name}?',
+    'Hey, {name}! This paycheck is about to be da bomb.',
+    'Sup, {name}? Let\u2019s make these numbers slap.',
+    '{name} has entered the chat. Iconic behavior.',
+    'Oh snap, {name}! The math is mathing.',
+    'Heyyy, {name}! Let\u2019s get this bread.',
+    'Ayo, {name}! Immaculate paycheck vibes.',
+    'Hello, {name}! No cap, you\u2019re crushing it.',
+    'Hey, {name}! Slay responsibly.',
+    'Greetings, {name}! Very demure. Very on payroll.',
+    'Well, well, well\u2026 if it isn\u2019t {name}.',
+    'Hello, {name}! Big money energy, respectfully.',
+    'Yo, {name}! It\u2019s giving gainfully employed.',
+    'Hey, {name}! The vibes are fiscally immaculate.'
+  ];
+  var profileGreetingPattern = PROFILE_GREETINGS[Math.floor(Math.random() * PROFILE_GREETINGS.length)];
+
   function renderHeader(){
     var wageLabel = settings.wageMode === 'full' ? 'full minimum wage' : 'tipped minimum wage';
-    var profileName = settings.profileName ? escapeHtml(settings.profileName) : '';
-    var greeting = profileName ? (profileName + ', ') : '';
+    var rawProfileName = settings.profileName ? settings.profileName.trim() : '';
+    var profileName = rawProfileName ? escapeHtml(rawProfileName) : '';
     var heroName = document.getElementById('profileNameHero');
-    heroName.textContent = profileName ? profileName + '\u2019s pay dashboard' : '';
-    heroName.classList.toggle('show', !!profileName);
+    heroName.textContent = rawProfileName ? profileGreetingPattern.replace('{name}', rawProfileName) : '';
+    heroName.classList.toggle('show', !!rawProfileName);
     var navTitle = document.getElementById('heroNavbarTitle');
     navTitle.innerHTML = profileName ? ('<strong>' + profileName + '</strong><small>The Take</small>') : '<small>The Take</small>';
     document.getElementById('subtext').innerHTML =
-      greeting + 'enter or scan sales to see what you actually take home. Service commission is <b>45% of the first $1,200</b> and <b>70% above $1,200</b>, plus <b>10% of retail</b> and your tips. ' +
+      'Enter or scan sales to see what you actually take home. Service commission is <b>45% of the first $1,200</b> and <b>70% above $1,200</b>, plus <b>10% of retail</b> and your tips. ' +
       'FICA is estimated at <b>' + (settings.ficaRate*100).toFixed(2) + '%</b>. ' +
       (settings.workerType === 'part-time' ? ('Hours are optional unless you need to check the ' + wageLabel + ' floor.') : 'Full-time calculations go straight to commission; no hours upload required.');
   }
