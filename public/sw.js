@@ -1,4 +1,4 @@
-var CACHE = 'thetake-shell-v4';
+var CACHE = 'thetake-shell-v5';
 var SHELL = [
   '/',
   '/manifest.webmanifest',

@@ -1569,7 +1569,9 @@ import { createWorker } from 'tesseract.js';
   function initServiceWorker(){
     if('serviceWorker' in navigator){
       window.addEventListener('load', function(){
-        navigator.serviceWorker.register('/sw.js').catch(function(){ /* offline caching is a bonus, not required */ });
+        navigator.serviceWorker.register('/sw.js?v=5', { updateViaCache: 'none' }).then(function(registration){
+          registration.update().catch(function(){ /* the current shell remains usable offline */ });
+        }).catch(function(){ /* offline caching is a bonus, not required */ });
       });
     }
   }
