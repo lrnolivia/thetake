@@ -18,7 +18,7 @@ Use these values in the build configuration screen:
 | --- | --- |
 | Project name | `the-take` |
 | Root directory | `/` (or leave blank) |
-| Build command | `npm run build` |
+| Build command | leave blank (`wrangler.jsonc` runs `npm run build`) |
 | Deploy command | `npx wrangler deploy` |
 | Non-production branch deploy command | leave the Cloudflare default |
 
@@ -30,7 +30,7 @@ Add this build environment variable only if Cloudflare does not already use a co
 
 Do **not** create D1, KV, R2, Durable Object, environment-secret, or service bindings. The checked-in `wrangler.jsonc` already points Static Assets at `dist/` and enables SPA fallback.
 
-Do not enter a Pages output directory. `wrangler deploy` reads the asset directory from `wrangler.jsonc`.
+Do not enter a Pages output directory. `wrangler deploy` runs the checked-in build command and then reads the `dist/` asset directory from `wrangler.jsonc`.
 
 ## 3. Privacy settings
 
@@ -61,4 +61,3 @@ Use one final canonical hostname before real onboarding. Browser storage is orig
 - Open Projected Earnings and confirm its background blur remains continuous.
 - Upload a sample screenshot and confirm OCR works without third-party network requests.
 - In iOS Safari, add the final custom-domain URL to the Home Screen and verify the app title and floating navbar.
-
