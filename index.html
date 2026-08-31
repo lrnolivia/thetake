@@ -1003,6 +1003,7 @@
   .backdrop{ position:fixed; inset:0; background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); display:none; z-index:40; opacity:0; transition:opacity var(--motion-base) var(--ease-standard); }
   .backdrop.show{ display:block; }
   .backdrop.in{ opacity:1; }
+  body.drawer-open{ overflow:hidden; }
   .drawer{
     position:fixed; top:0; right:0; width:min(440px, 100vw); height:100vh; height:100dvh;
     overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch;
@@ -1205,10 +1206,10 @@
 </div>
 <div class="theme-wipe" id="themeWipe" aria-hidden="true"></div>
 
-<section class="onboarding" id="onboarding" aria-hidden="true">
+<section class="onboarding" id="onboarding" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle" aria-hidden="true">
   <form class="onboarding-card" id="onboardingForm">
     <div class="onboarding-brand"><img src="assets/chop-logo.png" alt=""><span>The Take</span></div>
-    <h2>Let&rsquo;s set up your take.</h2>
+    <h2 id="onboardingTitle">Let&rsquo;s set up your take.</h2>
     <p class="onboarding-copy">This stays in this browser. Your role changes whether hours are requested, and your CHOP location is saved now so location-specific themes can be added later.</p>
     <div class="onboarding-fields">
       <label class="fieldwrap"><span class="fieldlabel">Your name</span><span class="fieldrow"><input type="text" id="onboardName" autocomplete="name" maxlength="60" required placeholder="What should we call you?"></span></label>
@@ -1237,8 +1238,8 @@
   <div class="hero-block reveal-scale" id="heroBlock">
     <div class="hero-navbar-blur" aria-hidden="true"><div class="tint"></div><span></span><span></span><span></span></div>
     <div class="paintwrap floating">
-      <button type="button" class="paintbtn" id="paintToggle" aria-label="Change look"><span aria-hidden="true">🖌️</span></button>
-      <div class="paintpop" id="paintPop">
+      <button type="button" class="paintbtn" id="paintToggle" aria-label="Change look" aria-haspopup="true" aria-controls="paintPop" aria-expanded="false"><span aria-hidden="true">🖌️</span></button>
+      <div class="paintpop" id="paintPop" aria-hidden="true" inert>
         <div class="pop-label">Accent color</div>
         <div class="accentrow">
           <button type="button" class="accentbtn" data-accentval="coral" aria-label="Classic accent color">
@@ -1272,8 +1273,8 @@
       <img class="hero-navbar-logo" src="assets/chop-logo.png" alt="">
       <span class="hero-navbar-title" id="heroNavbarTitle"><small>The Take</small></span>
       <div class="paintwrap navpaint">
-        <button type="button" class="hero-navbar-btn" id="navPaintBtn" aria-label="Change look"><span aria-hidden="true">🖌️</span></button>
-        <div class="paintpop" id="navPaintPop">
+        <button type="button" class="hero-navbar-btn" id="navPaintBtn" aria-label="Change look" aria-haspopup="true" aria-controls="navPaintPop" aria-expanded="false"><span aria-hidden="true">🖌️</span></button>
+        <div class="paintpop" id="navPaintPop" aria-hidden="true" inert>
           <div class="pop-label">Accent color</div>
           <div class="accentrow">
             <button type="button" class="accentbtn" data-accentval="coral" aria-label="Classic accent color">
@@ -1290,7 +1291,7 @@
         </div>
       </div>
       <button type="button" class="hero-navbar-btn" id="navHistoryBtn" aria-label="History" aria-haspopup="dialog" aria-controls="historyLayer" aria-expanded="false"><span aria-hidden="true">🕘</span></button>
-      <button type="button" class="hero-navbar-btn" id="navSettingsBtn" aria-label="Settings"><span aria-hidden="true">⚙️</span></button>
+      <button type="button" class="hero-navbar-btn" id="navSettingsBtn" aria-label="Settings" aria-haspopup="dialog" aria-controls="drawer" aria-expanded="false"><span aria-hidden="true">⚙️</span></button>
     </div>
   </div>
   </div>
@@ -1314,8 +1315,8 @@
   <div class="contenttoolbar reveal">
     <div class="toolbar-title">Your numbers</div>
     <div class="toolbar-actions">
-      <button type="button" class="gearbtn" id="historyToggle" aria-haspopup="dialog" aria-controls="historyLayer">🕘 History</button>
-      <button type="button" class="gearbtn" id="settingsToggle">⚙️ Settings</button>
+      <button type="button" class="gearbtn" id="historyToggle" aria-haspopup="dialog" aria-controls="historyLayer" aria-expanded="false">🕘 History</button>
+      <button type="button" class="gearbtn" id="settingsToggle" aria-haspopup="dialog" aria-controls="drawer" aria-expanded="false">⚙️ Settings</button>
     </div>
   </div>
 
@@ -1330,7 +1331,7 @@
       <div class="historysave">
         <div class="fieldwrap">
           <div class="fieldlabel">Label <span style="text-transform:none;">(optional)</span></div>
-          <div class="fieldrow"><input type="text" id="historyLabel" placeholder="e.g. Aug 18–24" maxlength="40"></div>
+          <div class="fieldrow"><input type="text" id="historyLabel" aria-label="History label" placeholder="e.g. Aug 18–24" maxlength="40"></div>
         </div>
         <button type="button" class="smallbtn" id="saveHistoryBtn">Save this period</button>
       </div>
@@ -1365,7 +1366,7 @@
 
       <div class="uploadgrid sales-primary">
         <button type="button" class="uploadbtn" id="scanSalesBtn"><span class="icon">📊</span><span class="label"><span class="l1">Upload</span><span class="l2">Sales</span></span></button>
-        <input type="file" id="scanSalesInput" accept="image/*" style="display:none">
+          <input type="file" id="scanSalesInput" aria-label="Choose a sales screenshot" accept="image/*" style="display:none">
       </div>
       <div class="scanstatus" id="scanStatus"></div>
 
@@ -1374,19 +1375,19 @@
         <div class="inputgrid">
         <div class="fieldwrap">
           <div class="fieldlabel">Gross service revenue</div>
-          <div class="fieldrow"><span>$</span><input type="number" id="inRevenue" step="0.01" min="0" placeholder="0"></div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inRevenue" aria-label="Gross service revenue" step="0.01" min="0" placeholder="0"></div>
         </div>
         <div class="fieldwrap">
           <div class="fieldlabel">Product sales</div>
-          <div class="fieldrow"><span>$</span><input type="number" id="inProductSales" step="0.01" min="0" placeholder="0"></div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inProductSales" aria-label="Product sales" step="0.01" min="0" placeholder="0"></div>
         </div>
         <div class="fieldwrap">
           <div class="fieldlabel">Actual tips</div>
-          <div class="fieldrow"><span>$</span><input type="number" id="inTips" step="0.01" min="0" placeholder="0"></div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inTips" aria-label="Actual tips" step="0.01" min="0" placeholder="0"></div>
         </div>
         <div class="fieldwrap">
           <div class="fieldlabel">Amount actually paid <span style="text-transform:none;">(optional)</span></div>
-          <div class="fieldrow"><span>$</span><input type="number" id="inReceived" step="0.01" min="0" placeholder="e.g. 295.85"></div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inReceived" aria-label="Amount actually paid" step="0.01" min="0" placeholder="e.g. 295.85"></div>
         </div>
         </div>
       </details>
@@ -1396,8 +1397,8 @@
         <p class="cardnote">Only add hours if this was an unusually low-sales period and you need to compare commission with the minimum-wage floor.</p>
         <div class="hourscheck-grid">
           <button type="button" class="uploadbtn" id="scanTimeBtn"><span class="icon">🕒</span><span class="label"><span class="l1">Upload</span><span class="l2">Hours</span></span></button>
-          <input type="file" id="scanTimeInput" accept="image/*" style="display:none">
-          <div class="fieldwrap"><div class="fieldlabel">Hours worked</div><div class="fieldrow"><input type="number" id="inHours" step="0.01" min="0" placeholder="0"><span>hrs</span></div></div>
+          <input type="file" id="scanTimeInput" aria-label="Choose an hours screenshot" accept="image/*" style="display:none">
+          <div class="fieldwrap"><div class="fieldlabel">Hours worked</div><div class="fieldrow"><input type="number" id="inHours" aria-label="Hours worked" step="0.01" min="0" placeholder="0"><span>hrs</span></div></div>
         </div>
       </details>
 
@@ -1470,7 +1471,7 @@
       </div>
     </div>
     <div class="customfield" id="shiftCustomWrap">
-      <input type="number" id="shiftCustomInput" min="1" max="80" step="1" inputmode="numeric" placeholder="e.g. 32"><span>hrs/wk, exact</span>
+      <input type="number" id="shiftCustomInput" aria-label="Custom hours per week" min="1" max="80" step="1" inputmode="numeric" placeholder="e.g. 32"><span>hrs/wk, exact</span>
     </div>
 
     <div class="controllabel">Average ticket tier</div>
@@ -1492,7 +1493,7 @@
     </div>
 
     <div class="customfield" id="tierCustomWrap">
-      <span>$</span><input type="number" id="tierCustomInput" min="0" step="1" inputmode="numeric" placeholder="e.g. 35"><span>avg ticket</span>
+      <span>$</span><input type="number" id="tierCustomInput" aria-label="Custom average ticket" min="0" step="1" inputmode="numeric" placeholder="e.g. 35"><span>avg ticket</span>
     </div>
 
     <p class="cardnote" id="tierintro" style="margin-top:14px;"></p>
@@ -1532,9 +1533,9 @@
 </div>
 
 <!-- SETTINGS DRAWER -->
-<div class="backdrop" id="backdrop"></div>
-<div class="drawer" id="drawer">
-  <div class="drawer-head"><h2>Settings</h2><button type="button" class="closebtn" id="closeDrawer">&times;</button></div>
+<div class="backdrop" id="backdrop" aria-hidden="true"></div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true" tabindex="-1" inert>
+  <div class="drawer-head"><h2 id="settingsTitle">Settings</h2><button type="button" class="closebtn" id="closeDrawer" aria-label="Close settings">&times;</button></div>
   <p class="drawer-sub">Everything here is saved in this browser (not synced anywhere) and drives both cards on the main page.</p>
 
   <div class="setgroup">

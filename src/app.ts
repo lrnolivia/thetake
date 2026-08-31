@@ -123,12 +123,15 @@ import { createWorker } from 'tesseract.js';
       var idx = opts.order.indexOf(activeKey);
       if(idx < 0) return;
       range.value = idx;
+      range.setAttribute('aria-valuetext', opts.names[activeKey] + '; ' + opts.amtFn(activeKey));
       setPoppingText(glyphEl, opts.glyphs[activeKey]);
       setPoppingText(nameEl, opts.names[activeKey]);
       setPoppingText(amtEl, opts.amtFn(activeKey));
       ticks.forEach(function(btn){
-        btn.classList.toggle('active', btn.getAttribute('data-key') === activeKey);
-        if(btn.getAttribute('data-key') === activeKey && previousKey !== activeKey){
+        var isActive = btn.getAttribute('data-key') === activeKey;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', String(isActive));
+        if(isActive && previousKey !== activeKey){
           btn.classList.remove('choice-pop'); void btn.offsetWidth; btn.classList.add('choice-pop');
           setTimeout(function(){ btn.classList.remove('choice-pop'); }, 420);
         }
@@ -277,10 +280,17 @@ import { createWorker } from 'tesseract.js';
   function showOnboarding(){
     var panel = document.getElementById('onboarding');
     panel.classList.add('show'); panel.setAttribute('aria-hidden','false'); document.body.classList.add('onboarding-open');
+    document.querySelector('.page').inert = true;
+    document.getElementById('installBtn').inert = true;
+    document.getElementById('iosInstallPop').inert = true;
+    requestAnimationFrame(function(){ document.getElementById('onboardName').focus(); });
   }
   function hideOnboarding(){
     var panel = document.getElementById('onboarding');
     panel.classList.remove('show'); panel.setAttribute('aria-hidden','true'); document.body.classList.remove('onboarding-open');
+    document.querySelector('.page').inert = false;
+    document.getElementById('installBtn').inert = false;
+    document.getElementById('iosInstallPop').inert = false;
   }
   function initOnboarding(){
     var locationSelect = document.getElementById('onboardLocation');
@@ -327,7 +337,9 @@ import { createWorker } from 'tesseract.js';
   function applyLook(){
     document.documentElement.setAttribute('data-accent', settings.uiAccent);
     document.querySelectorAll('.accentbtn').forEach(function(btn){
-      btn.classList.toggle('active', btn.getAttribute('data-accentval') === settings.uiAccent);
+      var isActive = btn.getAttribute('data-accentval') === settings.uiAccent;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
     });
     document.querySelectorAll('.rememberChk').forEach(function(chk){
       chk.checked = !!settings.rememberLook;
@@ -338,6 +350,16 @@ import { createWorker } from 'tesseract.js';
   // Two paint toggles share one set of style/accent controls: the floating button
   // on the full-size hero, and the compact one in the nav bar next to Settings.
   var paintPops = [];
+  function setPaintPopover(item, open){
+    item.pop.classList.toggle('show', open);
+    item.pop.setAttribute('aria-hidden', String(!open));
+    item.pop.inert = !open;
+    item.btn.setAttribute('aria-expanded', String(open));
+  }
+  function closePaintPops(){
+    paintPops.forEach(function(item){ setPaintPopover(item, false); });
+    document.getElementById('heroBlock').classList.remove('theme-flyout-open');
+  }
   function wirePaintToggle(btnId, popId){
     var btn = document.getElementById(btnId);
     var pop = document.getElementById(popId);
@@ -346,8 +368,8 @@ import { createWorker } from 'tesseract.js';
     btn.addEventListener('click', function(e){
       e.stopPropagation();
       var willShow = !pop.classList.contains('show');
-      paintPops.forEach(function(p){ p.pop.classList.remove('show'); });
-      if(willShow) pop.classList.add('show');
+      paintPops.forEach(function(p){ setPaintPopover(p, false); });
+      if(willShow) setPaintPopover(paintPops.filter(function(p){ return p.pop === pop; })[0], true);
       document.getElementById('heroBlock').classList.toggle('theme-flyout-open', willShow);
     });
   }
@@ -355,7 +377,7 @@ import { createWorker } from 'tesseract.js';
   wirePaintToggle('navPaintBtn', 'navPaintPop');
   document.addEventListener('click', function(e){
     paintPops.forEach(function(p){
-      if(!p.pop.contains(e.target) && e.target !== p.btn){ p.pop.classList.remove('show'); }
+      if(!p.pop.contains(e.target) && e.target !== p.btn){ setPaintPopover(p, false); }
     });
     if(!paintPops.some(function(p){ return p.pop.classList.contains('show'); })){
       document.getElementById('heroBlock').classList.remove('theme-flyout-open');
@@ -662,7 +684,9 @@ import { createWorker } from 'tesseract.js';
     renderProjection();
     renderHistory();
     document.querySelectorAll('#periodbar .periodbtn').forEach(function(btn){
-      btn.classList.toggle('active', btn.getAttribute('data-period') === ui.zoomPeriod);
+      var isActive = btn.getAttribute('data-period') === ui.zoomPeriod;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
     });
   }
 
@@ -671,9 +695,9 @@ import { createWorker } from 'tesseract.js';
     settings.brackets.forEach(function(b, i){
       var isLast = i === settings.brackets.length - 1;
       html += '<div class="bracketrow" data-idx="'+i+'">' +
-        '<div class="fieldrow"><input type="number" class="bRate" step="0.5" min="0" max="100" value="'+(b.rate*100)+'"><span>%</span></div>' +
-        '<div class="fieldrow">' + (isLast ? '<span style="flex:1;">and up</span>' : '<span>$</span><input type="number" class="bUpTo" step="100" min="0" value="'+b.upTo+'">') + '</div>' +
-        (settings.brackets.length>1 ? '<button type="button" class="rmbtn" data-rm="'+i+'">&times;</button>' : '<span></span>') +
+        '<div class="fieldrow"><input type="number" class="bRate" aria-label="Federal tax rate for bracket '+(i+1)+'" step="0.5" min="0" max="100" value="'+(b.rate*100)+'"><span>%</span></div>' +
+        '<div class="fieldrow">' + (isLast ? '<span style="flex:1;">and up</span>' : '<span>$</span><input type="number" class="bUpTo" aria-label="Upper income limit for bracket '+(i+1)+'" step="100" min="0" value="'+b.upTo+'">') + '</div>' +
+        (settings.brackets.length>1 ? '<button type="button" class="rmbtn" data-rm="'+i+'" aria-label="Remove federal tax bracket '+(i+1)+'">&times;</button>' : '<span></span>') +
         '</div>';
     });
     document.getElementById('bracketRows').innerHTML = html;
@@ -716,7 +740,9 @@ import { createWorker } from 'tesseract.js';
     loc.value = settings.location || '';
     document.getElementById('setProfileName').value = settings.profileName || '';
     document.querySelectorAll('#workerTypeToggle .periodbtn').forEach(function(btn){
-      btn.classList.toggle('active', btn.getAttribute('data-workertype') === settings.workerType);
+      var isActive = btn.getAttribute('data-workertype') === settings.workerType;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
     });
   }
 
@@ -733,7 +759,9 @@ import { createWorker } from 'tesseract.js';
     document.getElementById('setTicketPremium').value = settings.tierTickets.premium;
     document.getElementById('minWageNote').textContent = (STATE_MIN_WAGE[settings.state]||STATE_MIN_WAGE.OTHER).note + ' (reference figure, always verify.)';
     document.querySelectorAll('#wageModeToggle .periodbtn').forEach(function(btn){
-      btn.classList.toggle('active', btn.getAttribute('data-wagemode') === settings.wageMode);
+      var isActive = btn.getAttribute('data-wagemode') === settings.wageMode;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
     });
     renderBracketRows();
   }
@@ -830,20 +858,32 @@ import { createWorker } from 'tesseract.js';
     btn.addEventListener('click', function(){
       var gp = btn.getAttribute('data-goalperiod');
       ui.goalPeriod = gp;
-      document.querySelectorAll('#goalPeriodBar .periodbtn').forEach(function(b){ b.classList.toggle('active', b===btn); });
+      document.querySelectorAll('#goalPeriodBar .periodbtn').forEach(function(b){
+        b.classList.toggle('active', b===btn);
+        b.setAttribute('aria-pressed', String(b===btn));
+      });
       document.querySelectorAll('.goalperiod-panel').forEach(function(p){
         p.style.display = (p.getAttribute('data-goalperiod') === gp) ? 'block' : 'none';
       });
     });
   });
   document.querySelectorAll('#goalPeriodBar .periodbtn').forEach(function(btn){
-    btn.classList.toggle('active', btn.getAttribute('data-goalperiod') === ui.goalPeriod);
+    var isActive = btn.getAttribute('data-goalperiod') === ui.goalPeriod;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
   });
   document.querySelectorAll('.goalperiod-panel').forEach(function(p){
     p.style.display = (p.getAttribute('data-goalperiod') === ui.goalPeriod) ? 'block' : 'none';
   });
   document.querySelectorAll('#periodbar .periodbtn').forEach(function(btn){
-    btn.addEventListener('click', function(){ ui.zoomPeriod = btn.getAttribute('data-period'); renderActual(); document.querySelectorAll('#periodbar .periodbtn').forEach(function(b){ b.classList.toggle('active', b===btn); }); });
+    btn.addEventListener('click', function(){
+      ui.zoomPeriod = btn.getAttribute('data-period');
+      renderActual();
+      document.querySelectorAll('#periodbar .periodbtn').forEach(function(b){
+        b.classList.toggle('active', b===btn);
+        b.setAttribute('aria-pressed', String(b===btn));
+      });
+    });
   });
 
   var payInfoWrap = document.getElementById('payInfoWrap');
@@ -918,28 +958,54 @@ import { createWorker } from 'tesseract.js';
     if(historyPopoverEl.animate && !reduceMotion && to){
       historyLayer.classList.add('closing');
       historyPopoverEl.animate([{translate:'0px 0px',scale:'1 1',opacity:1},Object.assign({opacity:0},to)],{duration:300,easing:'cubic-bezier(.7,0,.84,0)'});
-      historyCloseTimer = setTimeout(function(){ historyLayer.classList.remove('show','closing'); },300);
+      historyCloseTimer = setTimeout(function(){
+        historyLayer.classList.remove('show','closing');
+        if(historyOrigin) historyOrigin.focus();
+      },300);
     } else {
       historyLayer.classList.remove('show','closing');
+      if(historyOrigin) historyOrigin.focus();
     }
   }
 
   var drawer = document.getElementById('drawer');
   var backdrop = document.getElementById('backdrop');
+  var settingsToggle = document.getElementById('settingsToggle');
+  var navSettingsToggle = document.getElementById('navSettingsBtn');
+  var drawerOrigin = null;
+  function setSettingsExpanded(expanded){
+    settingsToggle.setAttribute('aria-expanded', String(expanded));
+    if(navSettingsToggle) navSettingsToggle.setAttribute('aria-expanded', String(expanded));
+  }
   function openDrawer(){
+    drawerOrigin = document.activeElement;
     drawer.scrollTop = 0;
+    drawer.inert = false;
+    drawer.setAttribute('aria-hidden','false');
+    document.querySelector('.page').inert = true;
+    document.getElementById('installBtn').inert = true;
+    document.body.classList.add('drawer-open');
+    setSettingsExpanded(true);
     drawer.classList.add('show'); backdrop.classList.add('show');
-    requestAnimationFrame(function(){ backdrop.classList.add('in'); });
+    requestAnimationFrame(function(){ backdrop.classList.add('in'); document.getElementById('closeDrawer').focus(); });
   }
   function closeDrawer(){
+    if(!drawer.classList.contains('show')) return;
     drawer.classList.remove('show'); backdrop.classList.remove('in');
+    drawer.setAttribute('aria-hidden','true');
+    drawer.inert = true;
+    document.querySelector('.page').inert = false;
+    document.getElementById('installBtn').inert = false;
+    document.body.classList.remove('drawer-open');
+    setSettingsExpanded(false);
     setTimeout(function(){ backdrop.classList.remove('show'); }, 300);
+    if(drawerOrigin && drawerOrigin.isConnected) requestAnimationFrame(function(){ drawerOrigin.focus(); });
   }
   historyToggle.addEventListener('click', openHistory);
   if(navHistoryToggle) navHistoryToggle.addEventListener('click', openHistory);
   document.getElementById('closeHistory').addEventListener('click', closeHistory);
   document.getElementById('historyDismiss').addEventListener('click', closeHistory);
-  document.getElementById('settingsToggle').addEventListener('click', function(){ closeHistory(); openDrawer(); });
+  settingsToggle.addEventListener('click', function(){ closeHistory(); openDrawer(); });
   document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
   backdrop.addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function(e){
@@ -947,6 +1013,7 @@ import { createWorker } from 'tesseract.js';
       setPayInfo(false);
       closeHistory();
       closeDrawer();
+      closePaintPops();
     }
   });
 
@@ -1532,12 +1599,17 @@ import { createWorker } from 'tesseract.js';
     function showBtn(){
       if(everShown) return;
       everShown = true;
+      btn.removeAttribute('aria-hidden');
+      btn.tabIndex = 0;
       btn.style.display = 'flex';
       hideTimer = setTimeout(hideBtn, HIDE_AFTER_MS);
     }
     function hideBtn(){
       clearTimeout(hideTimer);
       btn.classList.add('hide');
+      btn.setAttribute('aria-hidden','true');
+      btn.tabIndex = -1;
+      if(iosPop) iosPop.classList.remove('show');
     }
 
     // Disappear the instant the user scrolls — the nudge shouldn't linger
@@ -1591,7 +1663,7 @@ import { createWorker } from 'tesseract.js';
   function initServiceWorker(){
     if('serviceWorker' in navigator){
       window.addEventListener('load', function(){
-        navigator.serviceWorker.register('/sw.js?v=5', { updateViaCache: 'none' }).then(function(registration){
+        navigator.serviceWorker.register('/sw.js?v=6', { updateViaCache: 'none' }).then(function(registration){
           registration.update().catch(function(){ /* the current shell remains usable offline */ });
         }).catch(function(){ /* offline caching is a bonus, not required */ });
       });

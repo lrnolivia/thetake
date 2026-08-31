@@ -3,3 +3,4 @@ dist/
 .wrangler/
 public/ocr/
 *.log
+.DS_Store
