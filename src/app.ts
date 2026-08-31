@@ -193,6 +193,7 @@ import { createWorker } from 'tesseract.js';
       // the completion flag during a standalone-PWA lifecycle restart.
       if(merged.profileName && merged.location && merged.workerType) merged.onboardingComplete = true;
       if(!merged.brackets || !merged.brackets.length){ merged.brackets = JSON.parse(JSON.stringify(DEFAULT_BRACKETS)); }
+      merged.brackets[merged.brackets.length - 1].upTo = null;
       // Older saved settings may only have {low,average,high} — backfill any new
       // tier keys (budget/premium) from defaults rather than losing them.
       merged.tierTickets = Object.assign({}, DEFAULTS.tierTickets, loaded.tierTickets || {});
@@ -279,6 +280,7 @@ import { createWorker } from 'tesseract.js';
   }
   function showOnboarding(){
     var panel = document.getElementById('onboarding');
+    panel.inert = false;
     panel.classList.add('show'); panel.setAttribute('aria-hidden','false'); document.body.classList.add('onboarding-open');
     document.querySelector('.page').inert = true;
     document.getElementById('installBtn').inert = true;
@@ -288,9 +290,11 @@ import { createWorker } from 'tesseract.js';
   function hideOnboarding(){
     var panel = document.getElementById('onboarding');
     panel.classList.remove('show'); panel.setAttribute('aria-hidden','true'); document.body.classList.remove('onboarding-open');
+    panel.inert = true;
     document.querySelector('.page').inert = false;
     document.getElementById('installBtn').inert = false;
-    document.getElementById('iosInstallPop').inert = false;
+    var installPop = document.getElementById('iosInstallPop');
+    installPop.inert = !installPop.classList.contains('show');
   }
   function initOnboarding(){
     var locationSelect = document.getElementById('onboardLocation');
@@ -356,9 +360,11 @@ import { createWorker } from 'tesseract.js';
     item.pop.inert = !open;
     item.btn.setAttribute('aria-expanded', String(open));
   }
-  function closePaintPops(){
+  function closePaintPops(returnFocus){
+    var focusedItem = paintPops.filter(function(item){ return item.pop.contains(document.activeElement); })[0];
     paintPops.forEach(function(item){ setPaintPopover(item, false); });
     document.getElementById('heroBlock').classList.remove('theme-flyout-open');
+    if(returnFocus && focusedItem) focusedItem.btn.focus();
   }
   function wirePaintToggle(btnId, popId){
     var btn = document.getElementById(btnId);
@@ -718,6 +724,7 @@ import { createWorker } from 'tesseract.js';
       btn.addEventListener('click', function(){
         var idx = parseInt(btn.getAttribute('data-rm'),10);
         settings.brackets.splice(idx,1);
+        settings.brackets[settings.brackets.length - 1].upTo = null;
         saveSettings(); renderBracketRows(); renderAll();
       });
     });
@@ -892,6 +899,7 @@ import { createWorker } from 'tesseract.js';
   function setPayInfo(open){
     payInfoPopover.classList.toggle('show', open);
     payInfoPopover.setAttribute('aria-hidden', String(!open));
+    payInfoPopover.inert = !open;
     payInfoToggle.setAttribute('aria-expanded', String(open));
     if(open) requestAnimationFrame(function(){ payInfoPopover.focus(); });
   }
@@ -1010,10 +1018,12 @@ import { createWorker } from 'tesseract.js';
   backdrop.addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape'){
+      var payInfoWasOpen = payInfoToggle.getAttribute('aria-expanded') === 'true';
       setPayInfo(false);
+      if(payInfoWasOpen) payInfoToggle.focus();
       closeHistory();
       closeDrawer();
-      closePaintPops();
+      closePaintPops(true);
     }
   });
 
@@ -1077,18 +1087,22 @@ import { createWorker } from 'tesseract.js';
   document.getElementById('resetAll').addEventListener('click', function(){
     if(!confirm('Reset all settings to defaults? This clears anything you\'ve customized.')) return;
     var keepAccent = settings.uiAccent, keepRemember = settings.rememberLook;
-    var keepProfile = { onboardingComplete:settings.onboardingComplete, profileName:settings.profileName, workerType:settings.workerType, location:settings.location };
+    var keepProfile = { onboardingComplete:settings.onboardingComplete, profileName:settings.profileName, workerType:settings.workerType, location:settings.location, state:settings.state };
     settings = JSON.parse(JSON.stringify(DEFAULTS));
     settings.uiAccent = keepAccent; settings.rememberLook = keepRemember;
     Object.assign(settings, keepProfile);
     saveSettings(); applyLook(); applyWorkerType(); populateStateDropdown(); populateProfileSettings(); renderSettingsForm(); renderAll();
   });
+  function openExternal(url){
+    var opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if(opened) opened.opener = null;
+  }
   document.getElementById('lookupWage').addEventListener('click', function(){
     var q = encodeURIComponent(settings.state + ' minimum wage 2026');
-    window.open('https://www.google.com/search?q=' + q, '_blank');
+    openExternal('https://www.google.com/search?q=' + q);
   });
   document.getElementById('lookupTax').addEventListener('click', function(){
-    window.open('https://www.google.com/search?q=' + encodeURIComponent('IRS 2026 federal tax brackets single filer'), '_blank');
+    openExternal('https://www.google.com/search?q=' + encodeURIComponent('IRS 2026 federal tax brackets single filer'));
   });
 
   function fileToImage(file){
@@ -1133,16 +1147,16 @@ import { createWorker } from 'tesseract.js';
     for(var i=0;i<lines.length;i++){
       var low = lines[i].toLowerCase();
       if(revenue===null && low.indexOf('service sales')!==-1){
-        revenue = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+        revenue = moneyFrom(lines[i]) ?? moneyFrom(lines[i+1]||'');
       }
       if(grossTotal===null && low.indexOf('total gross sales')!==-1){
-        grossTotal = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+        grossTotal = moneyFrom(lines[i]) ?? moneyFrom(lines[i+1]||'');
       }
       if(productSales===null && (low.indexOf('product sales')!==-1 || low.indexOf('retail sales')!==-1)){
-        productSales = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+        productSales = moneyFrom(lines[i]) ?? moneyFrom(lines[i+1]||'');
       }
       if(tips===null && /^tips\b/.test(low)){
-        tips = moneyFrom(lines[i]) || moneyFrom(lines[i+1]||'');
+        tips = moneyFrom(lines[i]) ?? moneyFrom(lines[i+1]||'');
       }
     }
     if(revenue===null && grossTotal!==null) revenue = Math.max(0, grossTotal - (productSales||0));
@@ -1293,7 +1307,9 @@ import { createWorker } from 'tesseract.js';
   }
 
   function initGlassLight(){
-    if(!window.matchMedia || !window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+    if(!window.matchMedia ||
+       window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+       !window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
     var surfaces = document.querySelectorAll('.netpay-hero, details.projection');
     surfaces.forEach(function(surface){
       var pending = false, clientX = 0, clientY = 0;
@@ -1405,6 +1421,7 @@ import { createWorker } from 'tesseract.js';
     var heroBlock = document.getElementById('heroBlock');
     var spacer = document.getElementById('heroSpacer');
     var heroNavbar = document.getElementById('heroNavbar');
+    var fullHeroPaint = document.querySelector('.paintwrap.floating');
     if(!heroBlock || !spacer) return;
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1412,6 +1429,7 @@ import { createWorker } from 'tesseract.js';
 
     var fullH = 0;
     var ticking = false;
+    var wasCompact = null;
 
     function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
 
@@ -1452,8 +1470,17 @@ import { createWorker } from 'tesseract.js';
       root.setProperty('--hero-progress', progress.toFixed(4));
       root.setProperty('--hero-content-p', contentP.toFixed(4));
       root.setProperty('--hero-nav-p', navP.toFixed(4));
-      heroBlock.classList.toggle('compact', progress > 0.92);
-      if(heroNavbar) heroNavbar.setAttribute('aria-hidden', progress > 0.92 ? 'false' : 'true');
+      var compact = progress > 0.92;
+      heroBlock.classList.toggle('compact', compact);
+      if(compact !== wasCompact){
+        if(heroNavbar){
+          heroNavbar.setAttribute('aria-hidden', compact ? 'false' : 'true');
+          heroNavbar.inert = !compact;
+        }
+        if(fullHeroPaint) fullHeroPaint.inert = compact;
+        if(wasCompact !== null) closePaintPops();
+        wasCompact = compact;
+      }
 
       ticking = false;
     }
@@ -1596,6 +1623,18 @@ import { createWorker } from 'tesseract.js';
     var everShown = false;
     var HIDE_AFTER_MS = 7000;
 
+    function setInstallPopover(open){
+      if(!iosPop) return;
+      iosPop.classList.toggle('show', open);
+      iosPop.setAttribute('aria-hidden', String(!open));
+      iosPop.inert = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      if(open){
+        clearTimeout(hideTimer);
+        requestAnimationFrame(function(){ iosPop.focus(); });
+      }
+    }
+
     function showBtn(){
       if(everShown) return;
       everShown = true;
@@ -1609,7 +1648,8 @@ import { createWorker } from 'tesseract.js';
       btn.classList.add('hide');
       btn.setAttribute('aria-hidden','true');
       btn.tabIndex = -1;
-      if(iosPop) iosPop.classList.remove('show');
+      setInstallPopover(false);
+      if(document.activeElement === btn || (iosPop && iosPop.contains(document.activeElement))) btn.blur();
     }
 
     // Disappear the instant the user scrolls — the nudge shouldn't linger
@@ -1618,7 +1658,18 @@ import { createWorker } from 'tesseract.js';
 
     var iosPopClose = document.getElementById('iosPopClose');
     if(iosPopClose && iosPop){
-      iosPopClose.addEventListener('click', function(){ iosPop.classList.remove('show'); });
+      iosPopClose.addEventListener('click', function(){
+        setInstallPopover(false);
+        btn.focus();
+        hideTimer = setTimeout(hideBtn, 2000);
+      });
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true'){
+          setInstallPopover(false);
+          btn.focus();
+          hideTimer = setTimeout(hideBtn, 2000);
+        }
+      });
     }
 
     if(isIOS){
@@ -1627,7 +1678,7 @@ import { createWorker } from 'tesseract.js';
       // actual browser + iOS version).
       if(stepsEl) stepsEl.innerHTML = installStepsHTML();
       btn.addEventListener('click', function(){
-        if(iosPop) iosPop.classList.toggle('show');
+        setInstallPopover(btn.getAttribute('aria-expanded') !== 'true');
       });
       showBtn();
     } else {
@@ -1653,7 +1704,7 @@ import { createWorker } from 'tesseract.js';
         if(deferredPrompt || everShown) return;
         if(stepsEl) stepsEl.innerHTML = installStepsHTML();
         btn.addEventListener('click', function(){
-          if(iosPop) iosPop.classList.toggle('show');
+          setInstallPopover(btn.getAttribute('aria-expanded') !== 'true');
         });
         showBtn();
       }, 2500);
@@ -1663,7 +1714,7 @@ import { createWorker } from 'tesseract.js';
   function initServiceWorker(){
     if('serviceWorker' in navigator){
       window.addEventListener('load', function(){
-        navigator.serviceWorker.register('/sw.js?v=6', { updateViaCache: 'none' }).then(function(registration){
+        navigator.serviceWorker.register('/sw.js?v=7', { updateViaCache: 'none' }).then(function(registration){
           registration.update().catch(function(){ /* the current shell remains usable offline */ });
         }).catch(function(){ /* offline caching is a bonus, not required */ });
       });

@@ -1,4 +1,5 @@
-var CACHE = 'thetake-shell-v6';
+var CACHE_PREFIX = 'thetake-shell-';
+var CACHE = CACHE_PREFIX + 'v7';
 var SHELL = [
   '/',
   '/manifest.webmanifest',
@@ -18,7 +19,7 @@ self.addEventListener('install', function(event){
 self.addEventListener('activate', function(event){
   event.waitUntil(
     caches.keys().then(function(keys){
-      return Promise.all(keys.filter(function(key){ return key !== CACHE; }).map(function(key){ return caches.delete(key); }));
+      return Promise.all(keys.filter(function(key){ return key.indexOf(CACHE_PREFIX) === 0 && key !== CACHE; }).map(function(key){ return caches.delete(key); }));
     }).then(function(){ return self.clients.claim(); })
   );
 });

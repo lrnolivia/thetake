@@ -6,7 +6,7 @@
 <title>The Take — Chop Barbershop</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%82%EF%B8%8F%3C/text%3E%3C/svg%3E">
 
-<!-- ---- PWA / installability ---- -->
+<!-- PWA / installability -->
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#141413">
 <meta name="application-name" content="The Take">
@@ -18,7 +18,7 @@
 <meta name="apple-mobile-web-app-title" content="The Take">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&amp;family=Space+Mono:wght@400;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <style>
 
   :root{
@@ -1193,6 +1193,19 @@
     .history-popover{ top:12px; max-height:calc(100% - 24px); padding:20px 18px 18px; }
   }
 
+  /* Keep this final in the cascade: several tactile states intentionally use
+     `!important`, so the accessibility override must come after them. */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:.01ms !important; transition-delay:0ms !important;
+      scroll-behavior:auto !important;
+    }
+    .motion-press.is-pressed, .motion-press.is-releasing{
+      animation:none !important; transform:none !important; transition:none !important;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -1206,7 +1219,7 @@
 </div>
 <div class="theme-wipe" id="themeWipe" aria-hidden="true"></div>
 
-<section class="onboarding" id="onboarding" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle" aria-hidden="true">
+<section class="onboarding" id="onboarding" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle" aria-hidden="true" inert>
   <form class="onboarding-card" id="onboardingForm">
     <div class="onboarding-brand"><img src="assets/chop-logo.png" alt=""><span>The Take</span></div>
     <h2 id="onboardingTitle">Let&rsquo;s set up your take.</h2>
@@ -1223,11 +1236,11 @@
   </form>
 </section>
 
-<button type="button" class="installbtn" id="installBtn" aria-label="Add The Take to your home screen">
+<button type="button" class="installbtn" id="installBtn" aria-label="Add The Take to your home screen" aria-haspopup="dialog" aria-controls="iosInstallPop" aria-expanded="false" aria-hidden="true" tabindex="-1">
   <span class="installbtn-label">Add to Home Screen</span>
 </button>
-<div class="iospop" id="iosInstallPop">
-  <div class="iospop-title">Add to Home Screen</div>
+<div class="iospop" id="iosInstallPop" role="dialog" aria-modal="false" aria-labelledby="iosPopTitle" aria-hidden="true" tabindex="-1" inert>
+  <div class="iospop-title" id="iosPopTitle">Add to Home Screen</div>
   <div class="iospop-steps" id="iospopSteps"></div>
   <button type="button" class="iospop-close" id="iosPopClose">Got it</button>
 </div>
@@ -1269,7 +1282,7 @@
     </div>
 
     <!-- Compact nav bar: crossfades in as the hero shrinks on scroll -->
-    <div class="hero-navbar" id="heroNavbar" aria-hidden="true">
+    <div class="hero-navbar" id="heroNavbar" aria-hidden="true" inert>
       <img class="hero-navbar-logo" src="assets/chop-logo.png" alt="">
       <span class="hero-navbar-title" id="heroNavbarTitle"><small>The Take</small></span>
       <div class="paintwrap navpaint">
@@ -1351,7 +1364,7 @@
         <div class="cardtitle pill-below">This Period's Pay<span>SCAN OR ENTER</span></div>
         <div class="payinfo-wrap" id="payInfoWrap">
           <button type="button" class="payinfo-btn" id="payInfoToggle" aria-label="Privacy and how this works" aria-haspopup="dialog" aria-controls="payInfoPopover" aria-expanded="false">i</button>
-          <aside class="payinfo-popover" id="payInfoPopover" role="dialog" aria-modal="false" aria-labelledby="payInfoTitle" aria-hidden="true" tabindex="-1">
+          <aside class="payinfo-popover" id="payInfoPopover" role="dialog" aria-modal="false" aria-labelledby="payInfoTitle" aria-hidden="true" tabindex="-1" inert>
             <div class="payinfo-head">
               <div class="payinfo-title" id="payInfoTitle">Private by Design</div>
               <button type="button" class="payinfo-close" id="payInfoClose" aria-label="Close privacy information">&times;</button>

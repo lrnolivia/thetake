@@ -46,14 +46,24 @@ const finitePositive = (value: number): number =>
   Number.isFinite(value) ? Math.max(0, value) : 0;
 
 export function annualFederalTax(taxableIncome: number, brackets: TaxBracket[]): number {
+  const income = finitePositive(taxableIncome);
   let tax = 0;
   let previousCap = 0;
 
-  for (const bracket of brackets) {
-    const cap = bracket.upTo ?? Number.POSITIVE_INFINITY;
-    if (taxableIncome <= previousCap) break;
-    const dollarsInBracket = Math.min(taxableIncome, cap) - previousCap;
-    tax += dollarsInBracket * bracket.rate;
+  for (let index = 0; index < brackets.length; index += 1) {
+    const bracket = brackets[index];
+    const isLast = index === brackets.length - 1;
+    const rawCap = bracket.upTo;
+    const cap = isLast || rawCap === null
+      ? Number.POSITIVE_INFINITY
+      : Math.max(previousCap, finitePositive(rawCap));
+    const rate = Number.isFinite(bracket.rate)
+      ? Math.min(1, Math.max(0, bracket.rate))
+      : 0;
+
+    if (income <= previousCap) break;
+    const dollarsInBracket = Math.max(0, Math.min(income, cap) - previousCap);
+    tax += dollarsInBracket * rate;
     previousCap = cap;
   }
 
@@ -82,13 +92,14 @@ export function calculatePay(input: PayInput, policy: PayPolicy): PayResult {
 
   const annualGross = grossWeekly * 52;
   const annualTips = tips * 52;
-  const tipsDeductionApplied = Math.max(
-    0,
-    Math.min(policy.tipsDeductionAssumed, annualTips, policy.tipsDeductionCap)
+  const tipsDeductionApplied = Math.min(
+    finitePositive(policy.tipsDeductionAssumed),
+    annualTips,
+    finitePositive(policy.tipsDeductionCap)
   );
   const taxableIncome = Math.max(
     0,
-    annualGross - policy.standardDeduction - tipsDeductionApplied
+    annualGross - finitePositive(policy.standardDeduction) - tipsDeductionApplied
   );
   const fedWeekly = annualFederalTax(taxableIncome, policy.brackets) / 52;
 
