@@ -159,6 +159,12 @@ import { createWorker } from 'tesseract.js';
   var PROFILE_KEY = 'thetake_profile_v1';
   var HISTORY_KEY = 'thetake_chop_history_v1';
 
+  function boundedNumber(value, fallback, min, max){
+    var parsed = Number(value);
+    if(!Number.isFinite(parsed)) return fallback;
+    return Math.min(max, Math.max(min, parsed));
+  }
+
   function syncMotionVisibility(){
     document.documentElement.classList.toggle('motion-paused', document.hidden);
   }
@@ -184,6 +190,8 @@ import { createWorker } from 'tesseract.js';
     try{
       var loaded = readLocalJson(STORAGE_KEY, {});
       var savedProfile = readLocalJson(PROFILE_KEY, {});
+      if(!loaded || typeof loaded !== 'object' || Array.isArray(loaded)) loaded = {};
+      if(!savedProfile || typeof savedProfile !== 'object' || Array.isArray(savedProfile)) savedProfile = {};
       var merged = JSON.parse(JSON.stringify(DEFAULTS));
       for(var k in loaded){ merged[k] = loaded[k]; }
       ['profileName','workerType','location','state','onboardingComplete'].forEach(function(key){
@@ -192,11 +200,43 @@ import { createWorker } from 'tesseract.js';
       // Recover older installs that saved all required profile fields but lost
       // the completion flag during a standalone-PWA lifecycle restart.
       if(merged.profileName && merged.location && merged.workerType) merged.onboardingComplete = true;
-      if(!merged.brackets || !merged.brackets.length){ merged.brackets = JSON.parse(JSON.stringify(DEFAULT_BRACKETS)); }
+      if(!Array.isArray(merged.brackets) || !merged.brackets.length){ merged.brackets = JSON.parse(JSON.stringify(DEFAULT_BRACKETS)); }
+      merged.brackets = merged.brackets.filter(function(bracket){
+        return bracket && typeof bracket === 'object';
+      }).map(function(bracket){
+        var rate = Number(bracket.rate);
+        var cap = bracket.upTo === null ? null : Number(bracket.upTo);
+        return {
+          upTo: cap === null || !Number.isFinite(cap) ? null : Math.max(0, cap),
+          rate: Number.isFinite(rate) ? Math.min(1, Math.max(0, rate)) : 0
+        };
+      });
+      if(!merged.brackets.length) merged.brackets = JSON.parse(JSON.stringify(DEFAULT_BRACKETS));
       merged.brackets[merged.brackets.length - 1].upTo = null;
       // Older saved settings may only have {low,average,high} — backfill any new
       // tier keys (budget/premium) from defaults rather than losing them.
-      merged.tierTickets = Object.assign({}, DEFAULTS.tierTickets, loaded.tierTickets || {});
+      var loadedTiers = loaded.tierTickets && typeof loaded.tierTickets === 'object' && !Array.isArray(loaded.tierTickets)
+        ? loaded.tierTickets
+        : {};
+      merged.tierTickets = Object.assign({}, DEFAULTS.tierTickets, loadedTiers);
+      Object.keys(DEFAULTS.tierTickets).forEach(function(key){
+        merged.tierTickets[key] = boundedNumber(merged.tierTickets[key], DEFAULTS.tierTickets[key], 0, 10000);
+      });
+      merged.profileName = typeof merged.profileName === 'string' ? merged.profileName.slice(0, 60) : '';
+      merged.workerType = merged.workerType === 'part-time' ? 'part-time' : 'full-time';
+      merged.location = typeof merged.location === 'string' && locationById(merged.location) ? merged.location : '';
+      if(merged.location) merged.state = locationById(merged.location).state;
+      merged.state = typeof merged.state === 'string' && STATE_MIN_WAGE[merged.state] ? merged.state : 'FL';
+      merged.wageMode = merged.wageMode === 'full' ? 'full' : 'tipped';
+      merged.minWage = boundedNumber(merged.minWage, DEFAULTS.minWage, 0, 1000);
+      merged.tipRateAssumed = boundedNumber(merged.tipRateAssumed, DEFAULTS.tipRateAssumed, 0, 1);
+      merged.ficaRate = boundedNumber(merged.ficaRate, DEFAULTS.ficaRate, 0, 1);
+      merged.stdDeduction = boundedNumber(merged.stdDeduction, DEFAULTS.stdDeduction, 0, 1000000000);
+      merged.tipsDeductionCap = boundedNumber(merged.tipsDeductionCap, DEFAULTS.tipsDeductionCap, 0, 1000000000);
+      merged.tipsDeductionAssumed = boundedNumber(merged.tipsDeductionAssumed, DEFAULTS.tipsDeductionAssumed, 0, merged.tipsDeductionCap);
+      merged.uiAccent = ACCENTS.indexOf(merged.uiAccent) >= 0 ? merged.uiAccent : DEFAULTS.uiAccent;
+      merged.rememberLook = merged.rememberLook === true;
+      merged.onboardingComplete = !!(merged.onboardingComplete && merged.profileName && merged.location);
       return merged;
     }catch(e){ return JSON.parse(JSON.stringify(DEFAULTS)); }
   }
@@ -211,7 +251,30 @@ import { createWorker } from 'tesseract.js';
     });
   }
   function loadHistory(){
-    return readLocalJson(HISTORY_KEY, []);
+    var saved = readLocalJson(HISTORY_KEY, []);
+    if(!Array.isArray(saved)) return [];
+    return saved.filter(function(record){
+      return record && typeof record === 'object' &&
+        Number.isFinite(Number(record.savedAt)) && Number.isFinite(Number(record.net));
+    }).map(function(record, index){
+      var savedAt = Number(record.savedAt);
+      var safeId = typeof record.id === 'string' && /^[A-Za-z0-9_-]+$/.test(record.id)
+        ? record.id
+        : 'saved-' + savedAt + '-' + index;
+      var received = record.received === null || record.received === undefined ? null : Number(record.received);
+      return {
+        id:safeId,
+        savedAt:savedAt,
+        label:typeof record.label === 'string' ? record.label.slice(0, 80) : '',
+        hours:boundedNumber(record.hours, 0, 0, 1000),
+        revenue:boundedNumber(record.revenue, 0, 0, 1000000000),
+        productSales:boundedNumber(record.productSales, 0, 0, 1000000000),
+        tips:boundedNumber(record.tips, 0, 0, 1000000000),
+        received:Number.isFinite(received) ? received : null,
+        net:boundedNumber(record.net, 0, 0, 1000000000),
+        floorApplies:record.floorApplies === true
+      };
+    });
   }
   function saveHistory(){
     writeLocalJson(HISTORY_KEY, history);

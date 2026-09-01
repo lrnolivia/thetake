@@ -45,6 +45,9 @@ export interface PayResult {
 const finitePositive = (value: number): number =>
   Number.isFinite(value) ? Math.max(0, value) : 0;
 
+const finiteRate = (value: number): number =>
+  Math.min(1, finitePositive(value));
+
 export function annualFederalTax(taxableIncome: number, brackets: TaxBracket[]): number {
   const income = finitePositive(taxableIncome);
   let tax = 0;
@@ -57,9 +60,7 @@ export function annualFederalTax(taxableIncome: number, brackets: TaxBracket[]):
     const cap = isLast || rawCap === null
       ? Number.POSITIVE_INFINITY
       : Math.max(previousCap, finitePositive(rawCap));
-    const rate = Number.isFinite(bracket.rate)
-      ? Math.min(1, Math.max(0, bracket.rate))
-      : 0;
+    const rate = finiteRate(bracket.rate);
 
     if (income <= previousCap) break;
     const dollarsInBracket = Math.max(0, Math.min(income, cap) - previousCap);
@@ -87,7 +88,7 @@ export function calculatePay(input: PayInput, policy: PayPolicy): PayResult {
   const base = hoursKnown ? Math.max(commission, floor) : commission;
   const floorApplies = hoursKnown && floor > commission;
   const grossWeekly = base + tips;
-  const ficaWeekly = grossWeekly * finitePositive(policy.ficaRate);
+  const ficaWeekly = grossWeekly * finiteRate(policy.ficaRate);
   const afterFicaWeekly = grossWeekly - ficaWeekly;
 
   const annualGross = grossWeekly * 52;

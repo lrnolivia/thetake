@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "node scripts/prepare-ocr.mjs && vite",
+    "test": "node --experimental-strip-types scripts/test-pay.mjs",
     "build": "node scripts/prepare-ocr.mjs && tsc --noEmit && vite build && node scripts/copy-pwa-assets.mjs",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy"
