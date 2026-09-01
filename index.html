@@ -1251,8 +1251,8 @@
   <div class="hero-block reveal-scale" id="heroBlock">
     <div class="hero-navbar-blur" aria-hidden="true"><div class="tint"></div><span></span><span></span><span></span></div>
     <div class="paintwrap floating">
-      <button type="button" class="paintbtn" id="paintToggle" aria-label="Change look" aria-haspopup="true" aria-controls="paintPop" aria-expanded="false"><span aria-hidden="true">🖌️</span></button>
-      <div class="paintpop" id="paintPop" aria-hidden="true" inert>
+      <button type="button" class="paintbtn" id="paintToggle" aria-label="Change look" aria-haspopup="dialog" aria-controls="paintPop" aria-expanded="false"><span aria-hidden="true">🖌️</span></button>
+      <div class="paintpop" id="paintPop" role="dialog" aria-label="Appearance options" aria-hidden="true" inert>
         <div class="pop-label">Accent color</div>
         <div class="accentrow">
           <button type="button" class="accentbtn" data-accentval="coral" aria-label="Classic accent color">
@@ -1286,8 +1286,8 @@
       <img class="hero-navbar-logo" src="assets/chop-logo.png" alt="">
       <span class="hero-navbar-title" id="heroNavbarTitle"><small>The Take</small></span>
       <div class="paintwrap navpaint">
-        <button type="button" class="hero-navbar-btn" id="navPaintBtn" aria-label="Change look" aria-haspopup="true" aria-controls="navPaintPop" aria-expanded="false"><span aria-hidden="true">🖌️</span></button>
-        <div class="paintpop" id="navPaintPop" aria-hidden="true" inert>
+        <button type="button" class="hero-navbar-btn" id="navPaintBtn" aria-label="Change look" aria-haspopup="dialog" aria-controls="navPaintPop" aria-expanded="false"><span aria-hidden="true">🖌️</span></button>
+        <div class="paintpop" id="navPaintPop" role="dialog" aria-label="Appearance options" aria-hidden="true" inert>
           <div class="pop-label">Accent color</div>
           <div class="accentrow">
             <button type="button" class="accentbtn" data-accentval="coral" aria-label="Classic accent color">
@@ -1333,7 +1333,7 @@
     </div>
   </div>
 
-  <div class="history-layer" id="historyLayer" aria-hidden="true">
+  <div class="history-layer" id="historyLayer" aria-hidden="true" inert>
     <button type="button" class="history-dismiss" id="historyDismiss" aria-label="Close history"></button>
     <section class="history-popover" id="historyPopover" role="dialog" aria-modal="false" aria-labelledby="historyTitle" tabindex="-1">
       <div class="history-popover-head">

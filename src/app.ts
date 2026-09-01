@@ -1008,6 +1008,7 @@ import { createWorker } from 'tesseract.js';
     historyOrigin = e && e.currentTarget ? e.currentTarget : historyToggle;
     var heroBottom = document.getElementById('heroBlock').getBoundingClientRect().bottom;
     historyLayer.style.top = Math.max(NAV_H, Math.round(heroBottom)) + 'px';
+    historyLayer.inert = false;
     historyLayer.classList.add('show');
     historyLayer.setAttribute('aria-hidden', 'false');
     setHistoryExpanded(true);
@@ -1023,6 +1024,7 @@ import { createWorker } from 'tesseract.js';
   function closeHistory(){
     if(!historyLayer || !historyLayer.classList.contains('show') || historyLayer.classList.contains('closing')) return;
     historyLayer.setAttribute('aria-hidden', 'true');
+    historyLayer.inert = true;
     setHistoryExpanded(false);
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var to = historyFlipKeyframes(historyOrigin);
