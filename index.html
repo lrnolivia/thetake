@@ -924,6 +924,7 @@
     color: #fff; font-family: var(--label-font); font-size: 14px; font-weight:700; padding: 7px 9px; text-align:center;
   }
   .customfield input:focus{ outline: none; border-color: var(--acc); }
+  .customfield input:focus-visible{ outline:3px solid var(--acc); outline-offset:3px; }
 
   .goalperiod-panel{ margin-top:0; }
   .goalperiod-panel[data-goalperiod="weekly"]{ display:none; }
@@ -956,6 +957,7 @@
     -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:999px;
     background: rgba(255,255,255,0.16); outline:none; margin: 4px 0 12px; touch-action:none; display:block;
   }
+  .stepslider input[type="range"]:focus-visible{ outline:3px solid var(--acc); outline-offset:5px; }
   .stepslider input[type="range"]::-webkit-slider-thumb{
     -webkit-appearance:none; width:26px; height:26px; border-radius:50%; background: var(--acc);
     box-shadow: 0 2px 8px rgba(0,0,0,0.45); cursor:pointer; border: 3px solid rgba(0,0,0,0.35);
@@ -1132,17 +1134,19 @@
   .historysave .smallbtn{ margin-top:0; }
   .historysummary{ font-family: var(--label-font); font-size:11.5px; color: var(--onblock-dim); margin-bottom:6px; font-weight:700; }
   .historyrow{
-    position:relative; padding:12px 34px 12px 0; border-bottom:1px solid rgba(0,0,0,0.12); cursor:pointer;
+    position:relative; padding-right:34px; border-bottom:1px solid rgba(0,0,0,0.12);
     opacity:0; transform:translate3d(0,12px,0); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft), background-color var(--motion-fast) var(--ease-standard);
   }
   .historyrow.in{ opacity:1; transform:translate3d(0,0,0); }
   .historyrow:last-child{ border-bottom:none; }
-  .historyrow:hover{ background: rgba(0,0,0,0.05); }
+  .historyload{ display:block; width:100%; padding:12px 0; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer; font:inherit; border-radius:var(--radius-sm); }
+  .historyload:hover{ background: rgba(0,0,0,0.05); }
+  .historyload:focus-visible{ outline:2px solid var(--acc); outline-offset:2px; }
   .historyrow-main{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
   .historylabel{ font-weight:700; font-size:14px; color: var(--onblock); }
   .historylabel .historydate{ font-family: var(--label-font); font-weight:400; font-size:11px; color: var(--onblock-dim); margin-left:6px; }
   .historynet{ font-family: var(--label-font); font-weight:800; font-size:15px; color: var(--onblock); flex-shrink:0; }
-  .historyrow-sub{ font-family: var(--label-font); font-size:11.5px; color: var(--onblock-dim); margin-top:3px; }
+  .historyrow-sub{ display:block; font-family: var(--label-font); font-size:11.5px; color: var(--onblock-dim); margin-top:3px; }
   .historydel{
     position:absolute; top:10px; right:0; background: rgba(0,0,0,0.12); border:none; color: var(--onblock);
     width:26px; height:26px; border-radius:999px; cursor:pointer; font-size:14px; line-height:1;

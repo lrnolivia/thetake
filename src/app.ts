@@ -709,19 +709,22 @@ import { createWorker } from 'tesseract.js';
     history.forEach(function(h){
       var hrs = Math.round((h.hours||0)*100)/100;
       var labelHtml = h.label ? escapeHtml(h.label) + ' <span class="historydate">' + fmtDate(h.savedAt) + '</span>' : fmtDate(h.savedAt);
+      var accessibleLabel = escapeHtml(h.label || fmtDate(h.savedAt));
       html += '<div class="historyrow" data-id="'+h.id+'">' +
-        '<div class="historyrow-main"><div class="historylabel">' + labelHtml + '</div>' +
-        '<div class="historynet">' + fmt(h.net) + '</div></div>' +
-        '<div class="historyrow-sub">' + (hrs ? (hrs + ' hrs &middot; ') : '') + fmt(h.revenue) + ' services &middot; ' + fmt(h.productSales||0) + ' retail &middot; ' + fmt(h.tips) + ' tips' + (h.floorApplies ? ' &middot; floor' : '') + '</div>' +
-        '<button type="button" class="historydel" data-id="'+h.id+'" aria-label="Delete saved period">&times;</button>' +
+        '<button type="button" class="historyload" data-id="'+h.id+'" aria-label="Load saved period '+accessibleLabel+', '+fmt(h.net)+' net">' +
+        '<span class="historyrow-main"><span class="historylabel">' + labelHtml + '</span>' +
+        '<span class="historynet">' + fmt(h.net) + '</span></span>' +
+        '<span class="historyrow-sub">' + (hrs ? (hrs + ' hrs &middot; ') : '') + fmt(h.revenue) + ' services &middot; ' + fmt(h.productSales||0) + ' retail &middot; ' + fmt(h.tips) + ' tips' + (h.floorApplies ? ' &middot; floor' : '') + '</span>' +
+        '</button>' +
+        '<button type="button" class="historydel" data-id="'+h.id+'" aria-label="Delete saved period '+accessibleLabel+'">&times;</button>' +
         '</div>';
     });
     wrap.innerHTML = html;
     staggerRows(wrap, '.historyrow');
 
-    wrap.querySelectorAll('.historyrow').forEach(function(row){
-      row.addEventListener('click', function(){
-        var id = row.getAttribute('data-id');
+    wrap.querySelectorAll('.historyload').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-id');
         var rec = history.filter(function(h){ return h.id === id; })[0];
         if(!rec) return;
         ui.hours = rec.hours || 0; ui.revenue = rec.revenue; ui.tips = rec.tips; ui.received = rec.received;
