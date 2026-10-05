@@ -11,15 +11,18 @@
     "test": "node --experimental-strip-types scripts/test-pay.mjs",
     "build": "node scripts/prepare-ocr.mjs && tsc --noEmit && vite build && node scripts/copy-pwa-assets.mjs",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "test:inventory": "node --test scripts/test-inventory.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
     "wrangler": "^4.127.1"
   },
   "dependencies": {
     "@tesseract.js-data/eng": "^1.0.0",
+    "jose": "^6.2.12",
     "tesseract.js": "^7.0.0"
   }
 }

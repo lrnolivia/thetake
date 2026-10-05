@@ -1,5 +1,5 @@
 var CACHE_PREFIX = 'thetake-shell-';
-var CACHE = CACHE_PREFIX + 'v7';
+var CACHE = CACHE_PREFIX + 'v8';
 var SHELL = [
   '/',
   '/manifest.webmanifest',
@@ -29,6 +29,8 @@ self.addEventListener('fetch', function(event){
   if(request.method !== 'GET') return;
   var url = new URL(request.url);
   if(url.origin !== self.location.origin) return;
+  // Authenticated inventory and identity responses must never enter the pay-app cache.
+  if(url.pathname.startsWith('/inventory') || url.pathname.startsWith('/cdn-cgi/access') || url.pathname.startsWith('/api/')) return;
 
   event.respondWith(
     fetch(request).then(function(response){
@@ -46,3 +48,4 @@ self.addEventListener('fetch', function(event){
     })
   );
 });
+

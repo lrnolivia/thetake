@@ -1,0 +1,33 @@
+name: Inventory quality
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run test:inventory
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Inventory browser checks
+        run: |
+          node scripts/inventory-fixture.mjs > /tmp/inventory-fixture.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4175/ && break; sleep 1; done
+          node scripts/inventory-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: inventory-qa-${{ github.event.pull_request.head.sha }}
+          path: artifacts/inventory
+          retention-days: 7
