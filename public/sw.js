@@ -49,3 +49,7 @@ self.addEventListener('fetch', function(event){
   );
 });
 
+
+self.addEventListener('message', function(event){
+  if(event.data && event.data.type === 'INVENTORY_CACHE_SAFE' && event.ports[0]) event.ports[0].postMessage({safe:true,version:8});
+});
