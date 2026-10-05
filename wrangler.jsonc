@@ -1,12 +1,11 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "the-take",
-  "compatibility_date": "2026-08-30",
-  "build": {
-    "command": "npm run build"
-  },
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+  "$schema":"node_modules/wrangler/config-schema.json",
+  "name":"thetake",
+  "main":"worker/index.mjs",
+  "compatibility_date":"2026-10-05",
+  "build":{"command":"npm run build"},
+  "assets":{"directory":"./dist","binding":"ASSETS","not_found_handling":"single-page-application","run_worker_first":["/inventory","/inventory/*","/inventory-test","/inventory-test/*"]},
+  "vars":{"APP_ORIGIN":"https://thetake.loew.fi","ACCESS_ISSUER":"https://loewfi.cloudflareaccess.com","LIVE_ACCESS_AUD":"2553abf8327ebbb6c520387aafbde54f884d4f9f38345009a9020f4dbd3c68c0","TEST_ACCESS_AUD":"9c2abfdbcfb9b095c42ebf45020e5b653765b314088bcd277b301ba52dcaa4a0"},
+  "keep_vars":true,
+  "d1_databases":[{"binding":"INVENTORY_DB","database_name":"thetake-inventory-live","database_id":"69aad746-293e-447c-8e02-75bc19b1650c","migrations_dir":"migrations"},{"binding":"INVENTORY_TEST_DB","database_name":"thetake-inventory-test","database_id":"f19b554e-1c6c-4028-b5ed-13a43b9644bc","migrations_dir":"migrations"}]
 }
