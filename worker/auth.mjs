@@ -6,8 +6,10 @@ export async function authenticate(request,env,mode){
  const token=request.headers.get('Cf-Access-Jwt-Assertion');if(!token)throw Object.assign(Error('Sign in with Google to continue'),{status:401});
  let keys=sets.get(issuer);if(!keys){keys=createRemoteJWKSet(new URL(issuer+'/cdn-cgi/access/certs'));sets.set(issuer,keys)}
  try{const payload=await verifyAccessToken(token,keys,{issuer,audience});
- const email=String(payload.email).toLowerCase(),expected=mode==='test'?env.MAINTAINER_EMAIL:env.INVENTORY_OWNER_EMAIL;
- if(!expected||email!==expected.toLowerCase()||typeof payload.sub!=='string'||!payload.sub)throw Error('Wrong inventory account');
+ // Each audience is a separate, exact-email Cloudflare Access policy. A token
+ // for the maintenance audience can never open the live route (or vice versa).
+ const email=typeof payload.email==='string'?payload.email.toLowerCase():'';
+ if(!email||!email.includes('@')||typeof payload.sub!=='string'||!payload.sub)throw Error('Invalid inventory identity');
  return {id:payload.sub,email,role:mode==='test'?'maintenance':'owner'};
  }catch{throw Object.assign(Error('This account cannot access this inventory space'),{status:403})}
 }
