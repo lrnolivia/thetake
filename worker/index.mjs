@@ -16,7 +16,7 @@ export function createWorker(auth=authenticate){return {async fetch(request,env)
   if(!Number.isSafeInteger(input.version)||input.version<0||typeof input.requestId!=='string'||!/^[a-zA-Z0-9-]{8,80}$/.test(input.requestId))return json({error:'Invalid save version'},400);
   let state;try{state=validate(input.state)}catch{return json({error:'Invalid inventory data'},400)}const encoded=JSON.stringify(state);
   // Same request may be retried after a dropped response without a second write.
-  const receipt=await db.prepare('SELECT version FROM inventory_state WHERE owner_id=? AND request_id=?').bind(actor.id,input.requestId).first();if(receipt)return json({version:receipt.version});
+  const receipt=await db.prepare('SELECT version,state_json FROM inventory_state WHERE owner_id=? AND request_id=?').bind(actor.id,input.requestId).first();if(receipt){if(receipt.state_json!==encoded)return json({error:'Save identifier was already used for different data',code:'conflict'},409);return json({version:receipt.version});}
   const result=await db.prepare(`INSERT INTO inventory_state(owner_id,version,state_json,request_id) SELECT ?,1,?,? WHERE ?=0 OR EXISTS(SELECT 1 FROM inventory_state WHERE owner_id=?)
    ON CONFLICT(owner_id) DO UPDATE SET version=inventory_state.version+1,state_json=excluded.state_json,request_id=excluded.request_id,updated_at=CURRENT_TIMESTAMP WHERE inventory_state.version=?
    RETURNING version`).bind(actor.id,encoded,input.requestId,input.version,actor.id,input.version).first();
