@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: "38,8 * * * *"
+    - cron: "29 6 * * *"
   workflow_dispatch:
     inputs:
       action:
@@ -20,6 +20,9 @@ jobs:
   admission:
     name: Runner coordination admission
     if: github.event_name == 'pull_request'
+    concurrency:
+      group: thetake-admission-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
