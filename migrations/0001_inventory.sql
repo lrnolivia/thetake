@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS inventory_state(owner_id TEXT PRIMARY KEY,version INTEGER NOT NULL CHECK(version>0),state_json TEXT NOT NULL CHECK(json_valid(state_json)),request_id TEXT NOT NULL,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);

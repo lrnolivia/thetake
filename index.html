@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en" data-style="dopamine">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Take — Chop Barbershop</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%82%EF%B8%8F%3C/text%3E%3C/svg%3E">
+
+<!-- PWA / installability -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#141413">
+<meta name="application-name" content="The Take">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-touch-fullscreen" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Take">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&amp;family=Space+Mono:wght@400;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --page-pad: 20px;
+    --maxw: 1180px;
+    --motion-instant:100ms;
+    --motion-fast:180ms;
+    --motion-base:260ms;
+    --motion-medium:380ms;
+    --motion-slow:500ms;
+    --motion-hero:650ms;
+    --ease-standard:cubic-bezier(.32,.72,0,1);
+    --ease-out-soft:cubic-bezier(.16,1,.3,1);
+    --ease-in-soft:cubic-bezier(.7,0,.84,0);
+    --ease-snappy:cubic-bezier(.22,1,.36,1);
+    --ease:var(--ease-standard);
+    --ease-spring:var(--ease-snappy);
+    --wx: 50%; --wy: 40px;
+    --nav-content-h: 64px;
+    --nav-h: calc(var(--nav-content-h) + env(safe-area-inset-top, 0px));
+    --sticky-gap: 14px;
+    --netpay-stuck-h: 76px;
+    --nav-fade-h: 25px;
+    --hero-top-space: clamp(96px, 12vh, 140px);
+  }
+
+  /* ---- Subtle grain, dopamine only — quiets the flat dark fills ---- */
+  body::before{
+    content:""; position:fixed; inset:-100px; z-index:1; pointer-events:none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:0; mix-blend-mode:overlay; transition:opacity var(--motion-slow) var(--ease-standard);
+  }
+  html[data-style="dopamine"] body::before{ opacity: 0.05; }
+
+  /* ---- Paint-wipe: a little theatrical flourish when style/accent changes ---- */
+  .theme-wipe{
+    position: fixed; inset: 0; z-index: 90; pointer-events: none;
+    background: var(--acc);
+    clip-path: circle(0% at var(--wx) var(--wy));
+    opacity: 0;
+  }
+  .theme-wipe.go{
+    transition: clip-path var(--motion-hero) var(--ease-standard), opacity var(--motion-slow) var(--ease-in-soft) var(--motion-fast);
+    clip-path: circle(140% at var(--wx) var(--wy));
+    opacity: 0.9;
+  }
+
+  html[data-accent="coral"]{ --acc:#FF5B49; --acc2:#00C2A0; --acc3:#FFD23F; --acc-ink:#0A0A0A; --acc2-ink:#0A0A0A; --acc3-ink:#0A0A0A; }
+  html[data-accent="teal"] { --acc:#00C2A0; --acc2:#FFD23F; --acc3:#FF5B49; --acc-ink:#0A0A0A; --acc2-ink:#0A0A0A; --acc3-ink:#F3F1EC; }
+  html[data-accent="gold"] { --acc:#FFD23F; --acc2:#FF5B49; --acc3:#00C2A0; --acc-ink:#0A0A0A; --acc2-ink:#F3F1EC; --acc3-ink:#0A0A0A; }
+
+  html[data-style="dopamine"]{
+    --bg:#141413; --bg2:#0D0D0C;
+    --panel:#1E1D1B; --surface:#242321;
+    --ink:#F3F1EC; --ink-dim:#C7C4BE; --ink-faint:#8B8983;
+    --line: rgba(255,246,228,0.10);
+    --chip-bg: rgba(10,8,6,0.55); --chip-fg: var(--ink);
+    --radius-xl: 42px; --radius-lg: 30px; --radius-md: 20px; --radius-sm: 14px;
+    --border-w: 0px; --border-c: transparent;
+    --shadow-block: 0 18px 40px -14px rgba(0,0,0,0.55);
+    --title-font: 'Bungee Inline', cursive;
+    --title-weight: 400;
+    --title-style: normal;
+    --title-tracking: -0.02em;
+    --label-font: 'Space Mono', monospace;
+    --body-font: 'Inter', sans-serif;
+    --block-a-bg: var(--acc);      --block-a-ink: var(--acc-ink);
+    --block-b-bg: var(--acc2);     --block-b-ink: var(--acc2-ink);
+    --block-c-bg: var(--acc3);     --block-c-ink: var(--acc3-ink);
+    --block-d-bg: var(--panel);    --block-d-ink: var(--ink);
+    --btn-radius: 999px;
+  }
+
+  *{
+    box-sizing:border-box; margin:0; padding:0;
+    -webkit-user-drag:none; -webkit-touch-callout:none;
+    -webkit-user-select:none; user-select:none;
+  }
+  p, pre, input, textarea, select, .payinfo-popover{ -webkit-user-select:text; user-select:text; }
+  html{
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body-font);
+    font-size: 16.5px;
+    display:flex;
+    justify-content:center;
+    padding: 0 0 90px;
+    transition: background-color var(--motion-slow) var(--ease-standard), color var(--motion-slow) var(--ease-standard);
+  }
+  .page{ width:100%; max-width: var(--maxw); padding: 0 var(--page-pad); position:relative; z-index:1; touch-action:pan-y; }
+
+  /* ---- Page background: the hero image lives here now, pinned behind the entire
+     page (both themes) instead of scoped to the hero block. It never scrolls or
+     zooms ("the image should not move") — only the tint/blur/grain layers on top
+     of it respond to scroll, via --hero-progress and the .cards-visible class. ---- */
+  .page-bg{ position:fixed; inset:0; z-index:-1; overflow:hidden; }
+  .page-bg-img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 32%;
+  }
+  .page-bg-tint{ position:absolute; inset:0; transition: opacity var(--motion-slow) var(--ease-standard); }
+  .page-bg-blur{
+    position:absolute; inset:0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+    transition: backdrop-filter var(--motion-slow) var(--ease-standard), -webkit-backdrop-filter var(--motion-slow) var(--ease-standard);
+  }
+  html.cards-visible .page-bg-blur{ backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .page-bg-grain{
+    position:absolute; inset:-100px; opacity:0; mix-blend-mode:overlay; pointer-events:none;
+    transition: opacity var(--motion-slow) var(--ease-standard);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  html.cards-visible .page-bg-grain{ opacity:0.14; }
+
+  /* Original: dark, moody gradient over the full-page image. Strongest near the
+     top (for hero-text legibility), it eases back as you scroll ("fades up and
+     away") but never fully clears — a dim floor keeps the image visible-but-dimmed
+     behind the cards for the rest of the page. */
+  html[data-style="dopamine"] .page-bg-tint{
+    background: linear-gradient(180deg, rgba(8,6,4,0.86) 0%, rgba(8,6,4,0.40) 42%, rgba(8,6,4,0.58) 100%);
+    opacity: calc(1 - var(--hero-progress, 0) * 0.58);
+  }
+  @media (prefers-reduced-motion: reduce){ .page-bg-img{ transform:none !important; } }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:.01ms !important; transition-delay:0ms !important;
+      scroll-behavior:auto !important;
+    }
+  }
+  html{ scroll-behavior: smooth; }
+  button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible{
+    outline: 3px solid var(--acc); outline-offset: 3px; border-radius: 4px;
+  }
+  button{ font-family: inherit; -webkit-tap-highlight-color: transparent; }
+  button{ transition: transform var(--motion-fast) var(--ease-snappy), box-shadow var(--motion-fast) var(--ease-standard), background-color var(--motion-base) var(--ease-standard), color var(--motion-base) var(--ease-standard), border-color var(--motion-base) var(--ease-standard); }
+  .motion-press{ transform-origin:center; }
+  .motion-press.is-pressed{ transform:scale3d(.965,.965,1) !important; transition:transform var(--motion-instant) var(--ease-standard) !important; }
+  .motion-press.is-releasing{ animation:motionPopSettle var(--motion-medium) var(--ease-snappy) both !important; }
+  @keyframes motionPopSettle{
+    0%{ transform:scale3d(.965,.965,1); }
+    55%{ transform:scale3d(1.025,1.025,1); }
+    80%{ transform:scale3d(.994,.994,1); }
+    100%{ transform:scale3d(1,1,1); }
+  }
+
+  .reveal{ opacity:0; transform:translate3d(0,18px,0) scale(.96); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft); transition-delay:var(--reveal-delay,0ms); }
+  .reveal.in{ opacity:1; transform:translate3d(0,0,0) scale(1); }
+  .reveal-scale{ opacity:0; transform:translate3d(0,12px,0) scale(.96); transition:opacity var(--motion-hero) var(--ease-out-soft), transform var(--motion-hero) var(--ease-out-soft); transition-delay:var(--reveal-delay,0ms); }
+  .reveal-scale.in{ opacity:1; transform:translate3d(0,0,0) scale(1); }
+  .motion-focus{ transition:filter var(--motion-base) var(--ease-standard); filter:saturate(.86) brightness(.92); }
+  .motion-focus.is-focused{ filter:saturate(1) brightness(1); }
+
+  /* Motion-demo ambient field: two transform-only lights drift behind the
+     static hero photo. Their periods intentionally differ so they never pulse
+     in sync with the net-pay breathing loop. */
+  .ambient-orb{ position:absolute; z-index:0; width:min(62vw,620px); aspect-ratio:1; border-radius:50%; filter:blur(74px); opacity:.22; pointer-events:none; will-change:transform; }
+  .ambient-orb.a{ top:-18%; left:-16%; background:radial-gradient(circle,var(--acc) 0%,transparent 68%); animation:ambientDriftA 16s ease-in-out infinite; }
+  .ambient-orb.b{ right:-20%; bottom:-20%; background:radial-gradient(circle,var(--acc2) 0%,transparent 70%); animation:ambientDriftB 21s ease-in-out infinite; }
+  @keyframes ambientDriftA{ 0%,100%{ transform:translate3d(0,0,0) scale(1); } 50%{ transform:translate3d(10vw,8vh,0) scale(1.16); } }
+  @keyframes ambientDriftB{ 0%,100%{ transform:translate3d(0,0,0) scale(1); } 50%{ transform:translate3d(-8vw,-7vh,0) scale(1.1); } }
+  html.motion-paused .ambient-orb{ animation-play-state:paused; }
+
+  .herohead{ display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
+  .titlelogo{ height: clamp(64px, 11vw, 110px); width:auto; border-radius:50%; flex-shrink:0; }
+
+  .paintwrap{ position:relative; }
+  .paintwrap.floating{ position:absolute; top:16px; right:16px; z-index:5; }
+  .paintwrap.floating .paintbtn{ width:38px; height:38px; font-size:15px; }
+  .paintbtn{
+    width:46px; height:46px; border-radius:50%; border:none; cursor:pointer;
+    background: var(--surface); color: var(--ink); display:flex; align-items:center; justify-content:center;
+    font-size:19px; box-shadow: var(--shadow-block);
+  }
+  .paintbtn:hover{ background: var(--acc); color: var(--acc-ink); }
+  .paintbtn > span,.hero-navbar-btn > span{ display:inline-block; }
+  @media(hover:hover) and (pointer:fine){
+    .paintbtn:hover > span,.hero-navbar-btn[aria-label="Change look"]:hover > span{ animation:brushWiggle var(--motion-medium) var(--ease-snappy); }
+    .hero-navbar-btn[aria-label="History"]:hover > span{ animation:clockWiggle var(--motion-medium) var(--ease-snappy); }
+    .hero-navbar-btn[aria-label="Settings"]:hover > span{ animation:gearTurn var(--motion-slow) var(--ease-snappy); }
+  }
+  @keyframes brushWiggle{ 0%,100%{ transform:rotate(0) scale(1); } 35%{ transform:rotate(-10deg) scale(1.08); } 68%{ transform:rotate(7deg) scale(.99); } }
+  @keyframes clockWiggle{ 0%,100%{ transform:rotate(0); } 42%{ transform:rotate(-16deg); } 72%{ transform:rotate(8deg); } }
+  @keyframes gearTurn{ 0%{ transform:rotate(0); } 72%{ transform:rotate(205deg) scale(1.08); } 100%{ transform:rotate(360deg); } }
+
+  /* ---- Add to Home Screen ---- */
+  /* ---- Add to Home Screen ----
+     A quiet, translucent toast — appears once on first load, and permanently retires
+     the moment the person scrolls (or after a few seconds either way), rather than
+     sitting around as a persistent floating button. */
+  .installbtn{
+    display:none; align-items:center; position:fixed; left:50%; bottom:26px; z-index:45;
+    transform: translateX(-50%) translateY(0) scale(1); opacity:1;
+    background: rgba(10,9,8,0.72); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+    color:#F5F3EE; border:1px solid rgba(255,255,255,0.14); border-radius: 999px;
+    padding: 14px 22px; font-family: var(--label-font); font-size:12.5px; font-weight:700;
+    letter-spacing:0.03em; cursor:pointer; box-shadow: 0 16px 40px -12px rgba(0,0,0,0.55);
+    transition:opacity var(--motion-slow) var(--ease-standard), transform var(--motion-slow) var(--ease-snappy);
+  }
+  .installbtn:hover{ transform: translateX(-50%) translateY(-3px); }
+  .installbtn:active{ transform: translateX(-50%) scale(0.95); }
+  .installbtn.hide{ opacity:0; transform: translateX(-50%) translateY(16px) scale(.92); pointer-events:none; }
+  @media (max-width: 640px){ .installbtn{ bottom:20px; padding:13px 20px; } }
+
+  .iospop{
+    display:none; position:fixed; left:50%; bottom:88px; z-index:46; width: min(300px, calc(100vw - 36px));
+    transform: translateX(-50%) translateY(10px) scale(.96);
+    background: var(--panel); color: var(--ink); border-radius: var(--radius-md); padding:18px;
+    box-shadow: 0 24px 60px -12px rgba(0,0,0,0.5);
+    opacity:0;
+    transition:opacity var(--motion-base) var(--ease-standard), transform var(--motion-medium) var(--ease-snappy);
+  }
+  .iospop.show{ display:block; opacity:1; transform: translateX(-50%) translateY(0) scale(1); }
+  .iospop-title{ font-family: var(--title-font); font-weight: var(--title-weight); color: var(--acc); font-size:18px; margin-bottom:12px; }
+  .iospop-step{ display:flex; align-items:flex-start; gap:10px; font-size:13px; line-height:1.5; color: var(--ink-dim); margin-bottom:10px; }
+  .iospop-num{
+    flex-shrink:0; width:20px; height:20px; border-radius:50%; background: var(--acc); color: var(--acc-ink);
+    font-family: var(--label-font); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  }
+  .iospop-close{
+    width:100%; margin-top:6px; background: rgba(128,128,128,0.14); border:none; color: var(--ink);
+    font-family: var(--label-font); font-size:11.5px; font-weight:700; padding:11px; border-radius: var(--btn-radius); cursor:pointer;
+  }
+  .iospop-close:hover{ background: var(--acc); color: var(--acc-ink); }
+
+  .paintpop{
+    position:absolute; top:56px; right:0; width: 268px; z-index:60;
+    background: var(--panel); border-radius: var(--radius-md); padding: 18px;
+    box-shadow: 0 24px 60px -12px rgba(0,0,0,0.45);
+    opacity:0; transform: translateY(-8px) scale(.96); pointer-events:none;
+    transition:opacity var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-snappy);
+    border: var(--border-w) solid var(--border-c);
+  }
+  .paintpop.show{ opacity:1; transform: translateY(0) scale(1); pointer-events:auto; }
+  .paintpop.show .accentbtn,.paintpop.show .rememberrow{ animation:paintChoiceIn var(--motion-base) var(--ease-out-soft) both; }
+  .paintpop.show .accentbtn:nth-child(2){ animation-delay:45ms; }
+  .paintpop.show .accentbtn:nth-child(3){ animation-delay:90ms; }
+  .paintpop.show .rememberrow{ animation-delay:135ms; }
+  @keyframes paintChoiceIn{ from{ opacity:0; transform:translate3d(0,9px,0) scale(.94); } to{ opacity:1; transform:translate3d(0,0,0) scale(1); } }
+  .pop-label{ font-family: var(--label-font); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color: var(--ink-faint); font-weight:700; margin-bottom:10px; }
+  .accentrow{ display:flex; gap:10px; justify-content:space-between; padding:0 4px; }
+  .accentbtn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:7px;
+    background:transparent; border:none; cursor:pointer; padding:4px 2px;
+  }
+  .accentbtn .dot{
+    width:34px; height:34px; border-radius:50%; border: 3px solid transparent; position:relative;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,0.12);
+  }
+  .accentbtn .name{ font-family: var(--label-font); font-size:10.5px; font-weight:700; letter-spacing:0.03em; color: var(--ink-dim); }
+  .accentbtn.active .dot{ border-color: var(--ink); animation:swatchPop var(--motion-medium) var(--ease-snappy); }
+  @keyframes swatchPop{ 0%{ transform:scale(.72) rotate(-12deg); } 58%{ transform:scale(1.16) rotate(4deg); } 82%{ transform:scale(.96); } 100%{ transform:scale(1) rotate(0); } }
+  .accentbtn.active .name{ color: var(--ink); }
+  .accentbtn.active .dot::after{ content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:14px; color:#0A0A0A; font-weight:800; text-shadow: 0 1px 4px rgba(255,255,255,0.5); }
+  .rememberrow{ display:flex; align-items:center; gap:8px; margin-top:16px; font-family: var(--label-font); font-size:11.5px; color: var(--ink-dim); cursor:pointer; }
+  .rememberrow input{ width:16px; height:16px; accent-color: var(--acc); cursor:pointer; }
+
+  /* ---- Hero: stays put in the viewport and shrinks into a compact nav bar as you scroll ---- */
+  .hero-spacer{
+    position:relative; margin: 0 calc(var(--page-pad) * -1) 0;
+    min-height: calc(62vh + var(--hero-top-space));
+    max-height: calc(640px + var(--hero-top-space)); /* pre-JS fallback size; JS syncs this to the live hero height */
+  }
+  @media (max-width: 640px){
+    :root{ --hero-top-space: clamp(72px, 10vh, 104px); }
+    .hero-spacer{ min-height: calc(52vh + var(--hero-top-space)); }
+  }
+
+  .hero-block{
+    /* NOTE: centered with left/right/margin, not a translateX transform — this element
+       also carries the .reveal-scale entrance animation, which sets `transform: none`
+       at higher specificity (.reveal-scale.in) once it plays; a transform-based centering
+       trick would get clobbered by that and knock the hero off-center after it loads. */
+    position: fixed; top:0; left:0; right:0; z-index:5;
+    width: min(100vw, calc(var(--maxw) + var(--page-pad) * 2));
+    margin: 0 auto;
+    min-height: calc(62vh + var(--hero-top-space));
+    max-height: calc(640px + var(--hero-top-space)); /* used only for the very first measurement, before JS pins a px height */
+    display:flex; flex-direction:column; justify-content:flex-end;
+    isolation: isolate;
+    /* No fill of its own while expanded — the shared #pageBg shows straight through.
+       Only .compact (the shrunk nav bar) paints a background, below. */
+    background: transparent;
+    transition:background-color var(--motion-base) var(--ease-standard);
+  }
+  @media (max-width: 640px){
+    .hero-block{ min-height: calc(52vh + var(--hero-top-space)); }
+  }
+  /* Reduced motion / no-JS: fall back to the original static, in-flow hero */
+  @media (prefers-reduced-motion: reduce){
+    .hero-block{ position:static !important; width:100% !important; transform:none !important; height:auto !important; }
+    .hero-spacer{ height:auto !important; }
+    .hero-navbar{ display:none !important; }
+  }
+
+  /* ---- Compact hero: once shrunk into a nav bar, it has NO fill or edge of its
+     own — the dark scrim below (which extends much further past the bar's own
+     box, deep into the content) carries all the visual weight, so there's
+     nothing to draw a hard boundary. ---- */
+  .hero-block.compact{ width:100%; left:0; right:0; margin:0; }
+  .hero-block.theme-flyout-open{ z-index:35; }
+  /* Compact sticky stack: nav + gap + pinned net-pay card + one short fade.
+     The hard height cap keeps the effect from washing over the page controls. */
+  .hero-navbar-blur{
+    position:absolute; top:0; left:0; right:0; z-index:1; overflow:hidden;
+    height: calc(var(--nav-h) + var(--sticky-gap) + var(--netpay-stuck-h) + var(--nav-fade-h));
+    opacity:0; pointer-events:none; transition:opacity var(--motion-base) var(--ease-standard);
+  }
+  .hero-block.compact .hero-navbar-blur{ opacity:1; }
+  html[data-style="dopamine"] .hero-navbar-blur .tint{
+    position:absolute; inset:0; z-index:3;
+    background: linear-gradient(180deg,
+      color-mix(in srgb, var(--bg) 99%, black) 0%,
+      color-mix(in srgb, var(--bg) 97%, transparent) 34%,
+      color-mix(in srgb, var(--bg) 90%, transparent) 58%,
+      color-mix(in srgb, var(--bg) 64%, transparent) 76%,
+      color-mix(in srgb, var(--bg) 26%, transparent) 89%,
+      transparent 100%);
+  }
+  /* Safari turns the progressive backdrop-filter slices into offset, blurry
+     duplicates of page text. Keep the compact-nav gradient, but remove those
+     filter slices so content below stays crisp. */
+  html[data-style="dopamine"] .hero-navbar-blur > span{ display:none; }
+  html[data-style="dopamine"] .hero-navbar-blur span{ position:absolute; inset:0; z-index:1; }
+  html[data-style="dopamine"] .hero-navbar-blur span:nth-child(2){
+    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 64%, transparent 82%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 64%, transparent 82%);
+  }
+  html[data-style="dopamine"] .hero-navbar-blur span:nth-child(3){
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 46%, #000 66%, #000 78%, transparent 92%);
+    mask-image: linear-gradient(180deg, transparent 46%, #000 66%, #000 78%, transparent 92%);
+  }
+  html[data-style="dopamine"] .hero-navbar-blur span:nth-child(4){
+    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 66%, #000 78%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 66%, #000 78%, transparent 100%);
+  }
+  .hero-inner{
+    position:relative; z-index:2; padding: 0 clamp(20px, 5vw, 56px) clamp(28px, 5vw, 52px); width:100%;
+    opacity: calc(1 - var(--hero-content-p, 0));
+    transform: translateY(calc(var(--hero-content-p, 0) * -22px)) scale(calc(1 - var(--hero-content-p, 0) * 0.12));
+    transform-origin: left bottom;
+  }
+  .hero-block.compact .hero-inner{ pointer-events:none; }
+  .paintwrap.floating{
+    opacity: calc(1 - var(--hero-content-p, 0));
+    transform: scale(calc(1 - var(--hero-content-p, 0) * 0.3));
+    transform-origin: top right;
+  }
+  .hero-block.compact .paintwrap.floating{ pointer-events:none; }
+
+  /* ---- Compact nav bar (crossfades in over the last part of the shrink) ---- */
+  .hero-navbar{
+    position:absolute; top:0; left:0; right:0; height:var(--nav-h); z-index:4;
+    display:flex; align-items:center; gap:12px;
+    padding: env(safe-area-inset-top, 0px) clamp(18px, 5vw, 40px) 0;
+    opacity: var(--hero-nav-p, 0);
+    pointer-events:none;
+  }
+  .hero-block.compact .hero-navbar{ pointer-events:auto; }
+  .hero-navbar-logo{ width:32px; height:32px; border-radius:50%; flex-shrink:0; object-fit:cover; }
+  .hero-block.compact .hero-navbar-logo{ animation:logoBreathe 4.8s ease-in-out infinite; }
+  @keyframes logoBreathe{ 0%,100%{ transform:scale(1); filter:brightness(1); } 50%{ transform:scale(1.055); filter:brightness(1.16); } }
+  .hero-navbar-title{
+    font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
+    font-size:19px; color: var(--ink); letter-spacing: var(--title-tracking); flex:1;
+  }
+  .hero-navbar-btn{
+    width:34px; height:34px; border-radius:50%; border:none; cursor:pointer; flex-shrink:0;
+    background: rgba(255,255,255,0.14); color: var(--ink); font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform var(--motion-fast) var(--ease-snappy), background-color var(--motion-fast) var(--ease-standard);
+  }
+  .hero-navbar-btn:hover{ background: var(--acc); color: var(--acc-ink); }
+  .paintwrap.navpaint{ position:relative; }
+  .paintwrap.navpaint .paintpop{ top:48px; }
+  @media (max-width: 480px){ .paintwrap.navpaint .paintpop{ right:-8px; } }
+  .hero-titlewrap{ position:relative; overflow: visible; }
+
+  /* ---- Title intro: curtain slide-up ---- */
+  .eyebrow{
+    font-family: var(--label-font); font-size: 11.5px; letter-spacing: 0.2em;
+    text-transform: uppercase; background: var(--acc); color: var(--acc-ink); padding: 5px 10px; border-radius: var(--radius-sm);
+    margin-bottom: 14px; font-weight:700; display:inline-block;
+    opacity:0; transform: translateY(14px);
+    transition:opacity var(--motion-medium) var(--ease-out-soft) var(--motion-instant), transform var(--motion-medium) var(--ease-out-soft) var(--motion-instant);
+  }
+  .hero-block.in .eyebrow{ opacity:1; transform: translateY(0); }
+
+  html[data-style="dopamine"] .hero-titlewrap h1{
+    transform: translateY(112%);
+    transition: transform var(--motion-hero) var(--ease-out-soft) var(--motion-fast);
+  }
+  html[data-style="dopamine"] .hero-block.in .hero-titlewrap h1{ transform: translateY(0); }
+  .hero-inner > .sub{ opacity:0; transform:translate3d(0,10px,0); transition:opacity var(--motion-medium) var(--ease-out-soft) var(--motion-base), transform var(--motion-medium) var(--ease-out-soft) var(--motion-base); }
+  .hero-block.in .hero-inner > .sub{ opacity:1; transform:translate3d(0,0,0); }
+
+  h1{
+    font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
+    font-size: clamp(60px, 12vw, 128px);
+    letter-spacing: var(--title-tracking); color: var(--ink); margin: 0 0 12px; line-height: 0.86;
+  }
+  html[data-style="dopamine"] h1{
+    margin-bottom:0;
+    margin-left: -4px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: visible;
+    text-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  html[data-style="dopamine"] .hero-titlewrap{ overflow:visible; margin-bottom:0; }
+  html[data-style="dopamine"] .hero-titleclip{ overflow:hidden; padding:0; }
+
+  @media (max-width:640px){ html[data-style="dopamine"] .hero-titlewrap{ margin-bottom:0; } }
+
+  .hero-inner > .sub{
+    color:rgba(255,246,228,0.92); font-size:15px; line-height:1.6; max-width:60ch; margin:0;
+    width:fit-content; padding:0; border-radius:0; background:none;
+    backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:none;
+    text-shadow:0 2px 3px rgba(0,0,0,1), 0 5px 12px rgba(0,0,0,.96), 0 0 26px rgba(0,0,0,.92), 0 0 44px rgba(0,0,0,.72);
+  }
+  @media (max-width:640px){ .hero-inner > .sub{ text-shadow:0 2px 3px #000, 0 5px 13px #000, 0 0 28px rgba(0,0,0,.96); } }
+  .hero-inner > .sub b{ color: #fff; font-weight:700; }
+  .profile-name-hero{
+    display:none; width:max-content; max-width:100%; margin:8px 0 10px;
+    color:var(--acc); font-family:var(--title-font); font-size:clamp(22px,4vw,34px);
+    font-weight:var(--title-weight); letter-spacing:var(--title-tracking); line-height:1;
+  }
+  .profile-name-hero.show{ display:block; animation:profileNameIn var(--motion-hero) var(--ease-snappy) both; }
+  @keyframes profileNameIn{ from{ opacity:0; translate:-16px 0; scale:.94; } 68%{ opacity:1; translate:3px 0; scale:1.015; } to{ opacity:1; translate:0 0; scale:1; } }
+  .hero-navbar-title strong{ display:block; overflow:hidden; text-overflow:ellipsis; color:var(--acc); font:800 10px/1.15 var(--label-font); letter-spacing:.05em; text-transform:uppercase; }
+  .hero-navbar-title small{ display:block; color:var(--ink); font:inherit; }
+  .hero-scroll-cue{
+    position:absolute; z-index:3; left:50%; bottom:34px; translate:-50% 0;
+    display:flex; align-items:center; gap:9px; color:rgba(255,255,255,.76);
+    font:800 10px/1 var(--label-font); letter-spacing:.16em; text-transform:uppercase;
+    opacity:clamp(0,calc(1 - var(--hero-progress,0) * 4),1);
+    transition:opacity var(--motion-fast) var(--ease-standard); pointer-events:none;
+  }
+  .hero-scroll-cue::after{ content:"↓"; color:var(--acc); font-size:16px; animation:cueFloat 1.6s var(--ease-standard) infinite; }
+  @keyframes cueFloat{ 0%,100%{ translate:0 -2px; } 50%{ translate:0 5px; } }
+  html.motion-paused .hero-scroll-cue::after{ animation-play-state:paused; }
+  @media (max-width:640px){
+    .hero-scroll-cue{ position:relative; left:auto; bottom:auto; translate:0 0; width:max-content; margin-top:15px; }
+  }
+
+  #netHeroSentinel{ height:0; }
+
+  .netpay-hero{
+    margin: -30px 0 26px; position: sticky; top: calc(var(--nav-h) + 14px); z-index:12; width:100%; overflow:hidden;
+    background: var(--block-d-bg); color: var(--block-d-ink);
+    border-radius: var(--radius-lg); padding: 26px 28px 22px; text-align:left;
+    box-shadow: var(--shadow-block);
+    /* Safari-only: overflow:hidden + border-radius doesn't reliably clip children that
+       use backdrop-filter or negative z-index (the bg/blur/grain layers below). Forcing
+       a dedicated compositing layer + a mask-based clip fixes the square-corner bug. */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    isolation: isolate;
+    transform: translateZ(0);
+    transition: padding var(--motion-medium) var(--ease), border-radius var(--motion-medium) var(--ease), box-shadow var(--motion-base) var(--ease);
+  }
+  /* ---- Stuck (pinned, with a gap below the compact hero): a short, fully
+     rounded pill that floats free of the nav bar rather than sitting flush
+     under it — number stays left (bigger, not smaller) with the label +
+     context stacked to its right. ---- */
+  .nph-content{ display:flex; flex-direction:column; }
+  .nph-textcol{ display:contents; }
+  .netpay-hero.stuck{
+    display:flex; align-items:center;
+    padding: 13px 22px;
+    min-height: var(--netpay-stuck-h);
+    border-radius: 9999px !important;
+    overflow: clip;
+    clip-path: inset(0 round 9999px);
+    -webkit-mask-image: none;
+    contain: paint;
+    box-shadow: 0 16px 34px -14px rgba(0,0,0,0.55);
+  }
+  .netpay-hero.stuck > .nph-bg,
+  .netpay-hero.stuck > .nph-blur,
+  .netpay-hero.stuck > .nph-grain,
+  .netpay-hero.stuck > .nph-fade,
+  .netpay-hero.stuck > .nph-sheen{ border-radius:9999px !important; clip-path:inset(0 round 9999px); }
+  .netpay-hero.stuck .nph-content{ flex-direction: row; align-items:center; gap:14px; width:100%; }
+  .netpay-hero.stuck .nph-textcol{ display:flex; flex-direction:column; order:2; gap:2px; }
+  .netpay-hero.stuck .nph-num{ order:1; font-size: clamp(32px, 9vw, 44px); flex-shrink:0; }
+  .netpay-hero.stuck .nph-label{ margin-bottom:0; font-size:9.5px; }
+  .netpay-hero.stuck .nph-context{ margin-top:0; font-size:10.5px; }
+  .netpay-hero.stuck .nph-num:not(.bump){ animation:none; }
+  @media (prefers-reduced-motion: reduce){ .netpay-hero{ position:relative; top:auto; } }
+  .nph-bg{
+    position:absolute; inset:0; z-index:-4;
+    background-image: url('assets/netpay-bg-hq.jpg');
+    background-size: cover; background-position: center 45%;
+    opacity:0.65;
+  }
+  .nph-blur{
+    position:absolute; inset:0; z-index:-3;
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    -webkit-mask-image: linear-gradient(105deg, #000 0%, #000 38%, transparent 74%);
+    mask-image: linear-gradient(105deg, #000 0%, #000 38%, transparent 74%);
+  }
+  .nph-grain{
+    position:absolute; inset:0; z-index:-2; opacity:0.15; mix-blend-mode:overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .nph-fade{
+    position:absolute; inset:0; z-index:-1;
+    background: linear-gradient(105deg, var(--block-d-bg) 0%, var(--block-d-bg) 34%, rgba(0,0,0,0) 78%);
+  }
+  .netpay-hero .nph-label{ order:1; font-family: var(--label-font); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; font-weight:700; opacity:0.75; margin-bottom:6px; transition: font-size var(--motion-base) var(--ease), margin var(--motion-base) var(--ease); }
+  .netpay-hero .nph-num{ order:2; font-family: var(--title-font); font-weight: var(--title-weight); font-size: clamp(52px, 11vw, 92px); line-height:0.95; letter-spacing: var(--title-tracking); display:inline-block; animation: nphBreathe 4.5s ease-in-out infinite; color: var(--acc); transition: font-size var(--motion-base) var(--ease); }
+  .netpay-hero .nph-num.bump{ animation:nphBump var(--motion-medium) var(--ease-snappy); }
+  @keyframes nphBump{ 0%{ transform:scale(1); } 42%{ transform:scale(1.025); } 100%{ transform:scale(1); } }
+  @keyframes nphBreathe{ 0%,100%{ filter: brightness(1); } 50%{ filter: brightness(1.07); } }
+  html.motion-paused .netpay-hero .nph-num,
+  html.motion-paused .uploadbtn.busy,
+  html.motion-paused .hero-navbar-logo{ animation-play-state:paused; }
+  @media (prefers-reduced-motion: reduce){ .netpay-hero .nph-num{ animation: none; } }
+
+  .netpay-hero .nph-context{ order:3; font-family: var(--label-font); font-size:11.5px; margin-top:8px; opacity:0.75; transition: font-size var(--motion-base) var(--ease), margin var(--motion-base) var(--ease); }
+  .nph-sheen{
+    position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.52;
+    background:radial-gradient(360px circle at var(--glass-x,72%) var(--glass-y,18%),rgba(255,255,255,.22),transparent 56%);
+    transition:opacity var(--motion-base) var(--ease-standard);
+  }
+  .nph-content{ position:relative; z-index:1; }
+  @media (max-width: 640px){ .netpay-hero{ padding: 20px 18px 18px; margin-top:-24px; } }
+
+  .contenttoolbar{ display:flex; align-items:center; justify-content:space-between; margin: 8px 2px 14px; gap:10px; flex-wrap:wrap; }
+  .toolbar-actions{ display:flex; align-items:center; gap:8px; }
+  .toolbar-title{ font-family: var(--label-font); font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color: var(--ink-faint); font-weight:700; }
+  .gearbtn{
+    display:flex; align-items:center; gap:8px;
+    position:relative; overflow:hidden; isolation:isolate;
+    background: var(--surface); border: none; color: var(--ink);
+    font-family: var(--label-font); font-size: 12px; letter-spacing:0.04em; font-weight:700;
+    padding: 12px 18px; border-radius: var(--btn-radius); cursor:pointer; min-height:46px;
+    box-shadow: var(--shadow-block);
+  }
+  .gearbtn::after{ content:""; position:absolute; inset:-70% -35%; z-index:-1; pointer-events:none; opacity:0; background:linear-gradient(105deg,transparent 34%,rgba(255,255,255,.34) 50%,transparent 66%); transform:translateX(-45%) rotate(8deg); transition:opacity var(--motion-fast) var(--ease-standard),transform var(--motion-medium) var(--ease-out-soft); }
+  .gearbtn:hover::after,.gearbtn:focus-visible::after{ opacity:.8; transform:translateX(45%) rotate(8deg); }
+  html[data-style="dopamine"] .gearbtn{ background: #2E2C2A; }
+  .gearbtn:hover{ background: var(--acc); color: var(--acc-ink); }
+
+  .cards-grid{ display:grid; grid-template-columns: 1fr; gap: 22px; align-items:start; }
+  .card-full{ grid-column: 1 / -1; }
+  @media (min-width: 900px){ .cards-grid{ grid-template-columns: 1fr 1fr; } }
+
+  .ledger{
+    border-radius: var(--radius-lg);
+    padding: 28px 24px 24px; position: relative; overflow: hidden;
+    color: var(--onblock); box-shadow: var(--shadow-block);
+    transition:background-color var(--motion-slow) var(--ease-standard), color var(--motion-slow) var(--ease-standard), border-color var(--motion-slow) var(--ease-standard);
+  }
+  @media(hover:hover) and (pointer:fine){
+    .ledger.reveal.in:hover{ transform:translate3d(0,-4px,0) scale(1.012); box-shadow:0 26px 58px -18px rgba(0,0,0,.68); }
+  }
+  .ledger-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+  .cardtitle{ font-family: var(--title-font); font-size: 24px; font-weight: var(--title-weight); font-style: var(--title-style); color: var(--onblock); letter-spacing: var(--title-tracking); }
+  .cardtitle span{
+    font-family: var(--label-font); font-size: 10px; font-weight:700; letter-spacing:0.08em;
+    color: var(--chip-fg); background: var(--chip-bg); margin-left: 10px;
+    padding: 5px 10px; border-radius: 999px; display:inline-block; vertical-align: 4px;
+  }
+  .cardtitle.pill-below{ display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+  .cardtitle.pill-below span{ margin-left:0; vertical-align:baseline; }
+  .cardnote{ color: var(--onblock-dim); font-size: 13.5px; line-height:1.6; margin-bottom: 18px; }
+
+  .payinfo-wrap{ position:relative; margin-left:auto; align-self:flex-start; z-index:6; }
+  .payinfo-btn{
+    width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,0.16);
+    display:grid; place-items:center; padding:0; cursor:pointer;
+    color:var(--chip-fg); background:var(--chip-bg); box-shadow:0 8px 22px -10px rgba(0,0,0,0.65);
+    font-family:Inter, sans-serif; font-size:17px; line-height:1; font-weight:800;
+    transition:transform var(--motion-fast) var(--ease-snappy), background-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
+  }
+  .payinfo-btn:hover, .payinfo-btn[aria-expanded="true"]{ background:var(--acc); color:var(--acc-ink); }
+  .payinfo-popover{
+    position:absolute; top:48px; right:0; width:min(380px, calc(100vw - 72px));
+    padding:18px; border-radius:var(--radius-md); color:#F3F1EC;
+    border:1px solid rgba(255,255,255,0.14); background:rgba(12,11,10,0.94);
+    backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%);
+    box-shadow:0 24px 60px -18px rgba(0,0,0,0.82);
+    opacity:0; visibility:hidden; pointer-events:none; transform:translateY(-8px) scale(.97);
+    transform-origin:top right; transition:opacity var(--motion-fast) var(--ease-standard), transform var(--motion-base) var(--ease-snappy), visibility 0s linear var(--motion-base);
+  }
+  .payinfo-popover.show{
+    opacity:1; visibility:visible; pointer-events:auto; transform:translateY(0) scale(1);
+    transition:opacity var(--motion-fast) var(--ease-standard), transform var(--motion-base) var(--ease-snappy), visibility 0s;
+  }
+  .payinfo-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:12px; }
+  .payinfo-title{ font-family:var(--title-font); font-size:18px; color:var(--acc); line-height:1.15; }
+  .payinfo-close{
+    width:30px; height:30px; flex:0 0 auto; border:0; border-radius:50%; cursor:pointer;
+    background:rgba(255,255,255,0.10); color:#F3F1EC; font-size:20px; line-height:1;
+  }
+  .payinfo-close:hover{ background:var(--acc); color:var(--acc-ink); }
+  .payinfo-item{
+    display:grid; grid-template-columns:8px 1fr; gap:10px; font-size:12.5px; line-height:1.55; color:rgba(243,241,236,0.76);
+    opacity:0; transform:translate3d(0,8px,0); transition:opacity var(--motion-base) var(--ease-out-soft), transform var(--motion-base) var(--ease-out-soft);
+  }
+  .payinfo-popover.show .payinfo-item{ opacity:1; transform:translate3d(0,0,0); }
+  .payinfo-popover.show .payinfo-item:nth-child(2){ transition-delay:40ms; }
+  .payinfo-popover.show .payinfo-item:nth-child(3){ transition-delay:80ms; }
+  .payinfo-popover.show .payinfo-item:nth-child(4){ transition-delay:120ms; }
+  .payinfo-item + .payinfo-item{ margin-top:10px; }
+  .payinfo-dot{ width:7px; height:7px; margin-top:.5em; border-radius:50%; background:var(--acc); }
+  .payinfo-item:nth-child(3) .payinfo-dot{ background:var(--acc2); }
+  .payinfo-item:nth-child(4) .payinfo-dot{ background:var(--acc3); }
+  .payinfo-item b{ color:#fff; }
+  @media (max-width:640px){
+    .payinfo-btn{ width:36px; height:36px; }
+    .payinfo-popover{ top:46px; right:0; width:min(320px, calc(100vw - 88px)); max-height:70vh; overflow:auto; }
+    /* iOS Safari zooms the viewport whenever a focused form control renders
+       below 16px. Custom sliders focus their number field automatically, so
+       keep every mobile form control at the non-zooming threshold. */
+    input, select, textarea{ font-size:16px !important; }
+  }
+
+  .block-a{ background: var(--block-a-bg); --onblock: var(--block-a-ink); --onblock-dim: color-mix(in srgb, var(--block-a-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
+  .block-b{ background: var(--block-b-bg); --onblock: var(--block-b-ink); --onblock-dim: color-mix(in srgb, var(--block-b-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
+  .block-c{ background: var(--block-c-bg); --onblock: var(--block-c-ink); --onblock-dim: color-mix(in srgb, var(--block-c-ink) 62%, transparent); --chip-bg: rgba(10,10,10,0.85); --chip-fg: #F3F1EC; }
+
+  .uploadgrid{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .uploadgrid.sales-primary{ grid-template-columns:1fr; }
+  /* Grid items default to min-width:auto, which lets an unbreakable bold/uppercase label
+     force its track wider than its 1fr share — the classic CSS Grid "blowout" bug. That
+     pushes content out past its card's own edge (and the parent's overflow:hidden can't
+     rescue it, since the box itself has genuinely grown). min-width:0 makes every track
+     respect its fr share and lets content wrap/shrink to fit instead. */
+  .uploadgrid > *{ min-width: 0; }
+  .bigrow > *{ min-width: 0; }
+  .goalrow, .goalcolheads{ min-width: 0; }
+  .goalrow > *, .goalcolheads > *{ min-width: 0; }
+  .zoomcolheads > *, .zoomrow > *{ min-width: 0; }
+  .bracketrow > *{ min-width: 0; }
+  .uploadbtn{
+    display:flex; flex-direction:row; align-items:center; justify-content:center; gap:16px;
+    background: rgba(255,255,255,0.38); color: var(--onblock); border: none; border-radius: var(--radius-sm);
+    padding: 26px 18px; cursor:pointer; min-height: 110px;
+  }
+  .uploadbtn .icon{ font-size: 40px; line-height:1; }
+  .uploadbtn .label{ display:flex; flex-direction:column; align-items:flex-start; line-height:1.08; }
+  .uploadbtn > *{ transform-origin:center; transition:transform var(--motion-fast) var(--ease-snappy); }
+  .uploadbtn.motion-press.is-pressed{ transform:none !important; }
+  .uploadbtn.motion-press.is-pressed > *{ transform:scale(.965); }
+  .uploadbtn.motion-press.is-releasing{ animation:none !important; }
+  .uploadbtn.motion-press.is-releasing > *{ animation:motionPopSettle var(--motion-medium) var(--ease-snappy) both; }
+  .uploadbtn .label .l1, .uploadbtn .label .l2{ font-family: var(--label-font); font-size: 19px; font-weight:900; letter-spacing:0.01em; text-transform:uppercase; }
+  @media (max-width: 400px){
+    .uploadbtn{ gap:10px; padding: 20px 10px; }
+    .uploadbtn .icon{ font-size:30px; }
+    .uploadbtn .label .l1, .uploadbtn .label .l2{ font-size:14.5px; }
+  }
+  .uploadbtn:hover{ background: rgba(255,255,255,0.5); transform: translateY(-2px); }
+  .uploadbtn.busy{ background: var(--acc3); color: var(--acc3-ink); animation:scanPulse 1.6s var(--ease-standard) infinite; }
+  .uploadbtn.done{ background: color-mix(in srgb, var(--acc2) 88%, black 0%); animation:scanPop var(--motion-medium) var(--ease-snappy); }
+  @keyframes scanPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.025); } }
+  @keyframes scanPop{ 0%{ transform:scale(.97); } 58%{ transform:scale(1.025); } 100%{ transform:scale(1); } }
+  .scanstatus{ font-family: var(--label-font); font-size: 11.5px; color: var(--onblock-dim); margin-bottom:4px; min-height: 14px; }
+
+  details.rawtext{ margin-bottom: 16px; }
+  details.rawtext summary{ font-family: var(--label-font); font-size: 10.5px; color: var(--onblock-dim); cursor:pointer; letter-spacing:0.04em; padding: 4px 0; }
+  details.rawtext pre{
+    margin-top: 8px; background: var(--chip-bg); border: none; border-radius: 10px;
+    padding: 12px; font-family: var(--label-font); font-size: 11px; color: var(--chip-fg);
+    white-space: pre-wrap; max-height: 160px; overflow:auto;
+  }
+
+  .inputgrid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 14px 16px; margin-top: 16px; margin-bottom: 4px; }
+  .manualentry{ margin-bottom: 18px; }
+  .manualentry summary{ list-style:none; cursor:pointer; display:block; }
+  .manualentry summary::-webkit-details-marker{ display:none; }
+  .manualbtn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    font-family: var(--label-font); font-size: 12px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase;
+    color: var(--onblock); background: rgba(255,255,255,0.22); border-radius: var(--radius-sm);
+    padding: 12px 16px;
+  }
+  .manualbtn::before{ content:"+"; font-weight:900; }
+  .manualentry[open] .manualbtn::before{ content:"\2212"; }
+  .manualentry[open] > :not(summary), details.rawtext[open] > :not(summary){ animation:detailBodyIn var(--motion-medium) var(--ease-out-soft) both; }
+  @keyframes detailBodyIn{ from{ opacity:0; transform:translate3d(0,10px,0) scale(.99); } to{ opacity:1; transform:translate3d(0,0,0) scale(1); } }
+  .hourscheck{ margin:0 0 18px; }
+  .hourscheck .cardnote{ margin:10px 2px 12px; }
+  .hourscheck-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:stretch; }
+  html[data-worker-type="full-time"] .hours-only{ display:none !important; }
+  .productentry{ margin:0 0 18px; }
+  .productsummary{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .productsummary-total{ font-family:var(--label-font); font-size:11px; opacity:.7; white-space:nowrap; }
+  .productgrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:12px; }
+  .productrow{ display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; padding:10px 11px; border-radius:var(--radius-sm); background:rgba(255,255,255,.16); }
+  .productname{ font-family:var(--label-font); font-size:11px; font-weight:800; line-height:1.25; }
+  .productprice{ display:block; margin-top:3px; font-size:10px; opacity:.62; font-weight:500; }
+  .productstepper{ display:flex; align-items:center; gap:7px; }
+  .productstepper button{ width:30px; height:30px; border:0; border-radius:50%; background:var(--chip-bg); color:var(--chip-fg); font:800 16px/1 var(--label-font); cursor:pointer; }
+  .productstepper output{ min-width:18px; text-align:center; font:800 12px/1 var(--label-font); }
+  .producttotals{ display:flex; justify-content:space-between; gap:12px; padding:12px 2px 0; font-family:var(--label-font); font-size:11px; color:var(--onblock-dim); }
+  .producttotals b{ color:var(--onblock); }
+  @media(max-width:640px){
+    .hourscheck-grid{ grid-template-columns:1fr; }
+    .productgrid{
+      display:flex; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain;
+      scroll-snap-type:x mandatory; touch-action:pan-x pan-y; scrollbar-width:none;
+      margin-inline:-2px; padding:4px 2px 10px;
+    }
+    .productgrid::-webkit-scrollbar{ display:none; }
+    .productrow{ flex:0 0 min(78vw,280px); scroll-snap-align:center; scroll-snap-stop:always; transition:filter var(--motion-base) var(--ease-standard),opacity var(--motion-base) var(--ease-standard),transform var(--motion-base) var(--ease-standard); transform:scale(.94); opacity:.62; filter:saturate(.78) brightness(.88); }
+    .productrow.is-focused{ transform:scale(1); opacity:1; filter:saturate(1) brightness(1); }
+  }
+  .fieldwrap{ display:flex; flex-direction:column; gap:7px; }
+  .fieldlabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.06em; text-transform:uppercase; color: var(--onblock-dim); font-weight:700; }
+  .fieldrow{ display:flex; align-items:center; gap:6px; background: var(--chip-bg); border: none; border-radius: var(--radius-sm); padding: 14px 14px; min-height: 52px; box-shadow: 0 0 0 0 var(--acc); transition:box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-snappy); }
+  .fieldrow:focus-within{ box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 55%, transparent); transform: translateY(-1px); }
+  .fieldwrap .fieldlabel{ transition:color var(--motion-base) var(--ease-standard); }
+  .fieldwrap:focus-within .fieldlabel{ color: var(--acc); }
+  .fieldrow span{ color: var(--chip-fg); opacity:0.6; font-family: var(--label-font); font-size:14px; }
+  .fieldrow input{
+    flex:1; min-width:0; background:transparent; border:none; color: var(--chip-fg);
+    font-family: var(--label-font); font-size: 15px; font-weight:600; outline:none;
+  }
+
+  .breakwrap{ margin-top: 4px; }
+  .flagrow{ display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+  .floorflag{
+    font-family: var(--label-font); font-size: 9.5px; letter-spacing:0.04em; color: #0A0A0A;
+    background: var(--acc3); border-radius: 999px; padding: 4px 10px; font-weight:800;
+  }
+  .flagtext{ font-family: var(--label-font); font-size: 11.5px; color: var(--onblock-dim); }
+
+  .nutrition{
+    background: rgba(255,255,255,0.14); border-radius: var(--radius-sm); overflow:hidden; margin-bottom: 20px;
+  }
+  .nutrition .nlabel-head{
+    font-family: var(--title-font); font-weight:800; font-size: 15px; letter-spacing:-0.01em;
+    padding: 10px 14px 8px; border-bottom: 6px solid rgba(0,0,0,0.55); text-transform:uppercase;
+  }
+  .nrow{
+    display:flex; justify-content:space-between; align-items:center; padding: 9px 14px;
+    border-bottom: 1px solid rgba(0,0,0,0.14); font-family: var(--label-font); font-size: 13px;
+    opacity:0; transform:none; filter:none; -webkit-filter:none;
+    transition:opacity var(--motion-medium) var(--ease-out-soft);
+  }
+  .nrow.in{ opacity:1; transform:none; }
+  .nrow:last-child{ border-bottom:none; }
+  .nrow .nk{ color: var(--onblock); font-weight:600; display:flex; align-items:center; gap:6px; }
+  .nrow .nk .op{ opacity:0.5; font-weight:400; }
+  .nrow .nv{ color: var(--onblock); font-weight:700; font-variant-numeric: tabular-nums; }
+  .nrow.nutrition-sub .nk, .nrow.nutrition-sub .nv{ opacity:0.75; font-weight:500; font-size:12.5px; padding-left: 10px; }
+  /* Keep the pay-breakdown copy optically clean. The legacy app used the
+     generic `sub` class for these rows, which let the hero subtitle's heavy
+     Safari text shadow leak into the nutrition label. Retain the legacy
+     selector here so an upgraded PWA is clean even before its first render. */
+  #nutritionBox,
+  #nutritionBox .nlabel-head,
+  #nutritionRows .nrow,
+  #nutritionRows .nrow.sub,
+  #nutritionRows .nrow .nk,
+  #nutritionRows .nrow .nv,
+  #nutritionRows .nrow .op,
+  #nutritionRows .nrow *{
+    text-shadow:none !important;
+    filter:none !important;
+    -webkit-filter:none !important;
+  }
+  .nrow.total{ border-top: 4px solid rgba(0,0,0,0.6); border-bottom:none; padding-top:12px; margin-top:2px; }
+  .nrow.total .nk, .nrow.total .nv{ font-size: 15px; font-weight:800; }
+  .nrow.net{ background: rgba(0,0,0,0.14); border-radius: 0 0 10px 10px; padding: 14px; }
+  .nrow.net .nk, .nrow.net .nv{ font-size: 17px; font-weight:800; }
+
+  .bigrow{ display:grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 12px; margin-bottom: 18px; }
+  .bigcell{ background: var(--chip-bg); border-radius: var(--radius-sm); padding: 16px 15px 14px; }
+  .bigcell .label{ font-family: var(--label-font); font-size: 10px; letter-spacing:0.06em; text-transform:uppercase; color: var(--chip-fg); opacity:0.6; margin-bottom:8px; }
+  .bigcell .val{ font-family: var(--label-font); font-size: 22px; font-weight:800; color: var(--chip-fg); }
+  .bigcell.net{ background: #0A0A0A; box-shadow: inset 0 0 0 2px var(--acc3); }
+  .bigcell.net .val{ color: var(--acc3); font-size:38px; font-family: var(--title-font); font-weight: 400; letter-spacing: var(--title-tracking); }
+
+  .bigcell.net .label{ opacity:0.85; }
+
+  .reconcile{ border-radius: var(--radius-sm); padding: 15px 17px; font-size: 13px; line-height:1.6; display:none; background: rgba(0,0,0,0.75); color: #F3F1EC; border-left: 5px solid transparent; }
+  .reconcile.show{ display:block; }
+  .reconcile.warn{ border-left-color: var(--acc); }
+  .reconcile.ok{ border-left-color: var(--acc2); }
+  .reconcile.mismatch{ border-left-color: var(--acc3); }
+  .reconcile b{ color: var(--acc3); }
+
+  details.projection{
+    position: relative; isolation: isolate;
+    margin-top: 30px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-lg);
+    padding: 22px 20px 26px;
+    box-shadow: var(--shadow-block);
+    overflow:hidden;
+  }
+  /* A pseudo-element stays painted in both native <details> states. This gives
+     the compact pill and full card one identical live glass layer; ordinary
+     child elements are not painted by browsers while <details> is closed. */
+  details.projection::before{
+    content:""; position:absolute; inset:0; z-index:0; border-radius:inherit;
+    background: rgba(8,7,6,0.58);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  }
+  details.projection::after{
+    content:""; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
+    background:radial-gradient(420px circle at var(--glass-x,78%) var(--glass-y,12%),rgba(255,255,255,.14),transparent 56%);
+    opacity:.7; transition:opacity var(--motion-base) var(--ease-standard);
+  }
+  details.projection.glass-flash::after{ animation:glassFlash var(--motion-slow) var(--ease-out-soft); }
+  @keyframes glassFlash{ 0%{ opacity:.25; filter:brightness(.8); } 48%{ opacity:1; filter:brightness(1.35); } 100%{ opacity:.7; filter:brightness(1); } }
+  details.projection > *{ position:relative; z-index:1; }
+  details.projection > summary{
+    list-style:none; cursor:pointer; font-family: var(--title-font); font-weight: var(--title-weight); font-style: var(--title-style);
+    font-size: 20px; color: var(--acc); padding: 6px 0; display:flex; align-items:center; gap:10px;
+  }
+  details.projection > summary::-webkit-details-marker{ display:none; }
+  details.projection > summary::before{ content:"▸"; color:var(--acc3); font-size:15px; width:18px; flex:0 0 18px; text-align:center; }
+  details.projection[open] > summary::before{ content:"▾"; }
+  details.projection > summary span{ font-family: var(--label-font); font-size:11px; color: rgba(243,241,236,0.68); font-weight:400; font-style:normal; }
+
+  /* Only geometry changes between states. Surface, title size, marker width,
+     and title coordinates stay identical so clicking never makes text jump. */
+  details.projection:not([open]), details.projection.is-closing{
+    border-radius:999px;
+    border-color:rgba(255,255,255,0.08);
+    background:transparent;
+    padding:8px 10px;
+    box-shadow:var(--shadow-block);
+  }
+  details.projection:not([open]) > summary,
+  details.projection.is-closing > summary{
+    box-sizing:border-box; min-height:70px; padding:20px 10px; color:var(--acc); gap:10px;
+    text-shadow:none;
+  }
+  details.projection:not([open]) > summary::before,
+  details.projection.is-closing > summary::before{
+    color:var(--acc3); font-size:15px;
+  }
+  details.projection:not([open]) > summary span,
+  details.projection.is-closing > summary span{
+    color:rgba(243,241,236,0.68); font-weight:400; line-height:1.45;
+  }
+  details.projection[open] > :not(summary){ animation:projectionContentIn var(--motion-medium) var(--ease-out-soft) both; }
+  details.projection[open] > :nth-child(2){ animation-delay:40ms; }
+  details.projection[open] > :nth-child(3){ animation-delay:80ms; }
+  details.projection[open] > :nth-child(4){ animation-delay:120ms; }
+  details.projection[open] > :nth-child(5){ animation-delay:160ms; }
+  details.projection[open] > :nth-child(n+6){ animation-delay:200ms; }
+  @keyframes projectionContentIn{ from{ opacity:0; translate:0 14px; scale:.985; } to{ opacity:1; translate:0 0; scale:1; } }
+  details.projection.tap-cue::after{ animation:projectionTapCue 1.45s var(--ease) 2; }
+  @keyframes projectionTapCue{
+    0%,100%{ opacity:.55; filter:brightness(1); box-shadow:inset 0 1px 0 rgba(255,255,255,.12); }
+    42%{ opacity:1; filter:brightness(1.5); box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 0 34px color-mix(in srgb,var(--acc) 30%,transparent); }
+  }
+  @media (prefers-reduced-motion:reduce){ details.projection.tap-cue{ animation:none; } }
+  @media (max-width:640px){
+    details.projection:not([open]) > summary,
+    details.projection.is-closing > summary{ min-height:70px; padding:20px 10px; }
+  }
+
+  .tabbar{ display:flex; gap:7px; margin: 16px 0 14px; flex-wrap: wrap; background: var(--chip-bg); padding:6px; border-radius: var(--radius-md); }
+  .controllabel{ font-family: var(--label-font); font-size: 10.5px; letter-spacing:0.1em; text-transform:uppercase; color: var(--ink-faint); margin-bottom: 9px; font-weight:700; }
+  details.projection .controllabel{ color: rgba(243,241,236,0.68); }
+  /* Glassy pills: a translucent white layer blended with mix-blend-mode against
+     whatever's behind (the frosted black card + photo), rather than a flat
+     solid fill — isolation:isolate scopes the blend to just this pill instead
+     of bleeding across the whole page. */
+  details.projection .tabbar{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+  details.projection .tabbtn{ position:relative; isolation:isolate; color: rgba(255,255,255,0.92); }
+  details.projection .tabbtn::before{
+    content:""; position:absolute; inset:0; border-radius: inherit; z-index:-1;
+    background: rgba(255,255,255,0.16); mix-blend-mode: overlay;
+    transition:background var(--motion-fast) var(--ease-standard);
+  }
+  details.projection .tabbtn:hover::before{ background: rgba(255,255,255,0.26); }
+  details.projection .tabbtn .ticket{ color: rgba(255,255,255,0.62); }
+  details.projection .tabbtn.active{ color: var(--acc-ink); }
+  details.projection .tabbtn.active::before{ background: var(--acc); mix-blend-mode: normal; }
+  details.projection .tabbtn.active .ticket{ color: inherit; opacity:0.75; }
+  details.projection .tabbtn-custom{ font-style: italic; }
+  details.projection .manualbtn{ color:rgba(255,255,255,.92); background:rgba(255,255,255,.08); }
+  details.projection .productrow{ background:rgba(255,255,255,.07); color:rgba(255,255,255,.92); }
+  details.projection .producttotals{ color:rgba(255,255,255,.62); }
+  details.projection .producttotals b{ color:#fff; }
+  .customfield{
+    display:none; align-items:center; gap:8px; margin: -6px 0 14px; padding: 10px 14px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--btn-radius);
+    font-family: var(--label-font); font-size: 12.5px; color: rgba(255,255,255,0.75);
+  }
+  .customfield.show{ display:flex; }
+  .customfield input{
+    width: 76px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 8px;
+    color: #fff; font-family: var(--label-font); font-size: 14px; font-weight:700; padding: 7px 9px; text-align:center;
+  }
+  .customfield input:focus{ outline: none; border-color: var(--acc); }
+  .customfield input:focus-visible{ outline:3px solid var(--acc); outline-offset:3px; }
+
+  .goalperiod-panel{ margin-top:0; }
+  .goalperiod-panel[data-goalperiod="weekly"]{ display:none; }
+
+  .tabbtn{
+    flex:1 1 100px; text-align:center; padding: 12px 4px 10px; border-radius: var(--btn-radius); border: none; min-height: 48px;
+    background: transparent; color: var(--ink-dim); font-family: var(--label-font); font-size: 12px; cursor:pointer; font-weight:600;
+  }
+  .tabbtn .ticket{ display:block; font-size: 10px; color: var(--ink-faint); margin-top:3px; }
+  .tabbtn.active{ background: var(--acc); color: var(--acc-ink); font-weight:800; }
+  .tabbtn.active .ticket{ color: inherit; opacity: 0.75; }
+  .tierglyph{ display:inline-block; font-size:11px; letter-spacing:-1px; opacity:0.65; margin-right:5px; }
+  .tabbtn.active .tierglyph{ opacity:0.85; }
+
+  /* Card-shaped step selector shared by ticket tiers and shift schedule. */
+  .selector-wide{ display:none; }
+  .stepslider{ display:block; }
+  .stepslider{
+    margin: 16px 0 14px; padding: 16px 18px 14px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: var(--radius-md);
+  }
+  .stepslider.glass-flash{ animation:sliderSettle var(--motion-medium) var(--ease-snappy); }
+  @keyframes sliderSettle{ 0%{ transform:scale(.994); filter:brightness(1); } 52%{ transform:scale(1.008); filter:brightness(1.18); } 100%{ transform:scale(1); filter:brightness(1); } }
+  .stepslider-label{ display:flex; align-items:baseline; gap:9px; margin-bottom:14px; }
+  .stepslider-label > span{ display:inline-block; }
+  .stepslider-glyph{ font-family: var(--label-font); font-size:15px; font-weight:800; color: var(--acc); letter-spacing:-1px; min-width:52px; }
+  .stepslider-name{ font-family: var(--label-font); font-size:15px; font-weight:800; color: rgba(255,255,255,0.94); text-transform:uppercase; letter-spacing:.03em; }
+  .stepslider-amt{ font-family: var(--label-font); font-size:12px; color: rgba(255,255,255,0.6); margin-left:auto; }
+  .stepslider input[type="range"]{
+    -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:999px;
+    background: rgba(255,255,255,0.16); outline:none; margin: 4px 0 12px; touch-action:none; display:block;
+  }
+  .stepslider input[type="range"]:focus-visible{ outline:3px solid var(--acc); outline-offset:5px; }
+  .stepslider input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:26px; height:26px; border-radius:50%; background: var(--acc);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.45); cursor:pointer; border: 3px solid rgba(0,0,0,0.35);
+    transition:transform var(--motion-fast) var(--ease-snappy),box-shadow var(--motion-fast) var(--ease-standard);
+  }
+  .stepslider input[type="range"]::-moz-range-thumb{
+    width:26px; height:26px; border-radius:50%; background: var(--acc); border: 3px solid rgba(0,0,0,0.35); cursor:pointer;
+    transition:transform var(--motion-fast) var(--ease-snappy),box-shadow var(--motion-fast) var(--ease-standard);
+  }
+  .stepslider.is-dragging input[type="range"]::-webkit-slider-thumb{ transform:scale(1.18); box-shadow:0 0 0 7px color-mix(in srgb,var(--acc) 22%,transparent),0 6px 18px rgba(0,0,0,.52); }
+  .stepslider.is-dragging input[type="range"]::-moz-range-thumb{ transform:scale(1.18); box-shadow:0 0 0 7px color-mix(in srgb,var(--acc) 22%,transparent),0 6px 18px rgba(0,0,0,.52); }
+  .stepslider input[type="range"]::-moz-range-track{ height:6px; border-radius:999px; background: rgba(255,255,255,0.16); }
+  .stepslider-ticks{ display:flex; justify-content:space-between; padding: 0 3px; }
+  .stepslider-ticks button{
+    background:none; border:none; padding:4px 2px; font-family: var(--label-font);
+    font-size:11px; font-weight:700; color: rgba(255,255,255,0.42); cursor:pointer; min-width:28px;
+  }
+  .stepslider-ticks button.active{ color: var(--acc); }
+  .stepslider-ticks button.choice-pop{ animation:choicePop var(--motion-medium) var(--ease-snappy); }
+  @keyframes choicePop{ 0%{ transform:scale(.82); } 55%{ transform:scale(1.18); } 78%{ transform:scale(.96); } 100%{ transform:scale(1); } }
+
+  .goalrow, .goalcolheads{ display:grid; grid-template-columns: 1.35fr 1.1fr 0.95fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
+  .goalcolheads{ font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding-bottom: 9px; font-weight:700; }
+  .goalrow:last-child{ border-bottom:none; }
+  .goalrow, .zoomrow{ opacity:0; transform:translate3d(0,12px,0); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft); }
+  .goalrow.in, .zoomrow.in{ opacity:1; transform: translateX(0); }
+  .num{ font-family: var(--label-font); font-size: 14px; text-align:right; color: var(--onblock-dim); font-variant-numeric: tabular-nums; }
+  .filllabel{ font-size: 13.5px; font-weight:700; color: var(--onblock); display:flex; align-items:center; gap:6px; }
+  .filllabel small{ font-family: var(--label-font); font-weight:400; color: var(--onblock-dim); font-size: 11px; }
+
+  .zoomhead{ display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:10px; }
+  .periodtoggle{ display:flex; gap:4px; background: var(--chip-bg); padding:5px; border-radius: var(--btn-radius); width:fit-content; margin-bottom:16px; }
+  .periodbtn{
+    font-family: var(--label-font); font-size: 11px; font-weight:700; padding: 9px 13px; border-radius: var(--btn-radius); min-height:40px;
+    border: none; background: transparent; color: var(--chip-fg); opacity:0.65; cursor:pointer;
+  }
+  .periodbtn.active{ background: var(--acc); color: var(--acc-ink); opacity:1; }
+  #periodbar, #goalPeriodBar{ width:100%; }
+  #periodbar .periodbtn, #goalPeriodBar .periodbtn{ flex:1 1 0; }
+  .zoomcolheads{ display:grid; grid-template-columns: 1.3fr 0.85fr 0.85fr 0.9fr; gap: 6px; font-family: var(--label-font); font-size: 10px; letter-spacing: 0.08em; color: var(--onblock-dim); text-transform: uppercase; padding: 0 0 9px; border-bottom: 1px solid rgba(0,0,0,0.12); font-weight:700; }
+  .zoomcolheads .num{ text-align:right; }
+  .zoomrow{ display:grid; grid-template-columns: 1.3fr 0.85fr 0.85fr 0.9fr; gap: 6px; align-items:center; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.12); }
+  .zoomrow:last-child{ border-bottom:none; }
+
+  .backdrop{ position:fixed; inset:0; background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); display:none; z-index:40; opacity:0; transition:opacity var(--motion-base) var(--ease-standard); }
+  .backdrop.show{ display:block; }
+  .backdrop.in{ opacity:1; }
+  body.drawer-open{ overflow:hidden; }
+  .drawer{
+    position:fixed; top:0; right:0; width:min(440px, 100vw); height:100vh; height:100dvh;
+    overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch;
+    background:var(--panel); background:color-mix(in srgb,var(--panel) 92%,transparent); z-index:50; padding:0 22px calc(44px + env(safe-area-inset-bottom, 0px));
+    backdrop-filter:blur(24px) saturate(145%); -webkit-backdrop-filter:blur(24px) saturate(145%);
+    box-shadow:inset 1px 0 0 rgba(255,255,255,.12),-24px 0 70px rgba(0,0,0,.36);
+    transform:translate3d(100%,0,0); transition:transform var(--motion-medium) var(--ease-standard);
+  }
+  .drawer.show{ transform: translateX(0); }
+  .drawer > :not(.drawer-head){ opacity:0; transform:translate3d(18px,0,0); transition:opacity var(--motion-base) var(--ease-out-soft),transform var(--motion-medium) var(--ease-out-soft); }
+  .drawer.show > :not(.drawer-head){ opacity:1; transform:translate3d(0,0,0); }
+  .drawer.show > :nth-child(2){ transition-delay:60ms; }
+  .drawer.show > :nth-child(3){ transition-delay:100ms; }
+  .drawer.show > :nth-child(4){ transition-delay:140ms; }
+  .drawer.show > :nth-child(5){ transition-delay:180ms; }
+  .drawer.show > :nth-child(n+6){ transition-delay:220ms; }
+
+  .value-pop{ animation:valuePop var(--motion-medium) var(--ease-snappy); }
+  @keyframes valuePop{ 0%{ transform:scale(.94); filter:brightness(1); } 48%{ transform:scale(1.055); filter:brightness(1.28); } 78%{ transform:scale(.99); } 100%{ transform:scale(1); filter:brightness(1); } }
+  .drawer-head{
+    position:sticky; top:0; z-index:4;
+    display:flex; justify-content:space-between; align-items:center;
+    margin:0 -22px 6px; padding:calc(14px + env(safe-area-inset-top, 0px)) 22px 12px;
+    background:linear-gradient(180deg, var(--panel) 0%, color-mix(in srgb, var(--panel) 96%, transparent) 78%, transparent 100%);
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  }
+  .drawer-head h2{ font-family: var(--title-font); font-weight: var(--title-weight); font-size:26px; color: var(--acc); }
+  .closebtn{ background: rgba(128,128,128,0.14); border:none; color: var(--ink); font-size:20px; cursor:pointer; line-height:1; padding:8px 12px; border-radius:999px; min-height:40px; }
+  .closebtn:hover{ background: var(--acc); color: var(--acc-ink); }
+  .drawer-sub{ color: var(--ink-faint); font-size: 12.5px; line-height:1.5; margin:10px 0 22px; }
+
+  .setgroup{ margin-bottom: 24px; padding-bottom:22px; border-bottom: 1px solid var(--line); }
+  .setgroup:last-child{ border-bottom:none; }
+  .setlabel{ font-family: var(--label-font); font-size: 11px; letter-spacing:0.08em; text-transform:uppercase; color: var(--acc); margin-bottom: 11px; font-weight:800; }
+  .sethint{ color: var(--ink-faint); font-size: 12px; line-height:1.5; margin-top:7px; }
+
+  .setrow{ display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+  .setrow label{ flex:1; font-size:13.5px; color: var(--ink-dim); }
+  .setrow .fieldrow{ width: 118px; flex-shrink:0; background: rgba(128,128,128,0.10); min-height:44px; padding:9px 12px; }
+  select{
+    background: rgba(128,128,128,0.10); border: none; color: var(--ink);
+    font-family: var(--label-font); font-size: 13px; padding: 11px 9px; border-radius: var(--radius-sm); width:100%; min-height:44px;
+  }
+
+  .onboarding{
+    position:fixed; inset:0; z-index:1000; display:none; place-items:center; padding:20px;
+    background:rgba(5,5,5,.72); backdrop-filter:blur(24px) saturate(125%); -webkit-backdrop-filter:blur(24px) saturate(125%);
+    overflow:auto;
+  }
+  .onboarding.show{ display:grid; }
+  body.onboarding-open{ overflow:hidden; }
+  .onboarding-card{ width:min(520px,100%); border-radius:var(--radius-lg); padding:28px; background:rgba(14,13,12,.92); border:1px solid rgba(255,255,255,.13); color:#F3F1EC; box-shadow:0 30px 90px rgba(0,0,0,.55); }
+  .onboarding.show .onboarding-card{ animation:onboardingRise var(--motion-hero) var(--ease-out-soft) both; }
+  .onboarding.show .onboarding-fields > *{ animation:onboardingField var(--motion-medium) var(--ease-out-soft) both; }
+  .onboarding.show .onboarding-fields > :nth-child(1){ animation-delay:140ms; }
+  .onboarding.show .onboarding-fields > :nth-child(2){ animation-delay:195ms; }
+  .onboarding.show .onboarding-fields > :nth-child(3){ animation-delay:250ms; }
+  .onboarding.show .onboarding-submit{ animation:onboardingField var(--motion-medium) var(--ease-out-soft) var(--motion-base) both; }
+  @keyframes onboardingRise{ from{ opacity:0; transform:translate3d(0,22px,0) scale(.94); } 72%{ opacity:1; transform:translate3d(0,-2px,0) scale(1.008); } to{ opacity:1; transform:translate3d(0,0,0) scale(1); } }
+  @keyframes onboardingField{ from{ opacity:0; transform:translate3d(0,12px,0); } to{ opacity:1; transform:translate3d(0,0,0); } }
+  .onboarding-brand{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+  .onboarding-brand img{ width:54px; height:54px; object-fit:contain; }
+  .onboarding-brand span{ font-family:var(--title-font); font-size:24px; }
+  .onboarding h2{ font-family:var(--title-font); font-size:clamp(28px,7vw,42px); color:var(--acc); line-height:1; margin-bottom:10px; }
+  .onboarding-copy{ color:rgba(243,241,236,.68); font-size:13px; line-height:1.55; margin-bottom:22px; }
+  .onboarding-fields{ display:grid; gap:14px; }
+  .onboarding .fieldlabel{ color:rgba(243,241,236,.65); }
+  .onboarding .fieldrow,.onboarding select{ background:rgba(255,255,255,.1); color:#fff; }
+  .onboarding .fieldrow input{ color:#fff; font-size:16px; }
+  .workerchoices{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .workerchoice{ position:relative; }
+  .workerchoice input{ position:absolute; opacity:0; pointer-events:none; }
+  .workerchoice span{ display:block; padding:13px 12px; border-radius:var(--btn-radius); background:rgba(255,255,255,.09); text-align:center; font:800 12px/1.2 var(--label-font); cursor:pointer; }
+  .workerchoice input:checked + span{ background:var(--acc); color:var(--acc-ink); }
+  .onboarding-submit{ width:100%; margin-top:20px; border:0; border-radius:var(--btn-radius); padding:15px; background:var(--acc); color:var(--acc-ink); font:900 13px/1 var(--label-font); cursor:pointer; }
+  .payformula{ padding:13px 14px; border-radius:var(--radius-sm); background:rgba(128,128,128,.10); color:var(--ink-dim); font-size:12.5px; line-height:1.55; }
+
+  .bracketrow{ display:grid; grid-template-columns: 1fr 1fr auto; gap:6px; align-items:center; margin-bottom:7px; }
+  .bracketrow .fieldrow{ padding: 8px 9px; background: rgba(128,128,128,0.10); min-height:40px; }
+  .bracketrow input{ font-size:12.5px; }
+  .rmbtn{ background: rgba(128,128,128,0.10); border:none; color: var(--ink-faint); border-radius:999px; width:32px; height:32px; cursor:pointer; }
+  .rmbtn:hover{ color: #fff; background: var(--acc); }
+  .smallbtn{
+    background: rgba(128,128,128,0.10); border: none; color: var(--ink); border-radius: var(--btn-radius);
+    padding: 11px 16px; font-family: var(--label-font); font-size: 11.5px; font-weight:700; cursor:pointer; margin-top:6px; min-height:42px;
+  }
+  .smallbtn:hover{ background: var(--acc2); color: #0A0A0A; }
+  .smallbtn.danger:hover{ background: var(--acc); color: #fff; }
+  .btnrow{ display:flex; gap:8px; flex-wrap:wrap; }
+  .lookupbtn{ font-size:10.5px; }
+
+  .footnotes{ margin:34px auto 0; width:min(82ch, 100%); position:relative; isolation:isolate; }
+  /* Dark gradient behind the footer, same spirit as the nav bar's scrim but running
+     the opposite direction — rises up behind the last card and the footnotes text so
+     it stays legible against the page's photo background once you reach the true end
+     of the page. Anchored to -90px (not further) so it lines up exactly with body's
+     own bottom padding instead of adding extra scrollable space past the real content. */
+  .footnotes::before{
+    content:""; position:absolute; z-index:-1; pointer-events:none;
+    left:50%; right:auto; width:100vw; transform:translateX(-50%);
+    top: -160px; bottom: -90px;
+    background: linear-gradient(180deg, transparent 0%, rgba(8,7,6,0.5) 45%, rgba(8,7,6,0.88) 78%, rgba(8,7,6,0.94) 100%);
+  }
+  .footnote{ color: var(--ink-faint); font-size: 12.5px; line-height: 1.65; padding: 7px 4px 0; }
+  .footnote{ opacity:0; transform:translate3d(-10px,0,0); }
+  .footnotes.in .footnote{ animation:footnoteIn var(--motion-base) var(--ease-out-soft) both; }
+  .footnotes.in .footnote:nth-child(2){ animation-delay:55ms; }
+  .footnotes.in .footnote:nth-child(3){ animation-delay:110ms; }
+  .footnotes.in .footnote:nth-child(4){ animation-delay:165ms; }
+  .footnotes.in .footnote:nth-child(5){ animation-delay:220ms; }
+  @keyframes footnoteIn{ to{ opacity:1; transform:translate3d(0,0,0); } }
+  .footnote .dot{ color:var(--acc2); font-weight:700; }
+  .footnote:nth-child(4n+1) .dot{ color: var(--acc); }
+  .footnote:nth-child(4n+2) .dot{ color: var(--acc2); }
+  .footnote:nth-child(4n+3) .dot{ color: var(--acc3); }
+  .footnote:nth-child(4n+4) .dot{ color: var(--ink-dim); }
+
+  @media (max-width: 640px){
+    .bigrow{ grid-template-columns: 1fr 1fr; }
+    .bigcell.net{ grid-column: 1 / -1; }
+    .goalrow, .goalcolheads{ grid-template-columns: 1.1fr 1fr 0.8fr; }
+  }
+
+  .historysave{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px; }
+  .historysave .fieldwrap{ flex:1; min-width:160px; }
+  .historysave .smallbtn{ margin-top:0; }
+  .historysummary{ font-family: var(--label-font); font-size:11.5px; color: var(--onblock-dim); margin-bottom:6px; font-weight:700; }
+  .historyrow{
+    position:relative; padding-right:34px; border-bottom:1px solid rgba(0,0,0,0.12);
+    opacity:0; transform:translate3d(0,12px,0); transition:opacity var(--motion-medium) var(--ease-out-soft), transform var(--motion-medium) var(--ease-out-soft), background-color var(--motion-fast) var(--ease-standard);
+  }
+  .historyrow.in{ opacity:1; transform:translate3d(0,0,0); }
+  .historyrow:last-child{ border-bottom:none; }
+  .historyload{ display:block; width:100%; padding:12px 0; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer; font:inherit; border-radius:var(--radius-sm); }
+  .historyload:hover{ background: rgba(0,0,0,0.05); }
+  .historyload:focus-visible{ outline:2px solid var(--acc); outline-offset:2px; }
+  .historyrow-main{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .historylabel{ font-weight:700; font-size:14px; color: var(--onblock); }
+  .historylabel .historydate{ font-family: var(--label-font); font-weight:400; font-size:11px; color: var(--onblock-dim); margin-left:6px; }
+  .historynet{ font-family: var(--label-font); font-weight:800; font-size:15px; color: var(--onblock); flex-shrink:0; }
+  .historyrow-sub{ display:block; font-family: var(--label-font); font-size:11.5px; color: var(--onblock-dim); margin-top:3px; }
+  .historydel{
+    position:absolute; top:10px; right:0; background: rgba(0,0,0,0.12); border:none; color: var(--onblock);
+    width:26px; height:26px; border-radius:999px; cursor:pointer; font-size:14px; line-height:1;
+  }
+  .historydel:hover{ background: var(--acc); color:#fff; }
+
+  .history-layer{
+    position:fixed; inset: var(--nav-h) 0 0; z-index:30;
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity var(--motion-base) var(--ease-standard), visibility 0s linear var(--motion-base);
+  }
+  .history-layer.show{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition:opacity var(--motion-base) var(--ease-standard), visibility 0s;
+  }
+  .history-layer.show.closing{ opacity:0; pointer-events:none; }
+  .history-dismiss{
+    position:absolute; inset:0; border:0; border-radius:0; cursor:default;
+    background: rgba(5,5,4,0.34); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  }
+  .history-popover{
+    --onblock: var(--ink);
+    --onblock-dim: rgba(243,241,236,0.68);
+    --chip-bg: rgba(255,255,255,0.08);
+    --chip-fg: var(--ink);
+    position:absolute; z-index:1; top:16px; left:50%;
+    width:min(520px, calc(100vw - 32px)); max-height:calc(100% - 32px); overflow:auto;
+    padding:24px 22px 22px; border-radius:var(--radius-lg);
+    border:1px solid rgba(255,255,255,0.12);
+    background:rgba(25,24,22,0.90);
+    backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
+    box-shadow:0 28px 80px -20px rgba(0,0,0,0.78);
+    transform:translateX(-50%); translate:0 -12px; scale:.96;
+    transform-origin:center center;
+    transition:translate var(--motion-medium) var(--ease-snappy),scale var(--motion-medium) var(--ease-snappy);
+  }
+  .history-layer.show .history-popover{ translate:0 0; scale:1; }
+  .history-layer.show .history-popover > *{ animation:popoverChildIn var(--motion-medium) var(--ease-out-soft) both; }
+  .history-layer.show .history-popover > :nth-child(2){ animation-delay:45ms; }
+  .history-layer.show .history-popover > :nth-child(3){ animation-delay:90ms; }
+  .history-layer.show .history-popover > :nth-child(n+4){ animation-delay:135ms; }
+  @keyframes popoverChildIn{ from{ opacity:0; transform:translate3d(0,10px,0); } to{ opacity:1; transform:translate3d(0,0,0); } }
+  .history-popover-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:10px; }
+  .history-popover .closebtn{ flex-shrink:0; }
+  @media (max-width:640px){
+    .toolbar-actions{ width:100%; }
+    .toolbar-actions .gearbtn{ flex:1; justify-content:center; padding-inline:12px; }
+    .history-popover{ top:12px; max-height:calc(100% - 24px); padding:20px 18px 18px; }
+  }
+
+  /* Keep this final in the cascade: several tactile states intentionally use
+     `!important`, so the accessibility override must come after them. */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:.01ms !important; transition-delay:0ms !important;
+      scroll-behavior:auto !important;
+    }
+    .motion-press.is-pressed, .motion-press.is-releasing{
+      animation:none !important; transform:none !important; transition:none !important;
+    }
+  }
+
+.inventory-switch{display:grid;place-items:center;color:var(--ink);background:var(--surface);width:38px;height:38px;border-radius:50%;text-decoration:none;flex-shrink:0}.inventory-switch-hero{position:absolute;top:16px;right:62px;z-index:5}.inventory-switch:focus-visible{outline:3px solid var(--acc);outline-offset:4px}
+</style>
+</head>
+<body>
+<div class="page-bg" id="pageBg" aria-hidden="true">
+  <img class="page-bg-img" id="pageBgImg" src="assets/chop-hero.jpg" alt="">
+  <div class="ambient-orb a"></div>
+  <div class="ambient-orb b"></div>
+  <div class="page-bg-tint" id="pageBgTint"></div>
+  <div class="page-bg-blur" id="pageBgBlur"></div>
+  <div class="page-bg-grain" id="pageBgGrain"></div>
+</div>
+<div class="theme-wipe" id="themeWipe" aria-hidden="true"></div>
+
+<section class="onboarding" id="onboarding" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle" aria-hidden="true" inert>
+  <form class="onboarding-card" id="onboardingForm">
+    <div class="onboarding-brand"><img src="assets/chop-logo.png" alt=""><span>The Take</span></div>
+    <h2 id="onboardingTitle">Let&rsquo;s set up your take.</h2>
+    <p class="onboarding-copy">This stays in this browser. Your role changes whether hours are requested, and your CHOP location is saved now so location-specific themes can be added later.</p>
+    <div class="onboarding-fields">
+      <label class="fieldwrap"><span class="fieldlabel">Your name</span><span class="fieldrow"><input type="text" id="onboardName" autocomplete="name" maxlength="60" required placeholder="What should we call you?"></span></label>
+      <fieldset style="border:0;padding:0;margin:0;"><legend class="fieldlabel" style="margin-bottom:8px;">Schedule</legend><div class="workerchoices">
+        <label class="workerchoice"><input type="radio" name="workerType" value="full-time" required><span>Full time</span></label>
+        <label class="workerchoice"><input type="radio" name="workerType" value="part-time" required><span>Part time</span></label>
+      </div></fieldset>
+      <label class="fieldwrap"><span class="fieldlabel">CHOP location</span><select id="onboardLocation" required><option value="">Choose your shop</option></select></label>
+    </div>
+    <button class="onboarding-submit" type="submit">Start calculating</button>
+  </form>
+</section>
+
+<button type="button" class="installbtn" id="installBtn" aria-label="Add The Take to your home screen" aria-haspopup="dialog" aria-controls="iosInstallPop" aria-expanded="false" aria-hidden="true" tabindex="-1">
+  <span class="installbtn-label">Add to Home Screen</span>
+</button>
+<div class="iospop" id="iosInstallPop" role="dialog" aria-modal="false" aria-labelledby="iosPopTitle" aria-hidden="true" tabindex="-1" inert>
+  <div class="iospop-title" id="iosPopTitle">Add to Home Screen</div>
+  <div class="iospop-steps" id="iospopSteps"></div>
+  <button type="button" class="iospop-close" id="iosPopClose">Got it</button>
+</div>
+
+<div class="page">
+
+  <div class="hero-spacer" id="heroSpacer">
+  <div class="hero-block reveal-scale" id="heroBlock">
+    <div class="hero-navbar-blur" aria-hidden="true"><div class="tint"></div><span></span><span></span><span></span></div>
+    <a class="inventory-switch inventory-switch-hero" href="/inventory/" aria-label="Open Inventory" title="Inventory"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 7 9-4 9 4v10l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v10M7.5 5 17 9"/></svg></a>
+    <div class="paintwrap floating">
+      <button type="button" class="paintbtn" id="paintToggle" aria-label="Change look" aria-haspopup="dialog" aria-controls="paintPop" aria-expanded="false"><span aria-hidden="true">🖌️</span></button>
+      <div class="paintpop" id="paintPop" role="dialog" aria-label="Appearance options" aria-hidden="true" inert>
+        <div class="pop-label">Accent color</div>
+        <div class="accentrow">
+          <button type="button" class="accentbtn" data-accentval="coral" aria-label="Classic accent color">
+            <span class="dot" style="background:#FF5B49;"></span><span class="name">Classic</span>
+          </button>
+          <button type="button" class="accentbtn" data-accentval="teal" aria-label="Original accent color">
+            <span class="dot" style="background:#00C2A0;"></span><span class="name">Original</span>
+          </button>
+          <button type="button" class="accentbtn" data-accentval="gold" aria-label="Legend accent color">
+            <span class="dot" style="background:#FFD23F;"></span><span class="name">Legend</span>
+          </button>
+        </div>
+        <label class="rememberrow"><input type="checkbox" class="rememberChk" id="rememberLook"> Remember this look</label>
+      </div>
+    </div>
+    <div class="hero-inner" id="heroInner">
+      <div class="herohead">
+        <img class="titlelogo" src="assets/chop-logo.png" alt="Chop Barbershop logo">
+        <div class="eyebrow">Chop Barbershop &mdash; Pay Calculator</div>
+        <div class="hero-titlewrap">
+          <div class="hero-titleclip"><h1>The Take</h1></div>
+        </div>
+        <div class="profile-name-hero" id="profileNameHero" aria-live="polite"></div>
+      </div>
+      <p class="sub" id="subtext"></p>
+      <div class="hero-scroll-cue" aria-hidden="true">Scroll to calculate</div>
+    </div>
+
+    <!-- Compact nav bar: crossfades in as the hero shrinks on scroll -->
+    <div class="hero-navbar" id="heroNavbar" aria-hidden="true" inert>
+      <img class="hero-navbar-logo" src="assets/chop-logo.png" alt="">
+      <span class="hero-navbar-title" id="heroNavbarTitle"><small>The Take</small></span>
+      <a class="inventory-switch hero-navbar-btn" href="/inventory/" aria-label="Open Inventory" title="Inventory"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m3 7 9-4 9 4v10l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v10M7.5 5 17 9"/></svg></a>
+      <div class="paintwrap navpaint">
+        <button type="button" class="hero-navbar-btn" id="navPaintBtn" aria-label="Change look" aria-haspopup="dialog" aria-controls="navPaintPop" aria-expanded="false"><span aria-hidden="true">🖌️</span></button>
+        <div class="paintpop" id="navPaintPop" role="dialog" aria-label="Appearance options" aria-hidden="true" inert>
+          <div class="pop-label">Accent color</div>
+          <div class="accentrow">
+            <button type="button" class="accentbtn" data-accentval="coral" aria-label="Classic accent color">
+              <span class="dot" style="background:#FF5B49;"></span><span class="name">Classic</span>
+            </button>
+            <button type="button" class="accentbtn" data-accentval="teal" aria-label="Original accent color">
+              <span class="dot" style="background:#00C2A0;"></span><span class="name">Original</span>
+            </button>
+            <button type="button" class="accentbtn" data-accentval="gold" aria-label="Legend accent color">
+              <span class="dot" style="background:#FFD23F;"></span><span class="name">Legend</span>
+            </button>
+          </div>
+          <label class="rememberrow"><input type="checkbox" class="rememberChk" id="rememberLook2"> Remember this look</label>
+        </div>
+      </div>
+      <button type="button" class="hero-navbar-btn" id="navHistoryBtn" aria-label="History" aria-haspopup="dialog" aria-controls="historyLayer" aria-expanded="false"><span aria-hidden="true">🕘</span></button>
+      <button type="button" class="hero-navbar-btn" id="navSettingsBtn" aria-label="Settings" aria-haspopup="dialog" aria-controls="drawer" aria-expanded="false"><span aria-hidden="true">⚙️</span></button>
+    </div>
+  </div>
+  </div>
+
+  <div id="netHeroSentinel" aria-hidden="true"></div>
+  <div class="netpay-hero reveal-scale" id="netHeroBox">
+    <div class="nph-bg" aria-hidden="true"></div>
+    <div class="nph-blur" aria-hidden="true"></div>
+    <div class="nph-grain" aria-hidden="true"></div>
+    <div class="nph-fade" aria-hidden="true"></div>
+    <div class="nph-sheen" aria-hidden="true"></div>
+    <div class="nph-content">
+      <div class="nph-num" id="netHeroVal">$0</div>
+      <div class="nph-textcol">
+        <div class="nph-label">Est. net pay this period</div>
+        <div class="nph-context" id="netHeroContext"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contenttoolbar reveal">
+    <div class="toolbar-title">Your numbers</div>
+    <div class="toolbar-actions">
+      <button type="button" class="gearbtn" id="historyToggle" aria-haspopup="dialog" aria-controls="historyLayer" aria-expanded="false">🕘 History</button>
+      <button type="button" class="gearbtn" id="settingsToggle" aria-haspopup="dialog" aria-controls="drawer" aria-expanded="false">⚙️ Settings</button>
+    </div>
+  </div>
+
+  <div class="history-layer" id="historyLayer" aria-hidden="true" inert>
+    <button type="button" class="history-dismiss" id="historyDismiss" aria-label="Close history"></button>
+    <section class="history-popover" id="historyPopover" role="dialog" aria-modal="false" aria-labelledby="historyTitle" tabindex="-1">
+      <div class="history-popover-head">
+        <div class="cardtitle pill-below" id="historyTitle">History<span id="historyCount">0 SAVED</span></div>
+        <button type="button" class="closebtn" id="closeHistory" aria-label="Close history">&times;</button>
+      </div>
+      <p class="cardnote">Save this period's numbers to build a running record. Saved locally in this browser only &mdash; tap any saved period to load it back into the fields above.</p>
+      <div class="historysave">
+        <div class="fieldwrap">
+          <div class="fieldlabel">Label <span style="text-transform:none;">(optional)</span></div>
+          <div class="fieldrow"><input type="text" id="historyLabel" aria-label="History label" placeholder="e.g. Aug 18–24" maxlength="40"></div>
+        </div>
+        <button type="button" class="smallbtn" id="saveHistoryBtn">Save this period</button>
+      </div>
+      <div id="historyEmpty" class="cardnote">No saved periods yet &mdash; enter or scan a period above, then save it here.</div>
+      <div id="historyRows"></div>
+      <div class="btnrow" id="historyClearRow" style="display:none; margin-top:12px;">
+        <button type="button" class="smallbtn danger" id="clearHistoryBtn">Clear history</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- ACTUAL PAY -->
+    <div class="ledger actual card-full block-a reveal">
+      <div class="ledger-head">
+        <div class="cardtitle pill-below">This Period's Pay<span>SCAN OR ENTER</span></div>
+        <div class="payinfo-wrap" id="payInfoWrap">
+          <button type="button" class="payinfo-btn" id="payInfoToggle" aria-label="Privacy and how this works" aria-haspopup="dialog" aria-controls="payInfoPopover" aria-expanded="false">i</button>
+          <aside class="payinfo-popover" id="payInfoPopover" role="dialog" aria-modal="false" aria-labelledby="payInfoTitle" aria-hidden="true" tabindex="-1" inert>
+            <div class="payinfo-head">
+              <div class="payinfo-title" id="payInfoTitle">Private by Design</div>
+              <button type="button" class="payinfo-close" id="payInfoClose" aria-label="Close privacy information">&times;</button>
+            </div>
+            <div class="payinfo-item"><span class="payinfo-dot"></span><div><b>Your screenshots stay on this device.</b> The app reads them inside your browser with on-device OCR; it does not upload the images to a server.</div></div>
+            <div class="payinfo-item"><span class="payinfo-dot"></span><div><b>The calculation happens live.</b> Hours, revenue, tips, FICA, and estimated federal tax are calculated locally as you enter them. Uploaded images and unsaved entries disappear when the page is reloaded.</div></div>
+            <div class="payinfo-item"><span class="payinfo-dot"></span><div><b>Only browser-local preferences are retained.</b> Settings and periods you explicitly save to History use this browser's local storage. They are not tied to an account or synced to the cloud, and History can be cleared at any time.</div></div>
+          </aside>
+        </div>
+      </div>
+      <p class="cardnote" id="actualIntro">Upload your sales screenshot or type the numbers in. Commission is the normal path; hours are only needed when you want to check the minimum-wage floor.</p>
+
+      <div class="uploadgrid sales-primary">
+        <button type="button" class="uploadbtn" id="scanSalesBtn"><span class="icon">📊</span><span class="label"><span class="l1">Upload</span><span class="l2">Sales</span></span></button>
+          <input type="file" id="scanSalesInput" aria-label="Choose a sales screenshot" accept="image/*" style="display:none">
+      </div>
+      <div class="scanstatus" id="scanStatus"></div>
+
+      <details class="manualentry" id="manualEntry">
+        <summary class="manualbtn">Manually enter numbers</summary>
+        <div class="inputgrid">
+        <div class="fieldwrap">
+          <div class="fieldlabel">Gross service revenue</div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inRevenue" aria-label="Gross service revenue" step="0.01" min="0" placeholder="0"></div>
+        </div>
+        <div class="fieldwrap">
+          <div class="fieldlabel">Product sales</div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inProductSales" aria-label="Product sales" step="0.01" min="0" placeholder="0"></div>
+        </div>
+        <div class="fieldwrap">
+          <div class="fieldlabel">Actual tips</div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inTips" aria-label="Actual tips" step="0.01" min="0" placeholder="0"></div>
+        </div>
+        <div class="fieldwrap">
+          <div class="fieldlabel">Amount actually paid <span style="text-transform:none;">(optional)</span></div>
+          <div class="fieldrow"><span>$</span><input type="number" id="inReceived" aria-label="Amount actually paid" step="0.01" min="0" placeholder="e.g. 295.85"></div>
+        </div>
+        </div>
+      </details>
+
+      <details class="manualentry hourscheck hours-only" id="hoursCheck">
+        <summary class="manualbtn">Check minimum-wage floor <span style="opacity:.65;text-transform:none;">(optional)</span></summary>
+        <p class="cardnote">Only add hours if this was an unusually low-sales period and you need to compare commission with the minimum-wage floor.</p>
+        <div class="hourscheck-grid">
+          <button type="button" class="uploadbtn" id="scanTimeBtn"><span class="icon">🕒</span><span class="label"><span class="l1">Upload</span><span class="l2">Hours</span></span></button>
+          <input type="file" id="scanTimeInput" aria-label="Choose an hours screenshot" accept="image/*" style="display:none">
+          <div class="fieldwrap"><div class="fieldlabel">Hours worked</div><div class="fieldrow"><input type="number" id="inHours" aria-label="Hours worked" step="0.01" min="0" placeholder="0"><span>hrs</span></div></div>
+        </div>
+      </details>
+
+      <details class="rawtext" id="salesRawWrap" style="display:none;">
+        <summary>Raw text read from sales screenshot</summary>
+        <pre id="salesRawText"></pre>
+      </details>
+      <details class="rawtext" id="timeRawWrap" style="display:none;">
+        <summary>Raw text read from timesheet screenshot</summary>
+        <pre id="timeRawText"></pre>
+      </details>
+
+      <div class="breakwrap">
+        <div class="flagrow" id="floorFlagRow" style="display:none;">
+          <span class="floorflag">FLOOR</span>
+          <span class="flagtext">Commission alone was below minimum wage for these hours &mdash; the floor was paid instead.</span>
+        </div>
+
+        <div class="nutrition" id="nutritionBox">
+          <div class="nlabel-head">Pay Breakdown</div>
+          <div id="nutritionRows"></div>
+        </div>
+
+        <div class="bigrow">
+          <div class="bigcell"><div class="label">Gross pay</div><div class="val" id="outGross">$0</div></div>
+          <div class="bigcell"><div class="label">After FICA</div><div class="val" id="outAfterFica">$0</div></div>
+          <div class="bigcell net"><div class="label">Est. net pay</div><div class="val" id="outNet">$0</div></div>
+        </div>
+        <div class="reconcile" id="reconcileBox"></div>
+      </div>
+    </div>
+
+    <!-- ZOOM OUT -->
+    <div class="ledger card-full block-c reveal">
+      <div class="zoomhead">
+        <div class="cardtitle" style="font-size:20px;">Zoom Out <span id="zoomlabel" style="font-family:'Space Mono', monospace; font-size:11px; font-weight:400;">Weekly</span></div>
+      </div>
+      <p class="cardnote">Same actual-pay numbers above, scaled out &mdash; assumes this period repeats every week.</p>
+      <div class="periodtoggle" id="periodbar">
+        <button type="button" class="periodbtn" data-period="weekly">Wk</button>
+        <button type="button" class="periodbtn" data-period="biweekly">2Wk</button>
+        <button type="button" class="periodbtn" data-period="monthly">Mo</button>
+        <button type="button" class="periodbtn" data-period="yearly">Yr</button>
+      </div>
+      <div class="zoomcolheads"><div>Period</div><div class="num">Gross</div><div class="num">FICA</div><div class="num">Net</div></div>
+      <div id="zoomrows"></div>
+    </div>
+
+  </div>
+
+  <!-- PROJECTION (planning tool, collapsible) -->
+  <details class="projection reveal">
+    <summary>Projected Earnings <span>&mdash; planning tool for a future week, not based on your scans</span></summary>
+
+    <div class="controllabel">Shift schedule</div>
+    <div class="stepslider" id="shiftSlider">
+      <div class="stepslider-label">
+        <span class="stepslider-glyph" id="shiftSliderGlyph" aria-hidden="true">&#10074;&#10074;</span>
+        <span class="stepslider-name" id="shiftSliderName">20 hrs/wk</span>
+        <span class="stepslider-amt" id="shiftSliderAmt">4 shifts</span>
+      </div>
+      <input type="range" id="shiftRangeInput" min="0" max="5" step="1" value="1" aria-label="Shift schedule">
+      <div class="stepslider-ticks" id="shiftSliderTicks" role="presentation">
+        <button type="button" data-key="10" aria-label="10 hours per week">10</button>
+        <button type="button" data-key="20" aria-label="20 hours per week">20</button>
+        <button type="button" data-key="30" aria-label="30 hours per week">30</button>
+        <button type="button" data-key="40" aria-label="40 hours per week">40</button>
+        <button type="button" data-key="50" aria-label="50 hours per week">50</button>
+        <button type="button" data-key="custom" aria-label="Custom hours">&#9998;</button>
+      </div>
+    </div>
+    <div class="customfield" id="shiftCustomWrap">
+      <input type="number" id="shiftCustomInput" aria-label="Custom hours per week" min="1" max="80" step="1" inputmode="numeric" placeholder="e.g. 32"><span>hrs/wk, exact</span>
+    </div>
+
+    <div class="controllabel">Average ticket tier</div>
+    <div class="stepslider" id="tierSlider">
+      <div class="stepslider-label">
+        <span class="stepslider-glyph" id="tierSliderGlyph" aria-hidden="true">$</span>
+        <span class="stepslider-name" id="tierSliderName">Budget</span>
+        <span class="stepslider-amt" id="tierSliderAmt">$18 avg</span>
+      </div>
+      <input type="range" id="tierRangeInput" min="0" max="5" step="1" value="0" aria-label="Average ticket tier">
+      <div class="stepslider-ticks" id="tierSliderTicks" role="presentation">
+        <button type="button" data-key="budget" aria-label="Budget">$</button>
+        <button type="button" data-key="low" aria-label="Low">$$</button>
+        <button type="button" data-key="average" aria-label="Average">$$$</button>
+        <button type="button" data-key="high" aria-label="High">$$$$</button>
+        <button type="button" data-key="premium" aria-label="Premium">$$$$$</button>
+        <button type="button" data-key="custom" aria-label="Custom">&#9998;</button>
+      </div>
+    </div>
+
+    <div class="customfield" id="tierCustomWrap">
+      <span>$</span><input type="number" id="tierCustomInput" aria-label="Custom average ticket" min="0" step="1" inputmode="numeric" placeholder="e.g. 35"><span>avg ticket</span>
+    </div>
+
+    <p class="cardnote" id="tierintro" style="margin-top:14px;"></p>
+
+    <details class="manualentry productentry" id="productEntry">
+      <summary class="manualbtn productsummary"><span>Estimate weekly products</span><span class="productsummary-total" id="productSummaryTotal">$0 retail</span></summary>
+      <p class="cardnote" style="margin-top:10px;">Optional: tap + for the products you expect to sell in a week. Their photographed shelf prices feed the 10% retail commission estimate.</p>
+      <div class="productgrid" id="productGrid"></div>
+      <div class="producttotals"><span>Projected retail <b id="productRetailTotal">$0</b></span><span>10% commission <b id="productCommissionTotal">$0</b></span></div>
+    </details>
+
+    <div class="periodtoggle" id="goalPeriodBar" style="margin: 2px 0 16px;">
+      <button type="button" class="periodbtn" data-goalperiod="daily">Daily</button>
+      <button type="button" class="periodbtn" data-goalperiod="weekly">Weekly</button>
+    </div>
+
+    <div class="ledger goal card-full block-b goalperiod-panel" data-goalperiod="daily">
+      <div class="ledger-head"><div class="cardtitle pill-below" style="font-size:19px;">Daily Sales Goal<span>PER 5-HR SHIFT</span></div></div>
+      <div class="goalcolheads"><div>Fill rate</div><div class="num">Revenue goal</div><div class="num">~ Clients</div></div>
+      <div id="goalrows"></div>
+    </div>
+    <div class="ledger card-full block-a goalperiod-panel" data-goalperiod="weekly">
+      <div class="ledger-head"><div class="cardtitle">Weekly Breakdown</div><div class="num" id="breakdownfloor"></div></div>
+      <div class="zoomcolheads"><div>Fill rate</div><div class="num">Gross</div><div class="num">FICA</div><div class="num">Net</div></div>
+      <div id="projrows"></div>
+    </div>
+  </details>
+
+  <div class="footnotes reveal">
+    <p class="footnote"><span class="dot">&bull;</span> Service commission is 45% of the first $1,200 and 70% above $1,200, plus 10% of retail product sales. If hours are supplied, the app compares that earned commission with the minimum-wage floor.</p>
+    <p class="footnote"><span class="dot">&bull;</span> FICA (Social Security + Medicare) applies to all pay including tips and floor wages. Federal income tax is an estimated <b style="color:var(--ink-dim)">annual liability</b> spread across the year, not a literal per-paycheck withholding figure &mdash; your actual withholding depends on your W-4 / 1099 status.</p>
+    <p class="footnote"><span class="dot">&bull;</span> Screenshot scanning uses on-device OCR (Tesseract.js) &mdash; the image never leaves your browser. It's best-effort: always check the parsed numbers before trusting them, and correct any field by hand if it misreads.</p>
+    <p class="footnote"><span class="dot">&bull;</span> Minimum wage and tax bracket figures in Settings are reference defaults, not live data &mdash; a static site like this one can't reliably auto-fetch government rate tables. Use the lookup links in Settings to confirm current numbers for your state.</p>
+    <p class="footnote"><span class="dot">&bull;</span> This is a planning and reconciliation tool, not tax advice &mdash; actual pay and tax owed will vary with real bookings, service mix, tips, and your filing situation.</p>
+  </div>
+
+</div>
+
+<!-- SETTINGS DRAWER -->
+<div class="backdrop" id="backdrop" aria-hidden="true"></div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true" tabindex="-1" inert>
+  <div class="drawer-head"><h2 id="settingsTitle">Settings</h2><button type="button" class="closebtn" id="closeDrawer" aria-label="Close settings">&times;</button></div>
+  <p class="drawer-sub">Everything here is saved in this browser (not synced anywhere) and drives both cards on the main page.</p>
+
+  <div class="setgroup">
+    <div class="setlabel">Your profile</div>
+    <div class="setrow"><label for="setProfileName">Name</label><div class="fieldrow"><input type="text" id="setProfileName" maxlength="60"></div></div>
+    <div class="setrow"><label for="setLocation">CHOP location</label><select id="setLocation" style="width:220px;flex-shrink:0;"></select></div>
+    <div class="setrow"><label>Schedule</label><div class="periodtoggle" id="workerTypeToggle" style="flex-shrink:0;width:auto;margin:0;"><button type="button" class="periodbtn" data-workertype="full-time">Full time</button><button type="button" class="periodbtn" data-workertype="part-time">Part time</button></div></div>
+    <div class="sethint">Full-time calculations skip hours. Part-time hours stay optional and are used only to check the wage floor. Store list from <a href="https://www.chopbarbershop.com/ourlocations" target="_blank" rel="noopener" style="color:var(--acc);">CHOP&rsquo;s official locations page</a>.</div>
+  </div>
+
+  <div class="setgroup">
+    <div class="setlabel">Location</div>
+    <div class="setrow">
+      <label for="setState">State</label>
+      <select id="setState" style="width:130px; flex-shrink:0;"></select>
+    </div>
+    <div class="setrow">
+      <label>Wage type</label>
+      <div class="periodtoggle" id="wageModeToggle" style="flex-shrink:0; width:auto; margin:0;">
+        <button type="button" class="periodbtn" data-wagemode="tipped">Tipped</button>
+        <button type="button" class="periodbtn" data-wagemode="full">Full</button>
+      </div>
+    </div>
+    <div class="setrow">
+      <label for="setMinWage">Minimum wage</label>
+      <div class="fieldrow"><span>$</span><input type="number" id="setMinWage" step="0.05" min="0"><span>/hr</span></div>
+    </div>
+    <div class="sethint" id="minWageNote"></div>
+    <div class="btnrow" style="margin-top:8px;">
+      <button type="button" class="smallbtn lookupbtn" id="lookupWage">🔎 Look up current minimum wage</button>
+    </div>
+  </div>
+
+  <div class="setgroup">
+    <div class="setlabel">Pay structure</div>
+    <div class="payformula"><b>Services:</b> 45% of the first $1,200 + 70% of service revenue above $1,200.<br><b>Retail:</b> 10% of products sold.<br><b>Then:</b> add actual tips.</div>
+    <div class="setrow"><label for="setTipRate">Assumed tip rate (projection only)</label><div class="fieldrow"><input type="number" id="setTipRate" step="0.5" min="0" max="100"><span>%</span></div></div>
+    <div class="sethint">Actual pay uses the real tips you enter or scan &mdash; this rate only feeds the Projected Earnings planner.</div>
+  </div>
+
+  <div class="setgroup">
+    <div class="setlabel">Taxes</div>
+    <div class="setrow"><label for="setFica">FICA rate</label><div class="fieldrow"><input type="number" id="setFica" step="0.01" min="0" max="100"><span>%</span></div></div>
+    <div class="setrow"><label for="setStdDeduction">Standard deduction</label><div class="fieldrow"><span>$</span><input type="number" id="setStdDeduction" step="100" min="0"></div></div>
+    <div class="setrow"><label for="setTipsDeduction">"No Tax on Tips" deducted</label><div class="fieldrow"><span>$</span><input type="number" id="setTipsDeduction" step="250" min="0" max="25000"></div></div>
+    <div class="sethint">Real cap is $25,000/yr, phased out above $150k MAGI.</div>
+
+    <div class="setlabel" style="margin-top:16px;">Federal tax brackets (single filer)</div>
+    <div id="bracketRows"></div>
+    <div class="btnrow" style="margin-top:8px;">
+      <button type="button" class="smallbtn" id="addBracket">+ Add bracket</button>
+      <button type="button" class="smallbtn" id="resetBrackets">Reset to 2026 defaults</button>
+      <button type="button" class="smallbtn lookupbtn" id="lookupTax">🔎 Look up current brackets</button>
+    </div>
+  </div>
+
+  <div class="setgroup">
+    <div class="setlabel">Projection ticket prices</div>
+    <div class="setrow"><label for="setTicketBudget">Budget tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketBudget" step="1" min="0"></div></div>
+    <div class="setrow"><label for="setTicketLow">Low tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketLow" step="1" min="0"></div></div>
+    <div class="setrow"><label for="setTicketAvg">Average tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketAvg" step="1" min="0"></div></div>
+    <div class="setrow"><label for="setTicketHigh">High tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketHigh" step="1" min="0"></div></div>
+    <div class="setrow"><label for="setTicketPremium">Premium tier</label><div class="fieldrow"><span>$</span><input type="number" id="setTicketPremium" step="1" min="0"></div></div>
+  </div>
+
+  <div class="btnrow">
+    <button type="button" class="smallbtn danger" id="resetAll">Reset everything to defaults</button>
+  </div>
+</div>
+
+<script type="module" src="/src/app.ts"></script>
+</body>
+</html>
+
